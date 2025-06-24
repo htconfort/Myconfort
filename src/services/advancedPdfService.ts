@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Invoice } from '../types';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
+import { generateInvoicePDF, convertInvoiceToCustomFormat, downloadCustomPDF, getCustomPDFBlob } from './customPdfService';
 
 export interface InvoiceData {
   clientName: string;
@@ -44,7 +45,19 @@ export class AdvancedPDFService {
     light: '#F2EFE2'
   };
 
+  // Utiliser le générateur PDF personnalisé par défaut
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
+    try {
+      console.log('🎨 Utilisation du générateur PDF personnalisé avec logo et formatage français');
+      return await generateInvoicePDF(convertInvoiceToCustomFormat(invoice));
+    } catch (error) {
+      console.warn('⚠️ Fallback vers le générateur PDF standard:', error);
+      return await this.generateStandardPDF(invoice);
+    }
+  }
+
+  // Générateur PDF standard (fallback)
+  private static async generateStandardPDF(invoice: Invoice): Promise<jsPDF> {
     const doc = new jsPDF();
     
     // Convertir les données de la facture
@@ -651,13 +664,24 @@ export class AdvancedPDFService {
     console.log('✅ Page CGV condensée en 2 colonnes ajoutée avec succès');
   }
 
+  // Méthodes publiques utilisant le générateur personnalisé
   static async downloadPDF(invoice: Invoice): Promise<void> {
-    const doc = await this.generateInvoicePDF(invoice);
-    doc.save(`facture_${invoice.invoiceNumber}.pdf`);
+    try {
+      await downloadCustomPDF(invoice);
+    } catch (error) {
+      console.error('Erreur téléchargement PDF personnalisé, fallback:', error);
+      const doc = await this.generateStandardPDF(invoice);
+      doc.save(`facture_${invoice.invoiceNumber}.pdf`);
+    }
   }
 
   static async getPDFBlob(invoice: Invoice): Promise<Blob> {
-    const doc = await this.generateInvoicePDF(invoice);
-    return doc.output('blob');
+    try {
+      return await getCustomPDFBlob(invoice);
+    } catch (error) {
+      console.error('Erreur génération blob PDF personnalisé, fallback:', error);
+      const doc = await this.generateStandardPDF(invoice);
+      return doc.output('blob');
+    }
   }
 }
