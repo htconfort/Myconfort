@@ -193,26 +193,22 @@ export class AdvancedPDFService {
     doc.text(`Tél: ${data.clientPhone}`, 20, 133);
     doc.text(`Email: ${data.clientEmail}`, 20, 140);
 
-    // Section "INFORMATIONS COMPLÉMENTAIRES" (colonne droite)
+    // Section "INFORMATIONS COMPLÉMENTAIRES" (colonne droite) - sans la mention Loi Hammon
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('INFORMATIONS COMPLÉMENTAIRES', 110, 101);
     
-    // Mention Loi Hammon sous "INFORMATIONS COMPLÉMENTAIRES"
-    doc.setTextColor(this.COLORS.danger);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LOI HAMMON', 110, 112);
-    
+    // Informations complémentaires si disponibles
     doc.setTextColor(this.COLORS.dark);
-    doc.setFontSize(7);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
-    const loiHammonText = 'Les achats effectués sur les foires expositions et salon, à l\'exception de ceux faisant l\'objet d\'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.';
-    
-    const splitText = doc.splitTextToSize(loiHammonText, 80); // Largeur réduite pour la colonne droite
-    doc.text(splitText, 110, 117);
+    let yPos = 112;
+    if (data.advisorName) {
+      doc.text(`Conseiller: ${data.advisorName}`, 110, yPos);
+      yPos += 7;
+    }
   }
 
   private static addProductsTable(doc: jsPDF, data: InvoiceData): void {
@@ -228,7 +224,7 @@ export class AdvancedPDFService {
     ]);
 
     autoTable(doc, {
-      startY: 150, // Position normale du tableau
+      startY: 150,
       head: [['DÉSIGNATION', 'QTÉ', 'PU HT', 'PU TTC', 'REMISE', 'TOTAL TTC']],
       body: tableData,
       theme: 'grid',
@@ -336,7 +332,7 @@ export class AdvancedPDFService {
       yPos += 20;
     }
     
-    // Modalités de paiement
+    // Modalités de paiement avec mention Loi Hammon
     if (data.paymentMethod) {
       doc.setTextColor(this.COLORS.primary);
       doc.setFontSize(11);
@@ -348,12 +344,29 @@ export class AdvancedPDFService {
       doc.setFontSize(9);
       doc.text(`Mode de règlement: ${data.paymentMethod}`, 15, yPos + 7);
       yPos += 15;
+      
+      // Cadre pour la mention Loi Hammon
+      doc.setDrawColor(this.COLORS.secondary);
+      doc.roundedRect(15, yPos, 180, 25, 2, 2);
+      
+      // Titre LOI HAMMON
+      doc.setTextColor(this.COLORS.danger);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LOI HAMMON', 20, yPos + 8);
+      
+      // Texte de la loi Hammon
+      doc.setTextColor(this.COLORS.dark);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      
+      const loiHammonText = 'Les achats effectués sur les foires expositions et salon, à l\'exception de ceux faisant l\'objet d\'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.';
+      
+      const splitText = doc.splitTextToSize(loiHammonText, 170);
+      doc.text(splitText, 20, yPos + 14);
+      
+      yPos += 30;
     }
-    
-    // Conditions générales
-    doc.setTextColor(this.COLORS.secondary);
-    doc.setFontSize(8);
-    doc.text('Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d\'intérêt légal seront appliquées.', 15, yPos);
   }
 
   private static addFooter(doc: jsPDF): void {
