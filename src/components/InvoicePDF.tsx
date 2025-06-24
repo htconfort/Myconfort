@@ -47,13 +47,16 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
 
   return (
     <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif' }}>
+      {/* Bordure supérieure verte */}
+      <div className="h-1 bg-[#477A0C]"></div>
+      
       {/* En-tête de la facture */}
       <div className="p-8 border-b-4 border-[#477A0C]">
         <div className="flex justify-between items-start">
           {/* Logo et informations entreprise */}
           <div className="flex-1">
             <div className="flex items-center mb-6">
-              <div className="text-[#477A0C] text-4xl mr-4">
+              <div className="bg-[#477A0C] rounded-full w-16 h-16 flex items-center justify-center text-[#F2EFE2] text-4xl mr-4">
                 🌸
               </div>
               <div>
@@ -143,6 +146,16 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Loi Hamon repositionnée au-dessus du tableau */}
+      <div className="px-8 py-4">
+        <div className="bg-red-50 border-2 border-red-500 p-4 rounded">
+          <h4 className="text-red-600 font-bold text-sm mb-2">LOI HAMON</h4>
+          <p className="text-xs text-gray-600">
+            Les achats effectués sur les foires expositions et salon, à l'exception de ceux faisant l'objet d'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.
+          </p>
         </div>
       </div>
 
@@ -248,6 +261,21 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             </div>
           </div>
         </div>
+
+        {/* Signature si présente */}
+        {invoice.signature && (
+          <div className="mt-8 flex justify-end">
+            <div className="border border-gray-300 rounded p-4 w-64">
+              <h4 className="text-[#477A0C] font-bold text-sm mb-2 text-center">SIGNATURE CLIENT</h4>
+              <div className="h-16 flex items-center justify-center">
+                <img src={invoice.signature} alt="Signature" className="max-h-full max-w-full" />
+              </div>
+              <p className="text-xs text-gray-500 text-center mt-2">
+                Signé le {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Informations de paiement et notes */}
@@ -259,12 +287,9 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               {invoice.payment.method && (
                 <p><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
               )}
-              
-              {/* Loi Hamon dans un cadre rouge (repositionnée comme demandé) */}
-              <div className="bg-white border-2 border-red-500 p-4 rounded mt-4">
-                <h4 className="text-red-600 font-bold text-sm mb-2">LOI HAMON</h4>
+              <div className="bg-white p-4 rounded border mt-4">
                 <p className="text-xs text-gray-600">
-                  Les achats effectués sur les foires expositions et salon, à l'exception de ceux faisant l'objet d'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.
+                  Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées.
                 </p>
               </div>
             </div>

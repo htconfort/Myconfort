@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Loader, CheckCircle, AlertCircle, Mail, FileText, Shield, Send } from 'lucide-react';
+import { Zap, Loader, CheckCircle, AlertCircle, Mail, FileText, Shield, Send, Clock, Award } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from '../services/advancedPdfService';
@@ -39,24 +39,24 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     );
   };
 
-  // Génération du PDF avec design identique à l'aperçu
-  const generatePDF = async (): Promise<any> => {
-    setStep('Génération du PDF avec design identique à l\'aperçu...');
+  // Génération du PDF professionnel identique à l'aperçu
+  const generateProfessionalPDF = async (): Promise<any> => {
+    setStep('🎨 Génération PDF professionnel identique à l\'aperçu Bolt...');
     
     try {
-      console.log('🎨 Génération PDF avec design exactement identique à l\'aperçu Bolt');
+      console.log('🎨 Génération PDF avec design EXACTEMENT identique à l\'aperçu Bolt');
       const doc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
-      console.log('✅ PDF généré avec design identique à l\'aperçu');
+      console.log('✅ PDF professionnel généré avec design parfaitement identique');
       return doc;
     } catch (error) {
-      console.error('❌ Erreur avec le générateur PDF:', error);
+      console.error('❌ Erreur avec le générateur PDF professionnel:', error);
       throw error;
     }
   };
 
-  // Envoi par email avec EmailJS
-  const sendEmail = async () => {
+  // Envoi automatique par email avec EmailJS
+  const sendEmailAutomatically = async () => {
     if (!isValid()) {
       onError('Veuillez remplir toutes les informations requises (client, email, produits)');
       return;
@@ -65,11 +65,11 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     setLoading(true);
 
     try {
-      // Étape 1: Génération du PDF avec design identique à l'aperçu
-      const pdf = await generatePDF();
+      // Étape 1: Génération du PDF professionnel
+      const pdf = await generateProfessionalPDF();
       
-      // Étape 2: Conversion en blob et base64
-      setStep('Préparation de la pièce jointe PDF...');
+      // Étape 2: Préparation de la pièce jointe
+      setStep('📎 Préparation de la pièce jointe PDF professionnelle...');
       const blob = pdf.output('blob');
       const sizeKB = Math.round(blob.size / 1024);
 
@@ -78,34 +78,34 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
         const base64 = (reader.result as string).split(',')[1];
 
         try {
-          // Étape 3: Envoi avec EmailJS
-          setStep('Envoi sécurisé par email...');
+          // Étape 3: Envoi automatique avec EmailJS
+          setStep('📧 Envoi automatique par email sécurisé...');
           
           const success = await EmailService.sendInvoiceByEmail(pdf, invoice, 
-            `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec FactuSign Pro.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nFactuSign Pro - Factures intelligentes, signées et envoyées automatiquement`
+            `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec FactuSign Pro.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nMYCONFORT - Facturation Professionnelle`
           );
 
           if (success) {
-            setStep('Envoi réussi !');
-            onSuccess(`✅ Facture FactuSign Pro envoyée avec succès ! PDF ${invoice.signature ? 'signé électroniquement' : 'professionnel'} avec design identique à l'aperçu (${sizeKB} KB) livré par email sécurisé à ${invoice.client.email}`);
+            setStep('✅ Envoi réussi !');
+            onSuccess(`✅ Facture professionnelle envoyée avec succès ! PDF ${invoice.signature ? 'signé électroniquement' : 'professionnel'} avec design identique à l'aperçu (${sizeKB} KB) livré automatiquement à ${invoice.client.email}`);
           } else {
             onError('❌ Erreur: Template EmailJS introuvable. Vérifiez votre configuration dans le dashboard EmailJS.');
           }
         } catch (err: any) {
-          console.error('❌ Erreur lors de l\'envoi:', err);
+          console.error('❌ Erreur lors de l\'envoi automatique:', err);
           
           if (err?.text?.includes('template ID not found') || err?.status === 400) {
             onError('❌ Template EmailJS introuvable. Le template ID configuré n\'existe pas dans votre compte.');
           } else {
-            onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF identique à l\'aperçu.');
+            onError('Erreur lors de la génération ou de l\'envoi automatique de la facture professionnelle.');
           }
         }
       };
 
       reader.readAsDataURL(blob);
     } catch (error) {
-      console.error('Erreur génération PDF:', error);
-      onError('❌ Erreur lors de la génération du PDF avec design identique à l\'aperçu.');
+      console.error('Erreur génération PDF professionnel:', error);
+      onError('❌ Erreur lors de la génération du PDF professionnel identique à l\'aperçu.');
     } finally {
       setLoading(false);
       setStep('');
@@ -117,11 +117,11 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
           <div className="bg-white/20 p-3 rounded-full">
-            <Zap className="w-8 h-8" />
+            <Award className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">FactuSign Pro</h2>
-            <p className="text-green-100">PDF avec design identique à l'aperçu Bolt</p>
+            <h2 className="text-2xl font-bold">MYCONFORT - Facturation Professionnelle</h2>
+            <p className="text-green-100">PDF hautement professionnel • Design identique à l'aperçu • Envoi automatique</p>
           </div>
         </div>
         
@@ -163,27 +163,32 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
         </div>
       </div>
 
-      {/* Indicateurs de fonctionnalités */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      {/* Indicateurs de fonctionnalités professionnelles */}
+      <div className="grid grid-cols-5 gap-3 mb-6">
         <div className="text-center">
-          <FileText className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-          <div className="text-sm font-semibold">Design Identique</div>
-          <div className="text-xs text-blue-100">Aperçu = PDF</div>
+          <Award className="w-6 h-6 mx-auto mb-1 text-yellow-200" />
+          <div className="text-xs font-semibold">Design Pro</div>
+          <div className="text-xs text-yellow-100">Identique aperçu</div>
         </div>
         <div className="text-center">
-          <Shield className="w-8 h-8 mx-auto mb-2 text-green-200" />
-          <div className="text-sm font-semibold">Signature Électronique</div>
+          <FileText className="w-6 h-6 mx-auto mb-1 text-blue-200" />
+          <div className="text-xs font-semibold">PDF Haute Qualité</div>
+          <div className="text-xs text-blue-100">Formatage français</div>
+        </div>
+        <div className="text-center">
+          <Shield className="w-6 h-6 mx-auto mb-1 text-green-200" />
+          <div className="text-xs font-semibold">Signature Électronique</div>
           <div className="text-xs text-green-100">{invoice.signature ? 'Intégrée' : 'Optionnelle'}</div>
         </div>
         <div className="text-center">
-          <Send className="w-8 h-8 mx-auto mb-2 text-purple-200" />
-          <div className="text-sm font-semibold">Envoi Automatique</div>
-          <div className="text-xs text-purple-100">Email sécurisé</div>
+          <Send className="w-6 h-6 mx-auto mb-1 text-purple-200" />
+          <div className="text-xs font-semibold">Envoi Automatique</div>
+          <div className="text-xs text-purple-100">EmailJS</div>
         </div>
         <div className="text-center">
-          <CheckCircle className="w-8 h-8 mx-auto mb-2 text-yellow-200" />
-          <div className="text-sm font-semibold">Loi Hamon</div>
-          <div className="text-xs text-yellow-100">Conforme</div>
+          <CheckCircle className="w-6 h-6 mx-auto mb-1 text-red-200" />
+          <div className="text-xs font-semibold">Loi Hamon</div>
+          <div className="text-xs text-red-100">Conforme</div>
         </div>
       </div>
 
@@ -193,7 +198,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-5 h-5 text-red-300" />
             <div className="text-sm">
-              <div className="font-semibold">Informations manquantes :</div>
+              <div className="font-semibold">Informations manquantes pour l'envoi automatique :</div>
               <ul className="list-disc list-inside mt-1 text-xs">
                 {!invoice.client.name && <li>Nom du client</li>}
                 {!invoice.client.email && <li>Email du client</li>}
@@ -210,31 +215,32 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           <div className="flex items-center space-x-3">
             <Loader className="w-5 h-5 animate-spin text-blue-300" />
             <div>
-              <div className="font-semibold text-blue-100">FactuSign Pro en action...</div>
+              <div className="font-semibold text-blue-100">Facturation Professionnelle en cours...</div>
               <div className="text-sm text-blue-200">{step}</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Bouton d'envoi */}
+      {/* Bouton d'envoi automatique */}
       <div className="flex justify-center">
         <button
-          onClick={sendEmail}
+          onClick={sendEmailAutomatically}
           disabled={loading || !isValid()}
           className="bg-white text-green-600 hover:bg-green-50 disabled:bg-gray-300 disabled:text-gray-500 px-8 py-4 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
         >
           {loading ? (
             <>
               <Loader className="w-6 h-6 animate-spin" />
-              <span>Envoi en cours...</span>
+              <span>Envoi automatique en cours...</span>
             </>
           ) : (
             <>
-              <Zap className="w-6 h-6" />
+              <Award className="w-6 h-6" />
               <Mail className="w-5 h-5" />
               {invoice.signature && <Shield className="w-5 h-5" />}
-              <span>Envoyer avec FactuSign Pro</span>
+              <Clock className="w-5 h-5" />
+              <span>Envoyer Automatiquement</span>
             </>
           )}
         </button>
@@ -244,9 +250,12 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
           {isValid() 
-            ? `Prêt à envoyer la facture ${invoice.signature ? 'signée électroniquement' : 'professionnelle'} avec design identique à l'aperçu à ${invoice.client.email}`
-            : 'Complétez les informations ci-dessus pour activer l\'envoi automatique'
+            ? `✅ Prêt pour l'envoi automatique de la facture ${invoice.signature ? 'signée électroniquement' : 'professionnelle'} avec design identique à l'aperçu à ${invoice.client.email}`
+            : '⚠️ Complétez les informations ci-dessus pour activer l\'envoi automatique professionnel'
           }
+        </p>
+        <p className="mt-1 text-xs text-blue-200">
+          🎨 Le PDF généré sera EXACTEMENT identique à l'aperçu que vous voyez dans Bolt
         </p>
       </div>
     </div>
