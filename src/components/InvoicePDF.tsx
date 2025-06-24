@@ -149,16 +149,6 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
         </div>
       </div>
 
-      {/* Loi Hamon repositionnée au-dessus du tableau */}
-      <div className="px-8 py-4">
-        <div className="bg-red-50 border-2 border-red-500 p-4 rounded">
-          <h4 className="text-red-600 font-bold text-sm mb-2">LOI HAMON</h4>
-          <p className="text-xs text-gray-600">
-            Les achats effectués sur les foires expositions et salon, à l'exception de ceux faisant l'objet d'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.
-          </p>
-        </div>
-      </div>
-
       {/* Tableau des produits */}
       <div className="p-8">
         <h3 className="text-lg font-bold text-[#477A0C] mb-6 border-b-2 border-[#477A0C] pb-2">
@@ -219,7 +209,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           </table>
         </div>
 
-        {/* Totaux */}
+        {/* Totaux avec gestion acompte */}
         <div className="mt-8 flex justify-end">
           <div className="w-full max-w-md">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
@@ -245,15 +235,20 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                   </div>
                 </div>
                 
+                {/* Gestion acompte - EXACTEMENT comme dans l'aperçu */}
                 {invoice.payment.method === 'Acompte' && invoice.payment.depositAmount > 0 && (
                   <>
-                    <div className="flex justify-between text-sm border-t border-gray-300 pt-3">
-                      <span className="font-semibold">Acompte versé:</span>
-                      <span className="font-semibold">{formatCurrency(invoice.payment.depositAmount)}</span>
+                    <div className="border-t border-gray-300 pt-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-semibold">Acompte versé:</span>
+                        <span className="font-semibold text-blue-600">{formatCurrency(invoice.payment.depositAmount)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-lg font-bold text-orange-600">
-                      <span>RESTE À PAYER:</span>
-                      <span>{formatCurrency(totals.totalWithTax - invoice.payment.depositAmount)}</span>
+                    <div className="bg-orange-50 border border-orange-200 rounded p-3">
+                      <div className="flex justify-between text-lg font-bold text-orange-600">
+                        <span>RESTE À PAYER:</span>
+                        <span>{formatCurrency(totals.totalWithTax - invoice.payment.depositAmount)}</span>
+                      </div>
                     </div>
                   </>
                 )}
@@ -287,6 +282,16 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               {invoice.payment.method && (
                 <p><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
               )}
+              
+              {/* Affichage spécial pour acompte */}
+              {invoice.payment.method === 'Acompte' && invoice.payment.depositAmount > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+                  <p className="font-semibold text-blue-800">Détails de l'acompte:</p>
+                  <p className="text-blue-700">Montant versé: <span className="font-bold">{formatCurrency(invoice.payment.depositAmount)}</span></p>
+                  <p className="text-orange-700 font-semibold">Reste à payer: <span className="font-bold">{formatCurrency(totals.totalWithTax - invoice.payment.depositAmount)}</span></p>
+                </div>
+              )}
+              
               <div className="bg-white p-4 rounded border mt-4">
                 <p className="text-xs text-gray-600">
                   Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées.

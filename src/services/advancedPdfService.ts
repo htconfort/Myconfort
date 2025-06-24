@@ -35,6 +35,7 @@ export interface InvoiceData {
   advisorName?: string;
   paymentMethod?: string;
   depositAmount?: number;
+  montantRestant?: number; // Nouveau champ pour le montant restant
   signature?: string;
   deliveryMethod?: string;
   deliveryNotes?: string;
@@ -50,11 +51,13 @@ export class AdvancedPDFService {
     grayLight: [248, 250, 252],  // Gris très clair pour alternance
     grayBorder: [209, 213, 219], // Gris bordures
     red: [220, 38, 38],          // Rouge pour alertes
-    orange: [255, 140, 0]        // Orange pour acompte
+    orange: [255, 140, 0],       // Orange pour acompte
+    blue: [59, 130, 246],        // Bleu pour informations
+    green: [34, 197, 94]         // Vert pour succès
   };
 
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
-    console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU BOLT');
+    console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU BOLT AVEC SUPPORT ACOMPTE');
     
     const doc = new jsPDF();
     const invoiceData = this.convertInvoiceData(invoice);
@@ -80,8 +83,8 @@ export class AdvancedPDFService {
     // 6. TABLEAU PRODUITS (style exact de l'aperçu)
     this.addProductsTableIdentical(doc, invoiceData);
     
-    // 7. TOTAUX (cadre gris clair comme l'aperçu)
-    this.addTotalsIdentical(doc, invoiceData);
+    // 7. TOTAUX AVEC ACOMPTE (cadre gris clair comme l'aperçu)
+    this.addTotalsWithAcompteIdentical(doc, invoiceData);
     
     // 8. SIGNATURE (si présente)
     if (invoiceData.signature) {
@@ -91,7 +94,7 @@ export class AdvancedPDFService {
     // 9. PIED DE PAGE AVEC FOND VERT
     this.addFooterIdentical(doc);
     
-    console.log('✅ PDF GÉNÉRÉ - IDENTIQUE À L\'APERÇU BOLT');
+    console.log('✅ PDF GÉNÉRÉ - IDENTIQUE À L\'APERÇU BOLT AVEC ACOMPTE');
     return doc;
   }
 
@@ -120,7 +123,7 @@ export class AdvancedPDFService {
     
     // Statut signature (coin droit)
     if (data.signature) {
-      doc.setFillColor(5, 150, 105); // Vert succès
+      doc.setFillColor(...this.COLORS.green);
       doc.roundedRect(150, 15, 40, 8, 2, 2, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(8);
@@ -244,7 +247,7 @@ export class AdvancedPDFService {
     doc.roundedRect(15, 125, 180, 25, 2, 2, 'FD');
     
     // Titre avec badge bleu
-    doc.setFillColor(59, 130, 246); // Bleu
+    doc.setFillColor(...this.COLORS.blue);
     doc.roundedRect(70, 130, 70, 6, 2, 2, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(9);
@@ -280,7 +283,7 @@ export class AdvancedPDFService {
     doc.roundedRect(15, 155, 180, 30, 2, 2, 'FD');
     
     // Titre avec badge vert
-    doc.setFillColor(34, 197, 94); // Vert
+    doc.setFillColor(...this.COLORS.green);
     doc.roundedRect(70, 160, 70, 6, 2, 2, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(9);
@@ -296,6 +299,14 @@ export class AdvancedPDFService {
       doc.text('Méthode de paiement*:', 20, 172);
       doc.setFont('helvetica', 'normal');
       doc.text(data.paymentMethod, 70, 172);
+      
+      // Affichage spécial pour acompte
+      if (data.paymentMethod === 'Acompte' && data.depositAmount && data.depositAmount > 0) {
+        doc.setTextColor(...this.COLORS.orange);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Acompte: ${formatCurrency(data.depositAmount)}`, 20, 178);
+        doc.setTextColor(...this.COLORS.dark);
+      }
     }
     
     if (data.advisorName) {
@@ -310,7 +321,7 @@ export class AdvancedPDFService {
     doc.text('Signature client FactuSign Pro:', 20, 180);
     
     if (data.signature) {
-      doc.setTextColor(34, 197, 94);
+      doc.setTextColor(...this.COLORS.green);
       doc.text('🔒 Signature électronique enregistrée', 80, 180);
     } else {
       doc.setTextColor(156, 163, 175);
@@ -369,14 +380,19 @@ export class AdvancedPDFService {
     });
   }
 
-  private static addTotalsIdentical(doc: jsPDF, data: InvoiceData): void {
+  private static addTotalsWithAcompteIdentical(doc: jsPDF, data: InvoiceData): void {
     const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    // Calculer la hauteur nécessaire selon les éléments à afficher
+    let boxHeight = 35; // Hauteur de base
+    if (data.totalDiscount > 0) boxHeight += 7;
+    if (data.depositAmount && data.depositAmount > 0) boxHeight += 20; // Plus d'espace pour acompte + reste
     
     // Cadre pour les totaux (exactement comme l'aperçu)
     doc.setFillColor(...this.COLORS.grayLight);
     doc.setDrawColor(...this.COLORS.grayBorder);
     doc.setLineWidth(1);
-    doc.roundedRect(130, finalY, 65, 45, 3, 3, 'FD');
+    doc.roundedRect(130, finalY, 65, boxHeight, 3, 3, 'FD');
     
     doc.setTextColor(...this.COLORS.dark);
     doc.setFontSize(10);
@@ -421,22 +437,41 @@ export class AdvancedPDFService {
     doc.text('TOTAL TTC:', 135, yPos);
     doc.text(formatCurrency(data.totalTTC), 185, yPos, { align: 'right' });
     
-    // Acompte si applicable
+    // ===== GESTION ACOMPTE (EXACTEMENT COMME L'APERÇU) =====
     if (data.depositAmount && data.depositAmount > 0) {
       yPos += 10;
+      
+      // Ligne de séparation pour l'acompte
+      doc.setDrawColor(...this.COLORS.grayBorder);
+      doc.setLineWidth(0.5);
+      doc.line(135, yPos, 190, yPos);
+      yPos += 5;
+      
+      // Acompte versé
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(...this.COLORS.dark);
       doc.text('Acompte versé:', 135, yPos);
       doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...this.COLORS.blue);
       doc.text(formatCurrency(data.depositAmount), 185, yPos, { align: 'right' });
       
       yPos += 7;
+      
+      // RESTE À PAYER (mise en valeur comme dans l'aperçu)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.setTextColor(...this.COLORS.orange);
       doc.text('RESTE À PAYER:', 135, yPos);
-      doc.text(formatCurrency(data.totalTTC - data.depositAmount), 185, yPos, { align: 'right' });
+      
+      // Calculer le montant restant
+      const montantRestant = data.totalTTC - data.depositAmount;
+      doc.text(formatCurrency(montantRestant), 185, yPos, { align: 'right' });
+      
+      // Encadrer le reste à payer pour le mettre en évidence
+      doc.setDrawColor(...this.COLORS.orange);
+      doc.setLineWidth(1);
+      doc.roundedRect(133, yPos - 4, 59, 8, 1, 1);
     }
   }
 
@@ -478,7 +513,7 @@ export class AdvancedPDFService {
       
     } catch (error) {
       console.warn('Erreur signature, fallback texte:', error);
-      doc.setTextColor(34, 197, 94);
+      doc.setTextColor(...this.COLORS.green);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('✓ DOCUMENT SIGNÉ ÉLECTRONIQUEMENT', 45, 210, { align: 'center' });
@@ -539,6 +574,11 @@ export class AdvancedPDFService {
       return sum + (originalTotal - item.total);
     }, 0);
 
+    // Calcul du montant restant si acompte
+    const montantRestant = invoice.payment.depositAmount && invoice.payment.depositAmount > 0 
+      ? totalTTC - invoice.payment.depositAmount 
+      : totalTTC;
+
     return {
       clientName: invoice.client.name,
       clientAddress: invoice.client.address,
@@ -562,6 +602,7 @@ export class AdvancedPDFService {
       advisorName: invoice.advisorName,
       paymentMethod: invoice.payment.method,
       depositAmount: invoice.payment.depositAmount,
+      montantRestant: montantRestant,
       signature: invoice.signature,
       deliveryMethod: invoice.delivery.method,
       deliveryNotes: invoice.delivery.notes
@@ -569,13 +610,13 @@ export class AdvancedPDFService {
   }
 
   static async downloadPDF(invoice: Invoice): Promise<void> {
-    console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU');
+    console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE AVEC ACOMPTE');
     const doc = await this.generateInvoicePDF(invoice);
     doc.save(`facture_${invoice.invoiceNumber}.pdf`);
   }
 
   static async getPDFBlob(invoice: Invoice): Promise<Blob> {
-    console.log('📎 GÉNÉRATION BLOB PDF IDENTIQUE');
+    console.log('📎 GÉNÉRATION BLOB PDF IDENTIQUE AVEC ACOMPTE');
     const doc = await this.generateInvoicePDF(invoice);
     return doc.output('blob');
   }
