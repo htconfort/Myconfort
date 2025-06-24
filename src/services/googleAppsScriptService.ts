@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 VOTRE NOUVEL ID DE DÉPLOIEMENT GOOGLE APPS SCRIPT
-  private static readonly SCRIPT_ID = 'AKfycbyzHsxcpelDHauyHdMVnGWLphDYRa67ndAOQ9Ar1sunBvA89NNNu_3J56dlmT2CV0ZE';
+  // 🔑 VOTRE NOUVEL ID DE SCRIPT GOOGLE APPS SCRIPT
+  private static readonly SCRIPT_ID = '17SHorSzUDc8SCDxQ2fd7FvUlAhik21jAk6KqBwIU-DXDhvRWhm_2J1b9';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVELLE URL');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVEL ID CONFIGURÉ');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -102,7 +102,7 @@ export class GoogleAppsScriptService {
       };
 
       // Étape 5: Envoyer la requête à Google Apps Script
-      console.log('📤 Envoi vers Google Apps Script (nouvelle URL)...');
+      console.log('📤 Envoi vers Google Apps Script (nouvel ID)...');
       console.log('📊 Taille PDF:', pdfSizeKB, 'KB');
       console.log('📧 Destinataire:', invoice.client.email);
 
@@ -121,11 +121,11 @@ export class GoogleAppsScriptService {
       }
 
       const result = await response.text();
-      console.log('📨 Réponse Google Apps Script (nouvelle URL):', result);
+      console.log('📨 Réponse Google Apps Script (nouvel ID):', result);
 
       // Vérifier si l'envoi a réussi
       if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK')) {
-        console.log('✅ Email envoyé avec succès via Google Apps Script (nouvelle URL) !');
+        console.log('✅ Email envoyé avec succès via Google Apps Script (nouvel ID) !');
         return true;
       } else {
         console.error('❌ Échec de l\'envoi:', result);
@@ -133,7 +133,7 @@ export class GoogleAppsScriptService {
       }
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi via Google Apps Script (nouvelle URL):', error);
+      console.error('❌ Erreur lors de l\'envoi via Google Apps Script (nouvel ID):', error);
       console.error('🔍 Détails:', {
         scriptId: GoogleAppsScriptService.SCRIPT_ID,
         scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
@@ -153,7 +153,7 @@ export class GoogleAppsScriptService {
     format: string = 'png'
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA GOOGLE APPS SCRIPT (NOUVELLE URL)');
+      console.log('📸 PARTAGE APERÇU VIA GOOGLE APPS SCRIPT (NOUVEL ID)');
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -239,12 +239,12 @@ export class GoogleAppsScriptService {
       }
 
       const result = await response.text();
-      console.log('📨 Réponse partage aperçu (nouvelle URL):', result);
+      console.log('📨 Réponse partage aperçu (nouvel ID):', result);
 
       return result.includes('Email envoyé') || result.includes('success') || result.includes('OK');
 
     } catch (error: any) {
-      console.error('❌ Erreur partage aperçu via Google Apps Script (nouvelle URL):', error);
+      console.error('❌ Erreur partage aperçu via Google Apps Script (nouvel ID):', error);
       return false;
     }
   }
@@ -254,7 +254,7 @@ export class GoogleAppsScriptService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT (NOUVELLE URL)');
+      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT (NOUVEL ID)');
       console.log('🔗 URL de test:', GoogleAppsScriptService.SCRIPT_URL);
       
       const startTime = Date.now();
@@ -286,19 +286,19 @@ export class GoogleAppsScriptService {
       }
 
       const result = await response.text();
-      console.log('📨 Réponse test (nouvelle URL):', result);
+      console.log('📨 Réponse test (nouvel ID):', result);
 
       return {
         success: true,
-        message: `Connexion réussie avec la nouvelle URL ! Réponse: ${result}`,
+        message: `Connexion réussie avec le nouvel ID ! Réponse: ${result}`,
         responseTime
       };
 
     } catch (error: any) {
-      console.error('❌ Erreur test connexion (nouvelle URL):', error);
+      console.error('❌ Erreur test connexion (nouvel ID):', error);
       return {
         success: false,
-        message: `Erreur de connexion avec la nouvelle URL: ${error.message}`
+        message: `Erreur de connexion avec le nouvel ID: ${error.message}`
       };
     }
   }
@@ -372,7 +372,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Configuré avec la nouvelle URL'
+      status: '✅ Configuré avec le nouvel ID'
     };
   }
 
