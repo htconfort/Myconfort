@@ -130,8 +130,8 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
 
-        // Vérifier si l'envoi a réussi
-        if (result.includes('Script actif') || result.includes('success') || result.includes('OK')) {
+        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT
+        if (result.includes('Script actif') || result.includes('success') || result.includes('OK') || response.ok) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
         } else {
@@ -259,7 +259,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse partage aperçu:', result);
 
-        return result.includes('Script actif') || result.includes('success') || result.includes('OK');
+        return result.includes('Script actif') || result.includes('success') || result.includes('OK') || response.ok;
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
         throw fetchError;
