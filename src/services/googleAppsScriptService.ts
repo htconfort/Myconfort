@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 YOUR ACTUAL GOOGLE APPS SCRIPT ID (extracted from your URL)
-  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
+  // 🔑 COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID (you need to replace this with your actual deployment ID)
+  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso_REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -279,6 +279,14 @@ export class GoogleAppsScriptService {
       console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
       console.log('🔗 URL de test:', GoogleAppsScriptService.SCRIPT_URL);
       
+      // Check if the script ID looks incomplete
+      if (GoogleAppsScriptService.SCRIPT_ID.includes('REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID')) {
+        return {
+          success: false,
+          message: '⚠️ Configuration requise: Vous devez remplacer le SCRIPT_ID par votre véritable ID de déploiement Google Apps Script. Allez dans votre projet Google Apps Script, déployez-le comme application web, et copiez l\'ID de déploiement complet.'
+        };
+      }
+      
       const startTime = Date.now();
       
       const testData = {
@@ -351,7 +359,7 @@ export class GoogleAppsScriptService {
       if (error.name === 'AbortError') {
         errorMessage += 'Timeout - Le script met trop de temps à répondre. Vérifiez votre connexion et le déploiement du script.';
       } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        errorMessage += 'Impossible de joindre le script. Vérifiez que:\n• Le script est déployé comme application web\n• Les permissions sont définies sur "Anyone, even anonymous"\n• L\'ID du script est correct';
+        errorMessage += 'Impossible de joindre le script. Vérifiez que:\n• Le script est déployé comme application web\n• Les permissions sont définies sur "Anyone, even anonymous"\n• L\'ID du script est correct et complet\n• L\'URL du script est accessible';
       } else if (error.message.includes('CORS')) {
         errorMessage += 'Problème CORS. Vérifiez les autorisations du script.';
       } else {
@@ -434,7 +442,9 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Configuré avec votre script'
+      status: GoogleAppsScriptService.SCRIPT_ID.includes('REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID') 
+        ? '⚠️ Configuration requise' 
+        : '✅ Configuré avec votre script'
     };
   }
 
