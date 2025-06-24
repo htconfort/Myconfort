@@ -19,7 +19,7 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [exportStep, setExportStep] = useState('');
 
   // VOTRE NOUVEL ID GOOGLE APPS SCRIPT COMPLET
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso/exec";
 
   const handleExportAndSend = async () => {
     if (!invoice.client.email) {
@@ -325,7 +325,7 @@ Erreur technique: ${fetchError.message}`);
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
         <p className="mt-1 text-xs text-green-200">
-          🔗 Script: AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO
+          🔗 Script: AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso
         </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
           <p className="font-semibold">⚠️ Si l'erreur persiste, vérifiez que votre Google Apps Script est :</p>
