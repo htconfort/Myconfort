@@ -10,8 +10,12 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 VOTRE ID DE SCRIPT GOOGLE APPS SCRIPT FINAL ET FONCTIONNEL
-  private static readonly SCRIPT_ID = 'AKfycbzRqELlhLgO4NYpd4nZvt0888WFP56GMO5lB3SoBX7ZlCNGfEMhvjR2bdigJe1O75bq';
+  // 🔑 PLACEHOLDER SCRIPT ID - NEEDS TO BE REPLACED WITH ACTUAL DEPLOYED SCRIPT
+  // To fix this error, you need to:
+  // 1. Deploy your Google Apps Script as a web app
+  // 2. Set permissions to "Anyone, even anonymous"
+  // 3. Replace this SCRIPT_ID with your actual deployment ID
+  private static readonly SCRIPT_ID = 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,6 +23,12 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
+      // Check if script is properly configured
+      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
+        console.error('❌ Google Apps Script non configuré. Veuillez remplacer SCRIPT_ID par votre ID de déploiement.');
+        throw new Error('Google Apps Script non configuré. Veuillez configurer le SCRIPT_ID dans googleAppsScriptService.ts');
+      }
+
       console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION FINALE');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
@@ -101,35 +111,46 @@ export class GoogleAppsScriptService {
         hasDiscount: invoice.products.some(p => p.discount > 0)
       };
 
-      // Étape 5: Envoyer la requête à Google Apps Script
+      // Étape 5: Envoyer la requête à Google Apps Script avec timeout
       console.log('📤 Envoi vers Google Apps Script...');
       console.log('📊 Taille PDF:', pdfSizeKB, 'KB');
       console.log('📧 Destinataire:', invoice.client.email);
 
-      const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-        mode: 'cors' // Important pour les requêtes cross-origin
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes timeout
 
-      // Étape 6: Traiter la réponse
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
-      }
+      try {
+        const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+          mode: 'cors',
+          signal: controller.signal
+        });
 
-      const result = await response.text();
-      console.log('📨 Réponse Google Apps Script:', result);
+        clearTimeout(timeoutId);
 
-      // Vérifier si l'envoi a réussi
-      if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK')) {
-        console.log('✅ Email envoyé avec succès via Google Apps Script !');
-        return true;
-      } else {
-        console.error('❌ Échec de l\'envoi:', result);
-        return false;
+        // Étape 6: Traiter la réponse
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.text();
+        console.log('📨 Réponse Google Apps Script:', result);
+
+        // Vérifier si l'envoi a réussi
+        if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK')) {
+          console.log('✅ Email envoyé avec succès via Google Apps Script !');
+          return true;
+        } else {
+          console.error('❌ Échec de l\'envoi:', result);
+          return false;
+        }
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        throw fetchError;
       }
 
     } catch (error: any) {
@@ -153,6 +174,12 @@ export class GoogleAppsScriptService {
     format: string = 'png'
   ): Promise<boolean> {
     try {
+      // Check if script is properly configured
+      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
+        console.error('❌ Google Apps Script non configuré.');
+        return false;
+      }
+
       console.log('📸 PARTAGE APERÇU VIA GOOGLE APPS SCRIPT');
       
       // Calculer les montants
@@ -224,24 +251,35 @@ export class GoogleAppsScriptService {
         generatedTime: new Date().toLocaleTimeString('fr-FR')
       };
 
-      // Envoyer à Google Apps Script
-      const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-        mode: 'cors'
-      });
+      // Envoyer à Google Apps Script avec timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+      try {
+        const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+          mode: 'cors',
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const result = await response.text();
+        console.log('📨 Réponse partage aperçu:', result);
+
+        return result.includes('Email envoyé') || result.includes('success') || result.includes('OK');
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        throw fetchError;
       }
-
-      const result = await response.text();
-      console.log('📨 Réponse partage aperçu:', result);
-
-      return result.includes('Email envoyé') || result.includes('success') || result.includes('OK');
 
     } catch (error: any) {
       console.error('❌ Erreur partage aperçu via Google Apps Script:', error);
@@ -254,6 +292,14 @@ export class GoogleAppsScriptService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
+      // Check if script is properly configured
+      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
+        return {
+          success: false,
+          message: '⚠️ Google Apps Script non configuré. Veuillez remplacer SCRIPT_ID par votre ID de déploiement dans googleAppsScriptService.ts'
+        };
+      }
+
       console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
       console.log('🔗 URL de test:', GoogleAppsScriptService.SCRIPT_URL);
       
@@ -269,53 +315,67 @@ export class GoogleAppsScriptService {
 
       console.log('📤 Envoi des données de test:', testData);
 
-      const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(testData),
-        mode: 'cors'
-      });
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
 
-      const responseTime = Date.now() - startTime;
+      try {
+        const response = await fetch(GoogleAppsScriptService.SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData),
+          mode: 'cors',
+          signal: controller.signal
+        });
 
-      console.log('📊 Réponse HTTP status:', response.status);
-      console.log('📊 Temps de réponse:', responseTime, 'ms');
+        clearTimeout(timeoutId);
+        const responseTime = Date.now() - startTime;
 
-      if (!response.ok) {
+        console.log('📊 Réponse HTTP status:', response.status);
+        console.log('📊 Temps de réponse:', responseTime, 'ms');
+
+        if (!response.ok) {
+          return {
+            success: false,
+            message: `❌ Erreur HTTP: ${response.status} ${response.statusText}. Vérifiez que votre Google Apps Script est déployé comme application web avec les bonnes permissions.`,
+            responseTime
+          };
+        }
+
+        const result = await response.text();
+        console.log('📨 Réponse complète du script:', result);
+
+        // Vérifier différents types de réponses de succès
+        const isSuccess = result.includes('Test réussi') || 
+                         result.includes('success') || 
+                         result.includes('OK') ||
+                         result.includes('test') ||
+                         response.status === 200;
+
         return {
-          success: false,
-          message: `Erreur HTTP: ${response.status} ${response.statusText}`,
+          success: isSuccess,
+          message: isSuccess 
+            ? `✅ Connexion réussie ! Script répond correctement. Réponse: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`
+            : `⚠️ Script accessible mais réponse inattendue: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`,
           responseTime
         };
+
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        throw fetchError;
       }
-
-      const result = await response.text();
-      console.log('📨 Réponse complète du script:', result);
-
-      // Vérifier différents types de réponses de succès
-      const isSuccess = result.includes('Test réussi') || 
-                       result.includes('success') || 
-                       result.includes('OK') ||
-                       result.includes('test') ||
-                       response.status === 200;
-
-      return {
-        success: isSuccess,
-        message: isSuccess 
-          ? `✅ Connexion réussie ! Script répond correctement. Réponse: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`
-          : `⚠️ Script accessible mais réponse inattendue: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`,
-        responseTime
-      };
 
     } catch (error: any) {
       console.error('❌ Erreur test connexion:', error);
       
-      let errorMessage = 'Erreur de connexion: ';
+      let errorMessage = '❌ Erreur de connexion: ';
       
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        errorMessage += 'Impossible de joindre le script. Vérifiez que le script est déployé comme application web.';
+      if (error.name === 'AbortError') {
+        errorMessage += 'Timeout - Le script met trop de temps à répondre. Vérifiez votre connexion et le déploiement du script.';
+      } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        errorMessage += 'Impossible de joindre le script. Vérifiez que:\n• Le script est déployé comme application web\n• Les permissions sont définies sur "Anyone, even anonymous"\n• L\'ID du script est correct';
       } else if (error.message.includes('CORS')) {
         errorMessage += 'Problème CORS. Vérifiez les autorisations du script.';
       } else {
@@ -395,10 +455,12 @@ export class GoogleAppsScriptService {
    * Obtient l'URL du script pour information
    */
   static getScriptInfo(): { scriptId: string; scriptUrl: string; status: string } {
+    const isConfigured = GoogleAppsScriptService.SCRIPT_ID !== 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID';
+    
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Configuré et fonctionnel'
+      status: isConfigured ? '✅ Configuré' : '⚠️ Non configuré - Remplacez SCRIPT_ID'
     };
   }
 
@@ -407,6 +469,11 @@ export class GoogleAppsScriptService {
    */
   static validateEmailData(invoice: Invoice): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
+
+    // Check if script is configured
+    if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
+      errors.push('Google Apps Script non configuré - Remplacez SCRIPT_ID');
+    }
 
     if (!invoice.client.email) {
       errors.push('Email du client requis');
