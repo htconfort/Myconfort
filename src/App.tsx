@@ -7,6 +7,7 @@ import { ClientListModal } from './components/ClientListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailModal } from './components/EmailModal';
 import { SignaturePad } from './components/SignaturePad';
+import { InvoiceSender } from './components/InvoiceSender';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
@@ -476,6 +477,13 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* FactuSign Pro - Composant d'envoi automatique */}
+        <InvoiceSender
+          invoice={invoice}
+          onSuccess={handleEmailSuccess}
+          onError={handleEmailError}
+        />
 
         {/* Action Buttons */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-200 transform transition-all hover:scale-[1.002] hover:shadow-xl">
