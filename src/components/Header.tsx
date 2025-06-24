@@ -22,21 +22,8 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <div className="bg-[#F2EFE2] rounded-lg p-2">
-            <img 
-              src="/logo.svg" 
-              alt="MYCONFORT Logo" 
-              className="w-8 h-8"
-              onError={(e) => {
-                // Fallback si le logo ne charge pas
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            <div className="hidden w-8 h-8 bg-[#477A0C] rounded flex items-center justify-center">
-              <span className="text-[#F2EFE2] font-bold text-lg">M</span>
-            </div>
+          <div className="text-[#F2EFE2] text-2xl">
+            🌸
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#F2EFE2]">

@@ -53,21 +53,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           {/* Logo et informations entreprise */}
           <div className="flex-1">
             <div className="flex items-center mb-6">
-              <div className="bg-[#477A0C] rounded-lg p-3 mr-4">
-                <img 
-                  src="/logo.svg" 
-                  alt="MYCONFORT Logo" 
-                  className="w-10 h-10"
-                  onError={(e) => {
-                    // Fallback si le logo ne charge pas
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-                <div className="hidden w-10 h-10 flex items-center justify-center">
-                  <span className="text-[#F2EFE2] font-bold text-2xl">M</span>
-                </div>
+              <div className="text-[#477A0C] text-4xl mr-4">
+                🌸
               </div>
               <div>
                 <h1 className="text-4xl font-black text-[#477A0C] tracking-tight">
@@ -306,20 +293,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
       <div className="p-8 border-t-4 border-[#477A0C] bg-[#477A0C] text-[#F2EFE2]">
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/logo.svg" 
-              alt="MYCONFORT Logo" 
-              className="w-8 h-8 mr-3"
-              onError={(e) => {
-                // Fallback si le logo ne charge pas
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            <div className="hidden w-8 h-8 mr-3 flex items-center justify-center">
-              <span className="text-[#F2EFE2] font-bold text-xl">M</span>
-            </div>
+            <span className="text-2xl mr-3">🌸</span>
             <span className="text-2xl font-bold">MYCONFORT</span>
           </div>
           <p className="font-bold text-lg mb-2">Merci de votre confiance !</p>

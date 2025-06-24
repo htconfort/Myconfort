@@ -50,8 +50,8 @@ export class AdvancedPDFService {
     const invoiceData = this.convertInvoiceData(invoice);
     
     // PAGE 1 - FACTURE
-    // Ajouter le logo MYCONFORT (fleur blanche)
-    await this.addLogo(doc);
+    // Ajouter le logo MYCONFORT (fleur blanche) - SIMPLIFIÉ
+    this.addSimpleLogo(doc);
     
     // Ajouter l'en-tête de l'entreprise
     this.addCompanyHeader(doc);
@@ -128,97 +128,73 @@ export class AdvancedPDFService {
     };
   }
 
-  private static async addLogo(doc: jsPDF): Promise<void> {
+  // NOUVELLE MÉTHODE SIMPLIFIÉE POUR LE LOGO
+  private static addSimpleLogo(doc: jsPDF): void {
     try {
-      console.log('🌸 Chargement du logo fleur blanche MYCONFORT...');
+      console.log('🌸 Ajout du logo fleur blanche MYCONFORT (version simplifiée)');
       
-      // Charger le logo fleur blanche MYCONFORT
-      const logoPath = '/logo.svg'; // ✅ Chemin vers le logo fleur blanche
+      // Dessiner directement la fleur blanche avec du SVG inline
+      // Utiliser les coordonnées du SVG fourni pour dessiner la fleur
+      doc.setFillColor(this.COLORS.light); // Couleur beige/blanc #F2EFE2
       
-      // Créer une image pour charger le logo
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
+      // Position du logo
+      const logoX = 15;
+      const logoY = 15;
+      const logoSize = 20;
       
-      // Promesse pour attendre le chargement du logo
-      const logoLoaded = new Promise<boolean>((resolve) => {
-        img.onload = () => {
-          try {
-            // Créer le carré vert MYCONFORT pour l'en-tête
-            doc.setFillColor(this.COLORS.primary); // Vert MYCONFORT #477A0C
-            doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
-            
-            // Ajouter le logo fleur blanche au centre du carré vert
-            // Dimensions ajustées pour bien s'intégrer dans le carré
-            const logoX = 20; // Position X centrée dans le carré
-            const logoY = 18; // Position Y centrée dans le carré
-            const logoWidth = 14; // Largeur du logo
-            const logoHeight = 14; // Hauteur du logo
-            
-            doc.addImage(img, 'SVG', logoX, logoY, logoWidth, logoHeight);
-            
-            // Ajouter le texte MYCONFORT à côté du logo
-            doc.setTextColor(this.COLORS.light); // Blanc/beige
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.text('MYCONFORT', 36, 28);
-            
-            console.log('✅ Logo fleur blanche MYCONFORT intégré avec succès dans le carré vert !');
-            resolve(true);
-          } catch (error) {
-            console.warn('⚠️ Erreur lors de l\'ajout du logo fleur:', error);
-            resolve(false);
-          }
-        };
-        
-        img.onerror = (error) => {
-          console.warn('⚠️ Impossible de charger le logo fleur depuis:', logoPath);
-          console.warn('🔍 Erreur de chargement:', error);
-          resolve(false);
-        };
-        
-        // Timeout de 3 secondes pour éviter les blocages
-        setTimeout(() => {
-          console.warn('⏱️ Timeout lors du chargement du logo fleur (3s)');
-          resolve(false);
-        }, 3000);
-      });
+      // Dessiner les pétales de la fleur en utilisant des formes géométriques
+      // Pétale central (tige)
+      doc.ellipse(logoX + 10, logoY + 16, 1, 8, 'F');
       
-      // Tenter de charger le logo
-      console.log('📂 Tentative de chargement du logo fleur depuis:', logoPath);
-      img.src = logoPath;
-      const logoSuccess = await logoLoaded;
+      // Pétales latéraux (feuilles stylisées)
+      doc.ellipse(logoX + 6, logoY + 12, 3, 6, 'F');
+      doc.ellipse(logoX + 14, logoY + 12, 3, 6, 'F');
       
-      // Si le logo n'a pas pu être chargé, utiliser un fallback
-      if (!logoSuccess) {
-        console.log('🔄 Utilisation du logo de fallback MYCONFORT avec carré vert');
-        this.addFallbackLogo(doc);
-      }
+      // Pétales supérieurs
+      doc.ellipse(logoX + 8, logoY + 8, 2, 4, 'F');
+      doc.ellipse(logoX + 12, logoY + 8, 2, 4, 'F');
+      
+      // Centre de la fleur
+      doc.circle(logoX + 10, logoY + 10, 2, 'F');
+      
+      // Ajouter le texte MYCONFORT à côté
+      doc.setTextColor(this.COLORS.primary);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('MYCONFORT', logoX + 25, logoY + 12);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(this.COLORS.secondary);
+      doc.text('Votre spécialiste literie', logoX + 25, logoY + 18);
+      
+      console.log('✅ Logo fleur blanche MYCONFORT créé avec succès (version géométrique)');
       
     } catch (error) {
-      console.warn('❌ Erreur générale lors du chargement du logo fleur:', error);
-      this.addFallbackLogo(doc);
+      console.warn('⚠️ Erreur lors de la création du logo fleur géométrique:', error);
+      this.addTextOnlyLogo(doc);
     }
   }
 
-  private static addFallbackLogo(doc: jsPDF): void {
+  // Logo de fallback avec texte uniquement
+  private static addTextOnlyLogo(doc: jsPDF): void {
     try {
-      // Logo de fallback avec carré vert et texte MYCONFORT
-      doc.setFillColor(this.COLORS.primary); // Vert MYCONFORT
-      doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
+      console.log('🔄 Création du logo texte MYCONFORT');
       
-      // Icône M stylisée pour MYCONFORT
-      doc.setTextColor(this.COLORS.light); // Blanc/beige
+      // Logo simple avec texte et emoji fleur
+      doc.setTextColor(this.COLORS.primary);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('🌸', 22, 28); // Emoji fleur comme fallback
+      doc.setFontSize(18);
+      doc.text('🌸 MYCONFORT', 15, 25);
       
-      // Texte MYCONFORT
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text('MYCONFORT', 30, 28);
+      doc.setTextColor(this.COLORS.secondary);
+      doc.text('Votre spécialiste en matelas et literie de qualité', 15, 32);
       
-      console.log('🔄 Logo de fallback MYCONFORT avec carré vert créé avec succès');
+      console.log('✅ Logo texte MYCONFORT créé avec succès');
     } catch (error) {
-      console.error('❌ Erreur lors de la création du logo de fallback:', error);
+      console.error('❌ Erreur lors de la création du logo texte:', error);
     }
   }
 
@@ -433,11 +409,11 @@ export class AdvancedPDFService {
     doc.setDrawColor(this.COLORS.primary);
     doc.line(15, pageHeight - 25, 195, pageHeight - 25);
     
-    // Texte du pied de page
+    // Texte du pied de page avec fleur
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
+    doc.text('🌸 MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
@@ -446,29 +422,19 @@ export class AdvancedPDFService {
     doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 8, { align: 'center' });
   }
 
-  // NOUVELLE MÉTHODE : PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE
+  // PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE
   private static addCGVPage(doc: jsPDF): void {
     console.log('📄 Ajout de la page 2 - Conditions Générales de Vente');
     
-    // En-tête de la page CGV avec logo fleur
+    // En-tête de la page CGV avec couleur MYCONFORT
     doc.setFillColor(this.COLORS.primary);
     doc.rect(15, 15, 180, 15, 'F');
     
-    // Ajouter le logo fleur dans l'en-tête CGV aussi
-    try {
-      const img = new Image();
-      img.src = '/logo.svg';
-      img.onload = () => {
-        doc.addImage(img, 'SVG', 20, 18, 10, 10);
-      };
-    } catch (error) {
-      console.warn('Logo fleur non disponible pour la page CGV');
-    }
-    
+    // Ajouter la fleur dans l'en-tête CGV
     doc.setTextColor(this.COLORS.light);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('CONDITIONS GÉNÉRALES DE VENTE', 105, 26, { align: 'center' });
+    doc.text('🌸 CONDITIONS GÉNÉRALES DE VENTE', 105, 26, { align: 'center' });
     
     let yPos = 45;
     const lineHeight = 5;
@@ -584,11 +550,11 @@ export class AdvancedPDFService {
     doc.setDrawColor(this.COLORS.primary);
     doc.line(15, pageHeight - 25, 195, pageHeight - 25);
     
-    // Informations entreprise
+    // Informations entreprise avec fleur
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 105, pageHeight - 18, { align: 'center' });
+    doc.text('🌸 MYCONFORT', 105, pageHeight - 18, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
