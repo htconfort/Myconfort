@@ -49,7 +49,7 @@ export class AdvancedPDFService {
     // Convertir les données de la facture
     const invoiceData = this.convertInvoiceData(invoice);
     
-    // Ajouter le logo
+    // Ajouter le logo MYCONFORT
     await this.addLogo(doc);
     
     // Ajouter l'en-tête de l'entreprise
@@ -125,22 +125,73 @@ export class AdvancedPDFService {
 
   private static async addLogo(doc: jsPDF): Promise<void> {
     try {
-      // Dessiner un logo MYCONFORT moderne avec la charte graphique
+      // Charger le vrai logo MYCONFORT SVG
+      const logoPath = '/public/logo.svg';
+      
+      // Créer une image pour charger le logo
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      // Promesse pour attendre le chargement du logo
+      const logoLoaded = new Promise<boolean>((resolve) => {
+        img.onload = () => {
+          try {
+            // Ajouter le logo SVG au PDF
+            doc.addImage(img, 'SVG', 15, 15, 50, 20);
+            console.log('✅ Logo MYCONFORT ajouté au PDF');
+            resolve(true);
+          } catch (error) {
+            console.warn('⚠️ Erreur lors de l\'ajout du logo SVG:', error);
+            resolve(false);
+          }
+        };
+        
+        img.onerror = () => {
+          console.warn('⚠️ Impossible de charger le logo SVG');
+          resolve(false);
+        };
+        
+        // Timeout de 2 secondes pour éviter les blocages
+        setTimeout(() => {
+          console.warn('⏱️ Timeout lors du chargement du logo');
+          resolve(false);
+        }, 2000);
+      });
+      
+      // Tenter de charger le logo
+      img.src = logoPath;
+      const logoSuccess = await logoLoaded;
+      
+      // Si le logo n'a pas pu être chargé, utiliser un fallback
+      if (!logoSuccess) {
+        this.addFallbackLogo(doc);
+      }
+      
+    } catch (error) {
+      console.warn('❌ Erreur lors du chargement du logo:', error);
+      this.addFallbackLogo(doc);
+    }
+  }
+
+  private static addFallbackLogo(doc: jsPDF): void {
+    try {
+      // Logo de fallback avec la charte graphique MYCONFORT
       doc.setFillColor(this.COLORS.primary);
       doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
       
       // Icône M pour MYCONFORT
-      doc.setFillColor(this.COLORS.light);
+      doc.setTextColor(this.COLORS.light);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.text('M', 22, 28);
       
       // Texte MYCONFORT
-      doc.setTextColor(this.COLORS.light);
-      doc.setFontSize(12);
-      doc.text('MYCONFORT', 28, 28);
+      doc.setFontSize(10);
+      doc.text('MYCONFORT', 30, 28);
+      
+      console.log('🔄 Logo de fallback MYCONFORT utilisé');
     } catch (error) {
-      console.warn('Erreur lors de l\'ajout du logo:', error);
+      console.error('❌ Erreur lors de la création du logo de fallback:', error);
     }
   }
 

@@ -55,7 +55,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             <div className="flex items-center mb-6">
               <div className="bg-[#477A0C] rounded-lg p-3 mr-4">
                 <img 
-                  src="/public/logo.svg" 
+                  src="/logo.svg" 
                   alt="MYCONFORT Logo" 
                   className="w-10 h-10"
                   onError={(e) => {
@@ -307,7 +307,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/public/logo.svg" 
+              src="/logo.svg" 
               alt="MYCONFORT Logo" 
               className="w-8 h-8 mr-3"
               onError={(e) => {

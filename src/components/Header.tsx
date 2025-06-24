@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-3">
           <div className="bg-[#F2EFE2] rounded-lg p-2">
             <img 
-              src="/public/logo.svg" 
+              src="/logo.svg" 
               alt="MYCONFORT Logo" 
               className="w-8 h-8"
               onError={(e) => {
