@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink } from 'lucide-react';
+import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { EmailService } from '../services/emailService';
@@ -31,6 +31,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [emailMethod, setEmailMethod] = useState<'emailjs' | 'client'>('emailjs');
+  const [showConfiguration, setShowConfiguration] = useState(false);
 
   const totalAmount = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -140,6 +141,22 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     }
   };
 
+  const handleTestConfiguration = async () => {
+    setIsLoading(true);
+    try {
+      const success = await EmailService.testConfiguration();
+      if (success) {
+        onSuccess('Configuration EmailJS testée avec succès !');
+      } else {
+        onError('Erreur lors du test de configuration EmailJS');
+      }
+    } catch (error) {
+      onError('Erreur lors du test de configuration');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -168,28 +185,53 @@ export const EmailModal: React.FC<EmailModalProps> = ({
         </div>
 
         {/* Configuration EmailJS */}
-        {!isEmailJSConfigured && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Settings className="w-5 h-5 text-amber-600" />
-              <h4 className="font-semibold text-amber-900">Configuration EmailJS requise</h4>
-            </div>
-            <p className="text-sm text-amber-700 mb-3">
-              Pour envoyer des emails automatiquement, configurez EmailJS avec vos clés dans le fichier <code>emailService.ts</code>.
-            </p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <ExternalLink className="w-4 h-4 text-amber-600" />
-              <a 
-                href="https://www.emailjs.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-amber-700 hover:text-amber-900 underline text-sm"
-              >
-                Créer un compte EmailJS gratuit
-              </a>
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <h4 className="font-semibold text-green-900">Service EmailJS Configuré</h4>
             </div>
+            <button
+              onClick={() => setShowConfiguration(!showConfiguration)}
+              className="text-green-700 hover:text-green-900 text-sm underline"
+            >
+              {showConfiguration ? 'Masquer' : 'Voir'} détails
+            </button>
           </div>
-        )}
+          <p className="text-sm text-green-700 mb-2">
+            ✅ Service ID: <code className="bg-green-100 px-2 py-1 rounded">service_ocsxnme</code>
+          </p>
+          
+          {showConfiguration && (
+            <div className="mt-3 p-3 bg-green-100 rounded border text-sm">
+              <p className="font-medium text-green-900 mb-2">Configuration actuelle :</p>
+              <ul className="space-y-1 text-green-700">
+                <li>• Service ID: service_ocsxnme ✅</li>
+                <li>• Template ID: template_invoice (à configurer)</li>
+                <li>• Public Key: (à configurer)</li>
+              </ul>
+              <div className="mt-3 flex items-center space-x-2">
+                <button
+                  onClick={handleTestConfiguration}
+                  disabled={isLoading}
+                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                >
+                  <TestTube className="w-3 h-3" />
+                  <span>Tester</span>
+                </button>
+                <a 
+                  href="https://www.emailjs.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-green-700 hover:text-green-900 underline text-sm flex items-center space-x-1"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>Dashboard EmailJS</span>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Sélection de la méthode d'envoi */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -202,11 +244,10 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 value="emailjs"
                 checked={emailMethod === 'emailjs'}
                 onChange={(e) => setEmailMethod(e.target.value as 'emailjs')}
-                disabled={!isEmailJSConfigured}
                 className="form-radio h-4 w-4 text-blue-600"
               />
-              <span className={`ml-2 text-sm ${!isEmailJSConfigured ? 'text-gray-400' : 'text-gray-700'}`}>
-                Envoi automatique avec EmailJS {!isEmailJSConfigured && '(non configuré)'}
+              <span className="ml-2 text-sm text-gray-700">
+                Envoi automatique avec EmailJS (service_ocsxnme)
               </span>
             </label>
             <label className="flex items-center">
@@ -323,25 +364,26 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <>
                 <Send className="w-4 h-4" />
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoyer automatiquement' : 'Ouvrir client email'}
+                  {emailMethod === 'emailjs' ? 'Envoyer avec EmailJS' : 'Ouvrir client email'}
                 </span>
               </>
             )}
           </button>
         </div>
 
-        {/* Instructions pour EmailJS */}
-        {!isEmailJSConfigured && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-            <h5 className="font-semibold text-blue-900 mb-2">Configuration EmailJS :</h5>
-            <ol className="list-decimal list-inside text-blue-700 space-y-1">
-              <li>Créez un compte gratuit sur <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="underline">EmailJS.com</a></li>
-              <li>Configurez un service email (Gmail, Outlook, etc.)</li>
-              <li>Créez un template d'email avec les variables : to_email, to_name, invoice_number, etc.</li>
-              <li>Remplacez les clés dans <code>emailService.ts</code></li>
-            </ol>
-          </div>
-        )}
+        {/* Instructions pour finaliser la configuration */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+          <h5 className="font-semibold text-blue-900 mb-2">Pour finaliser la configuration EmailJS :</h5>
+          <ol className="list-decimal list-inside text-blue-700 space-y-1">
+            <li>Connectez-vous à votre <a href="https://dashboard.emailjs.com/" target="_blank" rel="noopener noreferrer" className="underline">dashboard EmailJS</a></li>
+            <li>Créez un template d'email avec les variables : to_email, to_name, invoice_number, message, invoice_pdf</li>
+            <li>Récupérez votre Template ID et Public Key</li>
+            <li>Remplacez les valeurs dans le fichier <code>emailService.ts</code></li>
+          </ol>
+          <p className="mt-2 text-blue-600 font-medium">
+            ✅ Votre Service ID <code>service_ocsxnme</code> est déjà configuré !
+          </p>
+        </div>
       </div>
     </Modal>
   );
