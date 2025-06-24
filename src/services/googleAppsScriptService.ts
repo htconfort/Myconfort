@@ -11,7 +11,7 @@ export interface GoogleAppsScriptResponse {
 
 export class GoogleAppsScriptService {
   // 🔑 UPDATED WITH YOUR LATEST GOOGLE APPS SCRIPT DEPLOYMENT ID
-  private static readonly SCRIPT_ID = 'AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO';
+  private static readonly SCRIPT_ID = 'AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**

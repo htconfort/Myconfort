@@ -21,7 +21,7 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [testResult, setTestResult] = useState<any>(null);
 
   // VOTRE NOUVELLE URL GOOGLE APPS SCRIPT
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
 
   const handleTestConnection = async () => {
     setIsTesting(true);
@@ -345,7 +345,7 @@ Erreur technique: ${fetchError.message}`);
         
         <div className="text-sm text-blue-200">
           <div className="flex items-center space-x-2">
-            <span>Script ID: AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO</span>
+            <span>Script ID: AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-</span>
           </div>
           <div className="text-xs mt-1">
             URL: {GOOGLE_SCRIPT_URL}
@@ -454,7 +454,7 @@ Erreur technique: ${fetchError.message}`);
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
         <p className="mt-1 text-xs text-green-200">
-          🔗 Script: AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO
+          🔗 Script: AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-
         </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
           <p className="font-semibold">💡 Pour configurer votre Google Apps Script :</p>

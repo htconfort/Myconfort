@@ -40,7 +40,7 @@ export class Html2PdfService {
   };
 
   // URL de votre Google Apps Script (mise à jour avec votre nouvelle URL finale)
-  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec';
+  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec';
 
   /**
    * 📄 Génère un PDF à partir de l'élément HTML et l'envoie via Google Apps Script

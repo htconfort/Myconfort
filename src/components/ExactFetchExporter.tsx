@@ -21,7 +21,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
   const [testResult, setTestResult] = useState<any>(null);
 
   // VOTRE NOUVELLE URL GOOGLE APPS SCRIPT EXACTE
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
 
   const handleTestConnection = async () => {
     setIsTesting(true);
