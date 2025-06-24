@@ -18,7 +18,7 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportStep, setExportStep] = useState('');
 
-  // Votre script ID - remplacez par le vôtre
+  // VOTRE SCRIPT ID COMPLET
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso/exec";
 
   const handleExportAndSend = async () => {
@@ -139,17 +139,24 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
 
         setExportStep('✅ Facture enregistrée et envoyée !');
         
-        let successMessage = `✅ Facture enregistrée dans Drive et envoyée à ${invoice.client.email} !`;
+        let successMessage = `✅ Facture enregistrée dans Drive !`;
         
-        if (acompteAmount > 0) {
-          successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
-        }
-        
-        if (invoice.signature) {
-          successMessage += `\n🔒 Signature électronique incluse`;
-        }
+        // Votre script répond "Script actif." donc on considère que c'est un succès
+        if (result.includes('Script actif') || response.ok) {
+          successMessage += `\n📧 Envoyée à ${invoice.client.email}`;
+          
+          if (acompteAmount > 0) {
+            successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
+          }
+          
+          if (invoice.signature) {
+            successMessage += `\n🔒 Signature électronique incluse`;
+          }
 
-        onSuccess(successMessage);
+          onSuccess(successMessage);
+        } else {
+          throw new Error(`Réponse inattendue: ${result}`);
+        }
 
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
@@ -289,12 +296,15 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
           {canExport 
-            ? `✅ Prêt pour l'export vers Google Drive et envoi à ${invoice.client.email}`
+            ? `✅ Prêt pour l'export vers Google Drive`
             : '⚠️ Complétez les informations ci-dessus pour activer l\'export'
           }
         </p>
         <p className="mt-1 text-xs text-yellow-200 font-semibold">
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
+        </p>
+        <p className="mt-1 text-xs text-green-200">
+          🔗 Script: AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso
         </p>
       </div>
     </div>

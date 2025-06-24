@@ -10,7 +10,7 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 UPDATED WITH YOUR COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
+  // 🔑 VOTRE GOOGLE APPS SCRIPT ID COMPLET
   private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
@@ -131,7 +131,7 @@ export class GoogleAppsScriptService {
         console.log('📨 Réponse Google Apps Script:', result);
 
         // Vérifier si l'envoi a réussi
-        if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK')) {
+        if (result.includes('Script actif') || result.includes('success') || result.includes('OK')) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
         } else {
@@ -259,7 +259,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse partage aperçu:', result);
 
-        return result.includes('Email envoyé') || result.includes('success') || result.includes('OK');
+        return result.includes('Script actif') || result.includes('success') || result.includes('OK');
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
         throw fetchError;
@@ -325,7 +325,7 @@ export class GoogleAppsScriptService {
         console.log('📨 Réponse complète du script:', result);
 
         // Vérifier différents types de réponses de succès
-        const isSuccess = result.includes('Test réussi') || 
+        const isSuccess = result.includes('Script actif') || 
                          result.includes('success') || 
                          result.includes('OK') ||
                          result.includes('test') ||
@@ -334,8 +334,8 @@ export class GoogleAppsScriptService {
         return {
           success: isSuccess,
           message: isSuccess 
-            ? `✅ Connexion réussie ! Script répond correctement. Réponse: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`
-            : `⚠️ Script accessible mais réponse inattendue: "${result.substring(0, 100)}${result.length > 100 ? '...' : ''}"`,
+            ? `✅ Connexion réussie ! Script répond: "${result}"`
+            : `⚠️ Script accessible mais réponse inattendue: "${result}"`,
           responseTime
         };
 
