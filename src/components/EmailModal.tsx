@@ -326,7 +326,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 <p className="text-xs">
                   Modifiez la constante <code>EMAILJS_TEMPLATE_ID</code> dans le fichier 
                   <code className="bg-yellow-200 px-1 rounded mx-1">src/services/emailService.ts</code>
-                  avec l'ID d'un template existant de votre dashboard EmailJS.
+                  avec l'ID d\'un template existant de votre dashboard EmailJS.
                 </p>
               </div>
             </div>
