@@ -259,9 +259,12 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               {invoice.payment.method && (
                 <p><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
               )}
-              <div className="bg-white p-4 rounded border mt-4">
+              
+              {/* Loi Hamon dans un cadre rouge (repositionnée comme demandé) */}
+              <div className="bg-white border-2 border-red-500 p-4 rounded mt-4">
+                <h4 className="text-red-600 font-bold text-sm mb-2">LOI HAMON</h4>
                 <p className="text-xs text-gray-600">
-                  Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées.
+                  Les achats effectués sur les foires expositions et salon, à l'exception de ceux faisant l'objet d'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.
                 </p>
               </div>
             </div>

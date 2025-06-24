@@ -1,13 +1,31 @@
 export const formatCurrency = (amount: number): string => {
+  // Vérifier que amount est un nombre valide
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    return '0,00 €';
+  }
+  
   return Number(amount).toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 };
 
 // Alias pour compatibilité avec votre fonction
-export const formatEuro = formatCurrency;
+export const formatEuro = (amount: number): string => {
+  // Vérifier que amount est un nombre valide
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    return '0,00 €';
+  }
+  
+  return Number(amount).toLocaleString('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
 
 export const calculateHT = (ttcPrice: number, taxRate: number): number => {
   return ttcPrice / (1 + (taxRate / 100));
@@ -79,6 +97,10 @@ export const formatPhoneNumber = (phone: string): string => {
 
 // Fonctions utilitaires supplémentaires pour le formatage français
 export const formatNumber = (value: number, decimals: number = 2): string => {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0';
+  }
+  
   return Number(value).toLocaleString('fr-FR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -86,6 +108,10 @@ export const formatNumber = (value: number, decimals: number = 2): string => {
 };
 
 export const formatPercentage = (value: number): string => {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0%';
+  }
+  
   return Number(value).toLocaleString('fr-FR', {
     style: 'percent',
     minimumFractionDigits: 0,

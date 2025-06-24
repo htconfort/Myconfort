@@ -3,13 +3,20 @@ import autoTable from 'jspdf-autotable';
 import { Invoice } from '../types';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
 
-// Formatage français des montants (votre fonction intégrée)
-const formatEuro = (val: number): string =>
-  Number(val).toLocaleString('fr-FR', {
+// Formatage français des montants (version corrigée)
+const formatEuro = (val: number): string => {
+  // Vérifier que val est un nombre valide
+  if (typeof val !== 'number' || isNaN(val)) {
+    return '0,00 €';
+  }
+  
+  return Number(val).toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
+};
 
 export interface CustomInvoiceData {
   invoiceNumber: string;
@@ -36,12 +43,13 @@ export interface CustomInvoiceData {
   advisorName?: string;
   paymentMethod?: string;
   notes?: string;
+  depositAmount?: number;
 }
 
 export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promise<jsPDF> {
   const doc = new jsPDF();
 
-  // Logo HT-Confort (simulé avec un cercle coloré et texte en attendant le vrai logo)
+  // Logo HT-Confort (simulé avec un cercle coloré et texte)
   doc.setFillColor(71, 122, 12); // Couleur verte MYCONFORT
   doc.circle(25, 20, 8, 'F');
   
@@ -143,7 +151,7 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
   
   // Cadre pour les totaux
   doc.setDrawColor(100, 116, 139);
-  doc.roundedRect(130, summaryY - 5, 65, 45, 3, 3);
+  doc.roundedRect(130, summaryY - 5, 65, 50, 3, 3);
   
   doc.setTextColor(20, 40, 29);
   doc.setFontSize(10);
@@ -177,11 +185,27 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
   doc.setTextColor(71, 122, 12);
   doc.text('TOTAL TTC :', 135, yPos);
   doc.text(formatEuro(invoiceData.totalTTC), 185, yPos, { align: 'right' });
+  
+  // Acompte si applicable
+  if (invoiceData.depositAmount && invoiceData.depositAmount > 0) {
+    yPos += 10;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(20, 40, 29);
+    doc.text('Acompte versé :', 135, yPos);
+    doc.text(formatEuro(invoiceData.depositAmount), 185, yPos, { align: 'right' });
+    
+    yPos += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(220, 38, 38);
+    doc.text('RESTE À PAYER :', 135, yPos);
+    doc.text(formatEuro(invoiceData.totalTTC - invoiceData.depositAmount), 185, yPos, { align: 'right' });
+  }
 
   // Signature si présente
   if (invoiceData.signature) {
     try {
-      const signatureY = summaryY + 50;
+      const signatureY = summaryY + 60;
       
       // Cadre pour la signature
       doc.setDrawColor(100, 116, 139);
@@ -221,8 +245,8 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
     }
   }
 
-  // Modalités de paiement et notes
-  let notesY = summaryY + (invoiceData.signature ? 80 : 55);
+  // Modalités de paiement
+  let notesY = summaryY + (invoiceData.signature ? 90 : 70);
   
   if (invoiceData.paymentMethod) {
     doc.setTextColor(71, 122, 12);
@@ -237,9 +261,10 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
     notesY += 20;
   }
 
-  // Loi Hamon dans un cadre (remplace les anciennes mentions)
+  // Loi Hamon dans un cadre rouge (comme demandé)
   doc.setDrawColor(220, 38, 38);
-  doc.roundedRect(15, notesY, 180, 20, 2, 2);
+  doc.setLineWidth(1);
+  doc.roundedRect(15, notesY, 180, 25, 2, 2);
   
   doc.setTextColor(220, 38, 38);
   doc.setFontSize(10);
@@ -257,7 +282,7 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
 
   // Notes si présentes
   if (invoiceData.notes) {
-    notesY += 30;
+    notesY += 35;
     doc.setTextColor(71, 122, 12);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
@@ -291,22 +316,27 @@ export async function generateInvoicePDF(invoiceData: CustomInvoiceData): Promis
 
 // Fonction pour convertir les données de l'application vers le format personnalisé
 export function convertInvoiceToCustomFormat(invoice: Invoice): CustomInvoiceData {
-  const items = invoice.products.map(product => ({
-    description: product.name,
-    category: product.category,
-    qty: product.quantity,
-    unitPriceHT: calculateHT(product.priceTTC, invoice.taxRate),
-    unitPriceTTC: product.priceTTC,
-    discount: product.discount > 0 ? 
-      (product.discountType === 'percent' ? `${product.discount}%` : formatEuro(product.discount)) : 
-      '',
-    totalTTC: calculateProductTotal(
+  const items = invoice.products.map(product => {
+    const unitPriceHT = calculateHT(product.priceTTC, invoice.taxRate);
+    const totalTTC = calculateProductTotal(
       product.quantity,
       product.priceTTC,
       product.discount,
       product.discountType
-    )
-  }));
+    );
+    
+    return {
+      description: product.name,
+      category: product.category,
+      qty: product.quantity,
+      unitPriceHT: unitPriceHT,
+      unitPriceTTC: product.priceTTC,
+      discount: product.discount > 0 ? 
+        (product.discountType === 'percent' ? `${product.discount}%` : formatEuro(product.discount)) : 
+        '',
+      totalTTC: totalTTC
+    };
+  });
 
   const totalTTC = items.reduce((sum, item) => sum + item.totalTTC, 0);
   const totalHT = totalTTC / (1 + (invoice.taxRate / 100));
@@ -332,7 +362,8 @@ export function convertInvoiceToCustomFormat(invoice: Invoice): CustomInvoiceDat
     signature: invoice.signature,
     advisorName: invoice.advisorName,
     paymentMethod: invoice.payment.method,
-    notes: invoice.invoiceNotes
+    notes: invoice.invoiceNotes,
+    depositAmount: invoice.payment.depositAmount
   };
 }
 
