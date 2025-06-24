@@ -8,6 +8,8 @@ import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { GoogleAppsScriptModal } from './components/GoogleAppsScriptModal';
 import { SignaturePad } from './components/SignaturePad';
 import { GoogleAppsScriptSender } from './components/GoogleAppsScriptSender';
+import { Html2PdfSender } from './components/Html2PdfSender';
+import { InvoicePreview } from './components/InvoicePreview';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
@@ -49,6 +51,7 @@ function App() {
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showGoogleScriptModal, setShowGoogleScriptModal] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [showInvoicePreview, setShowInvoicePreview] = useState(true); // Afficher l'aperçu par défaut
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -480,6 +483,37 @@ function App() {
           onSuccess={handleGoogleScriptSuccess}
           onError={handleGoogleScriptError}
         />
+
+        {/* Html2Pdf Sender */}
+        <Html2PdfSender
+          invoice={invoice}
+          onSuccess={handleGoogleScriptSuccess}
+          onError={handleGoogleScriptError}
+        />
+
+        {/* Aperçu de la facture (pour html2pdf) */}
+        {showInvoicePreview && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Aperçu de la facture</h2>
+              <button
+                onClick={() => setShowInvoicePreview(!showInvoicePreview)}
+                className="text-blue-600 hover:text-blue-800 underline text-sm"
+              >
+                {showInvoicePreview ? 'Masquer' : 'Afficher'} l'aperçu
+              </button>
+            </div>
+            
+            <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <InvoicePreview invoice={invoice} />
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+              <p className="font-semibold">🎯 Aperçu html2pdf.js</p>
+              <p>Cet aperçu sera converti en PDF avec html2pdf.js. Le PDF généré sera identique à ce que vous voyez ici.</p>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-200 transform transition-all hover:scale-[1.002] hover:shadow-xl">
