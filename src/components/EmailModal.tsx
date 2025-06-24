@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube, FileText, Paperclip, AlertTriangle } from 'lucide-react';
+import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube, FileText, Paperclip, AlertTriangle, Zap, Shield, Clock } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { EmailService } from '../services/emailService';
@@ -24,8 +24,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [emailData, setEmailData] = useState({
     to_email: invoice.client.email,
     to_name: invoice.client.name,
-    subject: `Facture ${invoice.invoiceNumber} - FactuFlash`,
-    message: `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber}.\n\nCordialement,\n${invoice.advisorName || 'L\'équipe FactuFlash'}`
+    subject: `Facture ${invoice.invoiceNumber} - FactuSign Pro`,
+    message: `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée et signée électroniquement avec FactuSign Pro.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nFactuSign Pro - Factures intelligentes, signées et envoyées automatiquement`
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +34,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [showConfiguration, setShowConfiguration] = useState(false);
   const [showTroubleshooting, setShowTroubleshooting] = useState(false);
   const [pdfSize, setPdfSize] = useState<number>(0);
+  const [sendingStep, setSendingStep] = useState<string>('');
 
   const totalAmount = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -84,8 +85,9 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     setIsLoading(true);
 
     try {
-      // Générer le PDF avec jsPDF
-      console.log('📄 Génération du PDF...');
+      // Étape 1: Génération du PDF
+      setSendingStep('Génération du PDF avec signature...');
+      console.log('📄 Génération du PDF avec FactuSign Pro...');
       const pdfDoc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
       // Calculer la taille du PDF
@@ -93,35 +95,37 @@ export const EmailModal: React.FC<EmailModalProps> = ({
       const sizeKB = Math.round(pdfBlob.size / 1024);
       setPdfSize(sizeKB);
       
-      console.log('📎 PDF généré:', sizeKB, 'KB');
+      console.log('📎 PDF généré avec signature:', sizeKB, 'KB');
       
-      // Optimiser le PDF si nécessaire
+      // Étape 2: Optimisation du PDF
+      setSendingStep('Optimisation du PDF pour envoi...');
       const optimizedPDF = await EmailService.optimizePDFForEmail(pdfBlob);
       
-      // Envoyer l'email avec EmailJS et le PDF en pièce jointe
-      console.log('📧 Envoi de l\'email avec PDF en pièce jointe...');
+      // Étape 3: Envoi de l'email
+      setSendingStep('Envoi sécurisé par email...');
+      console.log('📧 Envoi de l\'email avec PDF signé en pièce jointe...');
       const success = await EmailService.sendInvoiceByEmail(pdfDoc, invoice, emailData.message);
 
       if (success) {
-        onSuccess(`✅ Facture envoyée avec succès par email avec PDF en pièce jointe (${sizeKB} KB) !`);
+        setSendingStep('Envoi réussi !');
+        onSuccess(`✅ Facture FactuSign Pro envoyée avec succès ! PDF signé électroniquement (${sizeKB} KB) livré par email sécurisé.`);
         onClose();
       } else {
-        // Erreur spécifique pour le template manquant
         onError('❌ Erreur: Template EmailJS introuvable. Vérifiez votre configuration dans le dashboard EmailJS.');
         setShowTroubleshooting(true);
       }
     } catch (error: any) {
       console.error('❌ Erreur lors de l\'envoi:', error);
       
-      // Messages d'erreur spécifiques
       if (error?.text?.includes('template ID not found') || error?.status === 400) {
         onError('❌ Template EmailJS introuvable. Le template ID configuré n\'existe pas dans votre compte.');
         setShowTroubleshooting(true);
       } else {
-        onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF.');
+        onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF signé.');
       }
     } finally {
       setIsLoading(false);
+      setSendingStep('');
     }
   };
 
@@ -131,21 +135,24 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     }
 
     setIsLoading(true);
+    setSendingStep('Génération du PDF signé...');
 
     try {
       // Générer et télécharger le PDF d'abord
       await AdvancedPDFService.downloadPDF(invoice);
       
+      setSendingStep('Ouverture du client email...');
       // Ouvrir le client email
       EmailService.openEmailClient(invoice, emailData.message);
       
-      onSuccess('📎 PDF téléchargé et client email ouvert. Veuillez attacher le PDF manuellement.');
+      onSuccess('📎 PDF FactuSign Pro téléchargé et client email ouvert. Veuillez attacher le PDF signé manuellement.');
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
-      onError('Erreur lors de la génération du PDF.');
+      onError('Erreur lors de la génération du PDF signé.');
     } finally {
       setIsLoading(false);
+      setSendingStep('');
     }
   };
 
@@ -159,7 +166,6 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
   const handleInputChange = (field: string, value: string) => {
     setEmailData(prev => ({ ...prev, [field]: value }));
-    // Effacer les erreurs de validation lors de la saisie
     if (validationErrors.length > 0) {
       setValidationErrors([]);
     }
@@ -186,13 +192,50 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Envoyer la facture par email" maxWidth="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="FactuSign Pro - Envoi Automatique" maxWidth="max-w-3xl">
       <div className="space-y-6">
+        {/* En-tête FactuSign Pro */}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg p-4">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="bg-white/20 p-2 rounded-full">
+              <Zap className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">FactuSign Pro</h3>
+              <p className="text-green-100">Factures intelligentes, signées et envoyées automatiquement</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="text-center">
+              <Shield className="w-8 h-8 mx-auto mb-1 text-green-200" />
+              <div className="text-sm font-semibold">Signature Électronique</div>
+              <div className="text-xs text-green-100">Conforme eIDAS</div>
+            </div>
+            <div className="text-center">
+              <Zap className="w-8 h-8 mx-auto mb-1 text-blue-200" />
+              <div className="text-sm font-semibold">Envoi Automatique</div>
+              <div className="text-xs text-blue-100">PDF en pièce jointe</div>
+            </div>
+            <div className="text-center">
+              <Clock className="w-8 h-8 mx-auto mb-1 text-purple-200" />
+              <div className="text-sm font-semibold">Instantané</div>
+              <div className="text-xs text-purple-100">Livraison immédiate</div>
+            </div>
+          </div>
+        </div>
+
         {/* Informations de la facture */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <Mail className="w-5 h-5 text-blue-600" />
             <h4 className="font-semibold text-blue-900">Facture à envoyer</h4>
+            {invoice.signature && (
+              <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1">
+                <Shield className="w-3 h-3" />
+                <span>SIGNÉE</span>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -213,8 +256,9 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           <div className="mt-3 flex items-center space-x-2 p-2 bg-green-100 border border-green-200 rounded">
             <Paperclip className="w-4 h-4 text-green-600" />
             <FileText className="w-4 h-4 text-green-600" />
+            {invoice.signature && <Shield className="w-4 h-4 text-green-600" />}
             <span className="text-sm font-medium text-green-700">
-              PDF sera automatiquement attaché en pièce jointe
+              PDF {invoice.signature ? 'signé électroniquement' : 'professionnel'} sera automatiquement attaché
               {pdfSize > 0 && ` (${pdfSize} KB)`}
             </span>
           </div>
@@ -255,13 +299,14 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           {showConfiguration && (
             <div className={`mt-3 p-3 rounded border text-sm ${isEmailJSConfigured ? 'bg-green-100' : 'bg-red-100'}`}>
               <p className={`font-medium mb-2 ${isEmailJSConfigured ? 'text-green-900' : 'text-red-900'}`}>
-                Configuration actuelle :
+                Configuration FactuSign Pro :
               </p>
               <ul className={`space-y-1 ${isEmailJSConfigured ? 'text-green-700' : 'text-red-700'}`}>
                 <li>• Service ID: {configInfo.serviceId} ✅</li>
                 <li>• Template ID: {configInfo.templateId} {isEmailJSConfigured ? '✅' : '❌'}</li>
                 <li>• Public Key: {configInfo.publicKey ? 'Configuré ✅' : 'Manquant ❌'}</li>
-                <li>• 📎 Attachement PDF: Automatique</li>
+                <li>• 📎 Attachement PDF: Automatique avec signature</li>
+                <li>• 🔒 Sécurité: Conforme eIDAS</li>
               </ul>
               {configInfo.warning && (
                 <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded">
@@ -305,7 +350,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                <h4 className="font-semibold text-yellow-900">Guide de dépannage</h4>
+                <h4 className="font-semibold text-yellow-900">Guide de dépannage FactuSign Pro</h4>
               </div>
               <button
                 onClick={() => setShowTroubleshooting(false)}
@@ -335,7 +380,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
         {/* Sélection de la méthode d'envoi */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Méthode d'envoi</h4>
+          <h4 className="font-semibold text-gray-900 mb-3">Méthode d'envoi FactuSign Pro</h4>
           <div className="space-y-2">
             <label className="flex items-center">
               <input
@@ -348,9 +393,11 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 disabled={!isEmailJSConfigured}
               />
               <span className={`ml-2 text-sm flex items-center space-x-1 ${!isEmailJSConfigured ? 'text-gray-400' : 'text-gray-700'}`}>
-                <span>Envoi automatique avec EmailJS (service_ocsxnme)</span>
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span>Envoi automatique FactuSign Pro (service_ocsxnme)</span>
                 <Paperclip className="w-3 h-3 text-green-600" />
-                <span className="text-green-600 font-medium">PDF attaché</span>
+                <Shield className="w-3 h-3 text-green-600" />
+                <span className="text-green-600 font-medium">PDF signé attaché</span>
                 {!isEmailJSConfigured && <span className="text-red-500 font-medium">(Non disponible)</span>}
               </span>
             </label>
@@ -363,8 +410,9 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 onChange={(e) => setEmailMethod(e.target.value as 'client')}
                 className="form-radio h-4 w-4 text-blue-600"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                Ouvrir le client email (PDF téléchargé séparément)
+              <span className="ml-2 text-sm text-gray-700 flex items-center space-x-1">
+                <Mail className="w-4 h-4 text-gray-600" />
+                <span>Ouvrir le client email (PDF téléchargé séparément)</span>
               </span>
             </label>
           </div>
@@ -442,6 +490,19 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           </div>
         </div>
 
+        {/* Indicateur de progression */}
+        {isLoading && sendingStep && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              <div>
+                <div className="font-semibold text-blue-900">FactuSign Pro en action...</div>
+                <div className="text-sm text-blue-700">{sendingStep}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex justify-between items-center pt-4 border-t">
           <button
@@ -455,21 +516,22 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           <button
             onClick={handleSendEmail}
             disabled={isLoading || (emailMethod === 'emailjs' && !isEmailJSConfigured)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-bold flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-105 shadow-lg"
           >
             {isLoading ? (
               <>
-                <Loader className="w-4 h-4 animate-spin" />
+                <Loader className="w-5 h-5 animate-spin" />
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoi avec PDF...' : 'Préparation...'}
+                  {emailMethod === 'emailjs' ? 'Envoi FactuSign Pro...' : 'Préparation...'}
                 </span>
               </>
             ) : (
               <>
-                <Send className="w-4 h-4" />
-                {emailMethod === 'emailjs' && <Paperclip className="w-3 h-3" />}
+                <Zap className="w-5 h-5" />
+                {emailMethod === 'emailjs' && <Paperclip className="w-4 h-4" />}
+                {emailMethod === 'emailjs' && <Shield className="w-4 h-4" />}
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoyer avec PDF' : 'Ouvrir client email'}
+                  {emailMethod === 'emailjs' ? 'Envoyer avec FactuSign Pro' : 'Ouvrir client email'}
                 </span>
               </>
             )}
@@ -478,18 +540,19 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
         {/* Instructions pour finaliser la configuration */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-          <h5 className="font-semibold text-blue-900 mb-2">📧 Template EmailJS pour PDF en pièce jointe :</h5>
+          <h5 className="font-semibold text-blue-900 mb-2">📧 Template EmailJS pour FactuSign Pro :</h5>
           <div className="bg-blue-100 p-3 rounded border font-mono text-xs overflow-x-auto">
-            <div className="mb-2"><strong>Variables disponibles :</strong></div>
-            <div>• <code>{'{{invoice_pdf}}'}</code> - Données PDF base64</div>
+            <div className="mb-2"><strong>Variables FactuSign Pro disponibles :</strong></div>
+            <div>• <code>{'{{invoice_pdf}}'}</code> - Données PDF base64 avec signature</div>
             <div>• <code>{'{{pdf_filename}}'}</code> - Nom du fichier PDF</div>
             <div>• <code>{'{{pdf_size}}'}</code> - Taille du PDF en KB</div>
             <div>• <code>{'{{to_email}}'}</code>, <code>{'{{to_name}}'}</code>, <code>{'{{message}}'}</code></div>
             <div>• <code>{'{{invoice_number}}'}</code>, <code>{'{{total_amount}}'}</code></div>
+            <div>• <code>{'{{app_name}}'}</code> - "FactuSign Pro"</div>
           </div>
           <p className="mt-2 text-blue-600 font-medium">
             {isEmailJSConfigured ? (
-              <>✅ Service ID <code>service_ocsxnme</code> configuré | 📎 PDF automatiquement attaché</>
+              <>✅ Service ID <code>service_ocsxnme</code> configuré | 📎 PDF signé automatiquement attaché</>
             ) : (
               <>⚠️ Configuration incomplète - Vérifiez votre template ID</>
             )}

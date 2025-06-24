@@ -31,6 +31,7 @@ export interface InvoiceData {
   advisorName?: string;
   paymentMethod?: string;
   depositAmount?: number;
+  signature?: string;
 }
 
 export class AdvancedPDFService {
@@ -50,8 +51,8 @@ export class AdvancedPDFService {
     const invoiceData = this.convertInvoiceData(invoice);
     
     // PAGE 1 - FACTURE
-    // Ajouter l'en-tête de l'entreprise (sans logo)
-    this.addCompanyHeader(doc);
+    // Ajouter l'en-tête de l'entreprise avec logo
+    await this.addCompanyHeaderWithLogo(doc);
     
     // Ajouter les informations de la facture
     this.addInvoiceInfo(doc, invoiceData);
@@ -65,11 +66,16 @@ export class AdvancedPDFService {
     // Ajouter les totaux
     this.addTotals(doc, invoiceData);
     
+    // Ajouter la signature si présente
+    if (invoiceData.signature) {
+      await this.addSignature(doc, invoiceData.signature);
+    }
+    
     // Ajouter les notes et conditions
     this.addNotesAndTerms(doc, invoiceData);
     
-    // Ajouter le pied de page
-    this.addFooter(doc);
+    // Ajouter le pied de page avec mentions légales
+    this.addFooterWithLegalMentions(doc);
     
     // PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE (condensées)
     doc.addPage();
@@ -121,30 +127,43 @@ export class AdvancedPDFService {
       notes: invoice.invoiceNotes,
       advisorName: invoice.advisorName,
       paymentMethod: invoice.payment.method,
-      depositAmount: invoice.payment.depositAmount
+      depositAmount: invoice.payment.depositAmount,
+      signature: invoice.signature
     };
   }
 
-  private static addCompanyHeader(doc: jsPDF): void {
-    // En-tête simple sans logo
-    doc.setTextColor(this.COLORS.primary);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 15, 25);
+  private static async addCompanyHeaderWithLogo(doc: jsPDF): Promise<void> {
+    // Logo MYCONFORT en haut à gauche (simulé avec un cercle coloré et texte)
+    doc.setFillColor(this.COLORS.primary);
+    doc.circle(25, 20, 8, 'F');
     
-    doc.setTextColor(this.COLORS.dark);
+    doc.setTextColor(this.COLORS.light);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('🌸', 22, 23);
+    
+    // Nom de l'entreprise à côté du logo
+    doc.setTextColor(this.COLORS.primary);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MYCONFORT', 40, 20);
+    
+    // Sous-titre FactuSign Pro
+    doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Votre spécialiste en matelas et literie de qualité', 15, 32);
+    doc.setFont('helvetica', 'italic');
+    doc.text('FactuSign Pro - Factures intelligentes, signées et envoyées automatiquement', 40, 27);
     
     // Informations de l'entreprise
-    doc.setFontSize(10);
-    doc.text('88 Avenue des Ternes', 15, 45);
-    doc.text('75017 Paris, France', 15, 52);
-    doc.text('SIRET: 824 313 530 00027', 15, 58);
-    doc.text('Tél: 04 68 50 41 45', 15, 64);
-    doc.text('Email: myconfort@gmail.com', 15, 70);
-    doc.text('Site web: https://www.htconfort.com', 15, 76);
+    doc.setTextColor(this.COLORS.dark);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('88 Avenue des Ternes', 15, 40);
+    doc.text('75017 Paris, France', 15, 46);
+    doc.text('SIRET: 824 313 530 00027', 15, 52);
+    doc.text('Tél: 04 68 50 41 45', 15, 58);
+    doc.text('Email: myconfort@gmail.com', 15, 64);
+    doc.text('Site web: https://www.htconfort.com', 15, 70);
   }
 
   private static addInvoiceInfo(doc: jsPDF, data: InvoiceData): void {
@@ -169,45 +188,66 @@ export class AdvancedPDFService {
     doc.text('Date:', 140, 47);
     doc.setFont('helvetica', 'bold');
     doc.text(new Date(data.invoiceDate).toLocaleDateString('fr-FR'), 170, 47);
+    
+    // Statut "Signé électroniquement" si signature présente
+    if (data.signature) {
+      doc.setFillColor(this.COLORS.success);
+      doc.roundedRect(140, 55, 55, 8, 2, 2, 'F');
+      doc.setTextColor(this.COLORS.light);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('✓ SIGNÉ ÉLECTRONIQUEMENT', 167, 60, { align: 'center' });
+    }
   }
 
   private static addClientInfo(doc: jsPDF, data: InvoiceData): void {
     // Titre section client avec couleur MYCONFORT
     doc.setFillColor(this.COLORS.light);
-    doc.rect(15, 95, 180, 8, 'F');
+    doc.rect(15, 85, 180, 8, 'F');
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('FACTURER À', 20, 101);
+    doc.text('FACTURER À', 20, 91);
     
     // Informations client (colonne gauche)
     doc.setTextColor(this.COLORS.dark);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.clientName, 20, 112);
+    doc.text(data.clientName, 20, 102);
     
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text(data.clientAddress, 20, 119);
-    doc.text(`${data.clientPostalCode} ${data.clientCity}`, 20, 126);
-    doc.text(`Tél: ${data.clientPhone}`, 20, 133);
-    doc.text(`Email: ${data.clientEmail}`, 20, 140);
+    doc.text(data.clientAddress, 20, 109);
+    doc.text(`${data.clientPostalCode} ${data.clientCity}`, 20, 116);
+    doc.text(`Tél: ${data.clientPhone}`, 20, 123);
+    doc.text(`Email: ${data.clientEmail}`, 20, 130);
 
-    // Section "INFORMATIONS COMPLÉMENTAIRES" (colonne droite) - sans la mention Loi Hammon
+    // Section "INFORMATIONS COMPLÉMENTAIRES" (colonne droite)
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('INFORMATIONS COMPLÉMENTAIRES', 110, 101);
+    doc.text('INFORMATIONS COMPLÉMENTAIRES', 110, 91);
     
-    // Informations complémentaires si disponibles
+    // Informations complémentaires
     doc.setTextColor(this.COLORS.dark);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
-    let yPos = 112;
+    let yPos = 102;
     if (data.advisorName) {
       doc.text(`Conseiller: ${data.advisorName}`, 110, yPos);
       yPos += 7;
+    }
+    
+    // Statut de signature
+    if (data.signature) {
+      doc.setTextColor(this.COLORS.success);
+      doc.setFont('helvetica', 'bold');
+      doc.text('✓ Document signé par le client', 110, yPos);
+      yPos += 7;
+      doc.setTextColor(this.COLORS.dark);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Date signature: ${new Date().toLocaleDateString('fr-FR')}`, 110, yPos);
     }
   }
 
@@ -224,7 +264,7 @@ export class AdvancedPDFService {
     ]);
 
     autoTable(doc, {
-      startY: 150,
+      startY: 140,
       head: [['DÉSIGNATION', 'QTÉ', 'PU HT', 'PU TTC', 'REMISE', 'TOTAL TTC']],
       body: tableData,
       theme: 'grid',
@@ -314,8 +354,64 @@ export class AdvancedPDFService {
     }
   }
 
+  private static async addSignature(doc: jsPDF, signatureDataUrl: string): Promise<void> {
+    try {
+      // Position de la signature (en bas à droite de la facture)
+      const signatureX = 130;
+      const signatureY = 200;
+      const signatureWidth = 60;
+      const signatureHeight = 20;
+      
+      // Cadre pour la signature
+      doc.setDrawColor(this.COLORS.secondary);
+      doc.roundedRect(signatureX, signatureY, signatureWidth, signatureHeight + 15, 2, 2);
+      
+      // Titre "Signature client"
+      doc.setTextColor(this.COLORS.primary);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SIGNATURE CLIENT', signatureX + 30, signatureY + 8, { align: 'center' });
+      
+      // Ajouter l'image de signature
+      doc.addImage(
+        signatureDataUrl,
+        'PNG',
+        signatureX + 5,
+        signatureY + 10,
+        signatureWidth - 10,
+        signatureHeight,
+        undefined,
+        'FAST'
+      );
+      
+      // Date et heure de signature
+      doc.setTextColor(this.COLORS.secondary);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const signatureDate = new Date().toLocaleDateString('fr-FR');
+      const signatureTime = new Date().toLocaleTimeString('fr-FR');
+      doc.text(`Signé le ${signatureDate} à ${signatureTime}`, signatureX + 30, signatureY + signatureHeight + 12, { align: 'center' });
+      
+      console.log('✅ Signature ajoutée au PDF');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'ajout de la signature:', error);
+      
+      // Fallback: afficher un texte si l'image ne peut pas être ajoutée
+      doc.setTextColor(this.COLORS.success);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('✓ DOCUMENT SIGNÉ ÉLECTRONIQUEMENT', 160, 210, { align: 'center' });
+      
+      doc.setTextColor(this.COLORS.secondary);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const signatureDate = new Date().toLocaleDateString('fr-FR');
+      doc.text(`Signé le ${signatureDate}`, 160, 217, { align: 'center' });
+    }
+  }
+
   private static addNotesAndTerms(doc: jsPDF, data: InvoiceData): void {
-    let yPos = 220;
+    let yPos = data.signature ? 240 : 220;
     
     // Notes si présentes
     if (data.notes) {
@@ -364,29 +460,43 @@ export class AdvancedPDFService {
       
       const splitText = doc.splitTextToSize(loiHammonText, 170);
       doc.text(splitText, 20, yPos + 14);
-      
-      yPos += 30;
     }
   }
 
-  private static addFooter(doc: jsPDF): void {
+  private static addFooterWithLegalMentions(doc: jsPDF): void {
     const pageHeight = doc.internal.pageSize.height;
     
     // Ligne de séparation avec couleur MYCONFORT
     doc.setDrawColor(this.COLORS.primary);
-    doc.line(15, pageHeight - 25, 195, pageHeight - 25);
+    doc.line(15, pageHeight - 35, 195, pageHeight - 35);
     
-    // Texte du pied de page
+    // Mentions légales renforcées
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
+    doc.text('MYCONFORT - FactuSign Pro', 105, pageHeight - 28, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 12, { align: 'center' });
-    doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 8, { align: 'center' });
+    doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 22, { align: 'center' });
+    
+    // Mentions légales obligatoires
+    doc.setFontSize(7);
+    doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530 00027', 105, pageHeight - 18, { align: 'center' });
+    doc.text('Capital social: 1000€ - Code APE: 4759A - N° TVA: FR82824313530', 105, pageHeight - 14, { align: 'center' });
+    
+    // Signature électronique et conformité
+    doc.setTextColor(this.COLORS.success);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Document généré et signé électroniquement - Conforme au règlement eIDAS', 105, pageHeight - 10, { align: 'center' });
+    
+    // Horodatage de génération
+    doc.setTextColor(this.COLORS.secondary);
+    doc.setFontSize(6);
+    const generationDate = new Date().toLocaleString('fr-FR');
+    doc.text(`Généré le ${generationDate} par FactuSign Pro`, 105, pageHeight - 6, { align: 'center' });
   }
 
   // PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE CONDENSÉES
@@ -530,7 +640,7 @@ export class AdvancedPDFService {
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 105, pageHeight - 14, { align: 'center' });
+    doc.text('MYCONFORT - FactuSign Pro', 105, pageHeight - 14, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(7);

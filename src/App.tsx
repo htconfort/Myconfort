@@ -112,11 +112,11 @@ function App() {
   const handleGeneratePDF = async () => {
     try {
       handleSave();
-      showToast('Génération du PDF en cours...', 'success');
+      showToast('Génération du PDF FactuSign Pro en cours...', 'success');
       
-      // Utiliser le nouveau service PDF avancé avec jsPDF
+      // Utiliser le service PDF avancé avec signature
       await AdvancedPDFService.downloadPDF(invoice);
-      showToast('PDF téléchargé avec succès', 'success');
+      showToast(`PDF FactuSign Pro téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
     } catch (error) {
       console.error('PDF generation error:', error);
       showToast('Erreur lors de la génération du PDF', 'error');
@@ -184,7 +184,7 @@ function App() {
 
   const handleSaveSignature = (signature: string) => {
     setInvoice(prev => ({ ...prev, signature }));
-    showToast('Signature enregistrée', 'success');
+    showToast('Signature enregistrée - Facture prête pour FactuSign Pro !', 'success');
   };
 
   const handleReset = () => {
@@ -263,6 +263,36 @@ function App() {
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
+        {/* En-tête FactuSign Pro */}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl shadow-xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-full">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">FactuSign Pro</h1>
+                <p className="text-green-100">Factures intelligentes, signées et envoyées automatiquement</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-blue-100">Statut de la facture</div>
+              <div className="flex items-center space-x-2 mt-1">
+                {invoice.signature ? (
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>🔒</span>
+                    <span>SIGNÉE</span>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    EN ATTENTE DE SIGNATURE
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <InvoiceHeader
           invoice={invoice}
           onUpdate={(updates) => setInvoice(prev => ({ ...prev, ...updates }))}
@@ -416,11 +446,14 @@ function App() {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-gray-900 mb-1 font-semibold">Signature client</label>
+                  <label className="block text-gray-900 mb-1 font-semibold">Signature client FactuSign Pro</label>
                   <div className="border-2 border-dashed border-gray-300 rounded h-20 flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
                     {invoice.signature ? (
                       <div className="text-center">
-                        <div className="text-green-600 font-semibold">✓ Signature enregistrée</div>
+                        <div className="text-green-600 font-semibold flex items-center justify-center space-x-1">
+                          <span>🔒</span>
+                          <span>Signature électronique enregistrée</span>
+                        </div>
                         <button
                           onClick={() => setShowSignaturePad(true)}
                           className="text-sm text-blue-600 hover:text-blue-800 underline mt-1"
@@ -431,9 +464,10 @@ function App() {
                     ) : (
                       <button
                         onClick={() => setShowSignaturePad(true)}
-                        className="text-gray-700 hover:text-gray-900 font-semibold"
+                        className="text-gray-700 hover:text-gray-900 font-semibold flex items-center space-x-2"
                       >
-                        ✍️ Cliquer pour signer
+                        <span>✍️</span>
+                        <span>Cliquer pour signer électroniquement</span>
                       </button>
                     )}
                   </div>
@@ -474,9 +508,10 @@ function App() {
               </button>
               <button
                 onClick={handleShowEmailModal}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
               >
-                <span>ENVOYER PAR EMAIL</span>
+                <span>⚡</span>
+                <span>FACTUSIGN PRO</span>
               </button>
             </div>
           </div>
