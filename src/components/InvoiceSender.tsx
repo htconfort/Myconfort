@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Zap, Loader, CheckCircle, AlertCircle, Mail, FileText, Shield, Send } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
-import { generateInvoicePDF, convertInvoiceToCustomFormat } from '../services/customPdfService';
+import { AdvancedPDFService } from '../services/advancedPdfService';
 import { EmailService } from '../services/emailService';
 
 interface InvoiceSenderProps {
@@ -39,19 +39,18 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     );
   };
 
-  // Génération du PDF avec le générateur personnalisé
+  // Génération du PDF avec design identique à l'aperçu
   const generatePDF = async (): Promise<any> => {
-    setStep('Génération du PDF avec logo et formatage français...');
+    setStep('Génération du PDF avec design identique à l\'aperçu...');
     
     try {
-      // Utiliser le générateur PDF personnalisé
-      const customData = convertInvoiceToCustomFormat(invoice);
-      const doc = await generateInvoicePDF(customData);
+      console.log('🎨 Génération PDF avec design exactement identique à l\'aperçu Bolt');
+      const doc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
-      console.log('✅ PDF généré avec le générateur personnalisé');
+      console.log('✅ PDF généré avec design identique à l\'aperçu');
       return doc;
     } catch (error) {
-      console.error('❌ Erreur avec le générateur personnalisé:', error);
+      console.error('❌ Erreur avec le générateur PDF:', error);
       throw error;
     }
   };
@@ -66,7 +65,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     setLoading(true);
 
     try {
-      // Étape 1: Génération du PDF personnalisé
+      // Étape 1: Génération du PDF avec design identique à l'aperçu
       const pdf = await generatePDF();
       
       // Étape 2: Conversion en blob et base64
@@ -88,7 +87,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
 
           if (success) {
             setStep('Envoi réussi !');
-            onSuccess(`✅ Facture FactuSign Pro envoyée avec succès ! PDF ${invoice.signature ? 'signé électroniquement' : 'professionnel'} avec logo et formatage français (${sizeKB} KB) livré par email sécurisé à ${invoice.client.email}`);
+            onSuccess(`✅ Facture FactuSign Pro envoyée avec succès ! PDF ${invoice.signature ? 'signé électroniquement' : 'professionnel'} avec design identique à l'aperçu (${sizeKB} KB) livré par email sécurisé à ${invoice.client.email}`);
           } else {
             onError('❌ Erreur: Template EmailJS introuvable. Vérifiez votre configuration dans le dashboard EmailJS.');
           }
@@ -98,7 +97,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           if (err?.text?.includes('template ID not found') || err?.status === 400) {
             onError('❌ Template EmailJS introuvable. Le template ID configuré n\'existe pas dans votre compte.');
           } else {
-            onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF personnalisé.');
+            onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF identique à l\'aperçu.');
           }
         }
       };
@@ -106,7 +105,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
       reader.readAsDataURL(blob);
     } catch (error) {
       console.error('Erreur génération PDF:', error);
-      onError('❌ Erreur lors de la génération du PDF personnalisé.');
+      onError('❌ Erreur lors de la génération du PDF avec design identique à l\'aperçu.');
     } finally {
       setLoading(false);
       setStep('');
@@ -122,7 +121,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           </div>
           <div>
             <h2 className="text-2xl font-bold">FactuSign Pro</h2>
-            <p className="text-green-100">Envoi automatique avec PDF personnalisé, logo et formatage français</p>
+            <p className="text-green-100">PDF avec design identique à l'aperçu Bolt</p>
           </div>
         </div>
         
@@ -164,12 +163,12 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
         </div>
       </div>
 
-      {/* Indicateurs de fonctionnalités améliorées */}
+      {/* Indicateurs de fonctionnalités */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="text-center">
           <FileText className="w-8 h-8 mx-auto mb-2 text-blue-200" />
-          <div className="text-sm font-semibold">PDF Personnalisé</div>
-          <div className="text-xs text-blue-100">Logo + Format FR</div>
+          <div className="text-sm font-semibold">Design Identique</div>
+          <div className="text-xs text-blue-100">Aperçu = PDF</div>
         </div>
         <div className="text-center">
           <Shield className="w-8 h-8 mx-auto mb-2 text-green-200" />
@@ -245,7 +244,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
           {isValid() 
-            ? `Prêt à envoyer la facture ${invoice.signature ? 'signée électroniquement' : 'professionnelle'} avec logo MYCONFORT et formatage français à ${invoice.client.email}`
+            ? `Prêt à envoyer la facture ${invoice.signature ? 'signée électroniquement' : 'professionnelle'} avec design identique à l'aperçu à ${invoice.client.email}`
             : 'Complétez les informations ci-dessus pour activer l\'envoi automatique'
           }
         </p>

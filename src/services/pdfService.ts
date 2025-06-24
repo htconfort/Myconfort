@@ -3,15 +3,16 @@ import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
 export class PDFService {
-  // Méthode principale utilisant jsPDF avec autoTable
+  // Méthode principale utilisant le service avancé qui reproduit l'aperçu
   static async generateInvoicePDF(invoice: Invoice, elementId?: string): Promise<Blob> {
     try {
-      // Utiliser le nouveau service PDF avancé
+      // Utiliser le service PDF avancé qui reproduit exactement l'aperçu
+      console.log('🎨 Génération PDF avec design identique à l\'aperçu Bolt');
       return await AdvancedPDFService.getPDFBlob(invoice);
     } catch (error) {
-      console.error('Erreur avec jsPDF, fallback vers html2pdf:', error);
+      console.error('Erreur avec le service avancé, fallback vers html2pdf:', error);
       
-      // Fallback vers html2pdf si jsPDF échoue
+      // Fallback vers html2pdf si le service avancé échoue
       if (elementId) {
         return await this.generateHTMLToPDF(invoice, elementId);
       }
@@ -60,10 +61,11 @@ export class PDFService {
 
   static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
     try {
-      // Utiliser le nouveau service PDF avancé
+      // Utiliser le service avancé qui reproduit exactement l'aperçu
+      console.log('📥 Téléchargement PDF avec design identique à l\'aperçu');
       await AdvancedPDFService.downloadPDF(invoice);
     } catch (error) {
-      console.error('Erreur avec jsPDF, fallback vers html2pdf:', error);
+      console.error('Erreur avec le service avancé, fallback vers html2pdf:', error);
       
       // Fallback vers html2pdf
       if (elementId) {
