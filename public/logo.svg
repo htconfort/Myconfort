@@ -1,0 +1,9 @@
+<svg width="200" height="80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="80" rx="8" fill="#2563eb"/>
+  <path d="M20 25L35 40L20 55" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="45" y="35" width="20" height="10" rx="2" fill="white"/>
+  <rect x="70" y="30" width="20" height="20" rx="4" fill="white"/>
+  <rect x="95" y="25" width="20" height="30" rx="6" fill="white"/>
+  <text x="125" y="35" font-family="Inter, sans-serif" font-size="16" font-weight="bold" fill="white">FactuFlash</text>
+  <text x="125" y="50" font-family="Inter, sans-serif" font-size="10" fill="white" opacity="0.8">Facturation Pro</text>
+</svg>

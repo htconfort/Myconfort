@@ -12,6 +12,7 @@ import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient } from './utils/storage';
 import { PDFService } from './services/pdfService';
+import { AdvancedPDFService } from './services/advancedPdfService';
 import { EmailService } from './services/emailService';
 
 function App() {
@@ -111,13 +112,23 @@ function App() {
   const handleGeneratePDF = async () => {
     try {
       handleSave();
-      await PDFService.downloadPDF(invoice, 'pdf-preview-content');
+      showToast('Génération du PDF en cours...', 'success');
+      
+      // Utiliser le nouveau service PDF avancé avec jsPDF
+      await AdvancedPDFService.downloadPDF(invoice);
       showToast('PDF téléchargé avec succès', 'success');
     } catch (error) {
       console.error('PDF generation error:', error);
       showToast('Erreur lors de la génération du PDF', 'error');
-      // Fallback to print
-      handlePrint();
+      
+      // Fallback vers l'ancienne méthode
+      try {
+        await PDFService.downloadPDF(invoice, 'pdf-preview-content');
+        showToast('PDF téléchargé avec succès (méthode alternative)', 'success');
+      } catch (fallbackError) {
+        console.error('Fallback PDF error:', fallbackError);
+        handlePrint();
+      }
     }
   };
 
