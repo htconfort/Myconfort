@@ -25,107 +25,134 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   const acompteAmount = invoice.payment.depositAmount || 0;
   const montantRestant = totalTTC - acompteAmount;
 
+  // Calculer les totaux pour l'affichage
+  const totalHT = totalTTC / (1 + (invoice.taxRate / 100));
+  const totalTVA = totalTTC - totalHT;
+  const totalDiscount = invoice.products.reduce((sum, product) => {
+    const originalTotal = product.priceTTC * product.quantity;
+    const discountedTotal = calculateProductTotal(
+      product.quantity,
+      product.priceTTC,
+      product.discount,
+      product.discountType
+    );
+    return sum + (originalTotal - discountedTotal);
+  }, 0);
+
   return (
     <div 
       id="facture-apercu" 
-      className={`p-6 bg-white rounded-md max-w-3xl mx-auto text-black ${className}`}
+      className={`bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
     >
       {/* En-tête avec logo */}
-      <div className="flex items-center mb-6">
-        <div className="bg-[#477A0C] rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl mr-4">
-          🌸
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center">
+          <div className="bg-[#477A0C] rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl mr-4">
+            🌸
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#477A0C]">MYCONFORT</h1>
+            <p className="text-sm text-gray-600">Facturation professionnelle</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-[#477A0C]">MYCONFORT</h1>
-          <p className="text-gray-600 text-sm">Facturation professionnelle</p>
+        <div className="text-right">
+          <p className="text-sm">
+            Facture n° : <strong className="text-[#477A0C]">{invoice.invoiceNumber}</strong>
+          </p>
+          <p className="text-sm">Date : {new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</p>
+          {invoice.eventLocation && (
+            <p className="text-sm">Lieu : {invoice.eventLocation}</p>
+          )}
         </div>
       </div>
 
-      {/* Informations facture */}
+      {/* Statut signature */}
+      <div className="flex justify-end mb-4">
+        {invoice.signature ? (
+          <div className="bg-green-100 border border-green-300 rounded-lg px-3 py-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-600">🔒</span>
+              <span className="font-semibold text-green-800 text-sm">FACTURE SIGNÉE</span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-yellow-600">⏳</span>
+              <span className="font-semibold text-yellow-800 text-sm">EN ATTENTE DE SIGNATURE</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <hr className="my-4 border-gray-300" />
+
+      {/* Informations client et entreprise */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Informations facture</h2>
-          <p className="text-gray-700">
-            <span className="font-medium">Facture n°:</span> {invoice.invoiceNumber}
-          </p>
-          <p className="text-gray-700">
-            <span className="font-medium">Date:</span> {new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}
-          </p>
-          {invoice.eventLocation && (
-            <p className="text-gray-700">
-              <span className="font-medium">Lieu:</span> {invoice.eventLocation}
-            </p>
-          )}
-          {invoice.advisorName && (
-            <p className="text-gray-700">
-              <span className="font-medium">Conseiller:</span> {invoice.advisorName}
-            </p>
-          )}
-        </div>
-
-        {/* Statut signature */}
-        <div className="flex justify-end">
-          {invoice.signature ? (
-            <div className="bg-green-100 border border-green-300 rounded-lg p-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-green-600">🔒</span>
-                <span className="font-semibold text-green-800">FACTURE SIGNÉE</span>
-              </div>
-              <p className="text-xs text-green-600 mt-1">
-                Signature électronique valide
-              </p>
-            </div>
-          ) : (
-            <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-yellow-600">⏳</span>
-                <span className="font-semibold text-yellow-800">EN ATTENTE</span>
-              </div>
-              <p className="text-xs text-yellow-600 mt-1">
-                Signature en attente
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <hr className="my-6 border-gray-300" />
-
-      {/* Section client */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Client</h2>
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="font-semibold text-gray-900">{invoice.client.name}</p>
-          <p className="text-gray-700">{invoice.client.address}</p>
-          <p className="text-gray-700">{invoice.client.postalCode} {invoice.client.city}</p>
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-            <p className="text-gray-700">
-              <span className="font-medium">Tél:</span> {invoice.client.phone}
-            </p>
-            <p className="text-gray-700">
-              <span className="font-medium">Email:</span> {invoice.client.email}
-            </p>
+          <h2 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
+            FACTURER À
+          </h2>
+          <div className="space-y-1">
+            <p className="font-bold text-gray-900">{invoice.client.name}</p>
+            <p className="text-gray-700">{invoice.client.address}</p>
+            <p className="text-gray-700">{invoice.client.postalCode} {invoice.client.city}</p>
+            <p className="text-gray-700">Tél: {invoice.client.phone}</p>
+            <p className="text-gray-700">Email: {invoice.client.email}</p>
+            {invoice.client.siret && (
+              <p className="text-gray-700">SIRET: {invoice.client.siret}</p>
+            )}
           </div>
-          {invoice.client.siret && (
-            <p className="text-gray-700 mt-1">
-              <span className="font-medium">SIRET:</span> {invoice.client.siret}
-            </p>
-          )}
+        </div>
+        
+        <div>
+          <h2 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
+            INFORMATIONS COMPLÉMENTAIRES
+          </h2>
+          <div className="space-y-1">
+            {invoice.advisorName && (
+              <p className="text-gray-700">
+                <span className="font-medium">Conseiller:</span> {invoice.advisorName}
+              </p>
+            )}
+            {invoice.client.housingType && (
+              <p className="text-gray-700">
+                <span className="font-medium">Type logement:</span> {invoice.client.housingType}
+              </p>
+            )}
+            {invoice.client.doorCode && (
+              <p className="text-gray-700">
+                <span className="font-medium">Code d'accès:</span> {invoice.client.doorCode}
+              </p>
+            )}
+            {invoice.delivery.method && (
+              <p className="text-gray-700">
+                <span className="font-medium">Livraison:</span> {invoice.delivery.method}
+              </p>
+            )}
+            {invoice.payment.method && (
+              <p className="text-gray-700">
+                <span className="font-medium">Paiement:</span> {invoice.payment.method}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Détail des produits */}
+      {/* Tableau des produits */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Détail des produits</h2>
+        <h3 className="font-semibold text-[#477A0C] mb-3 border-b border-[#477A0C] pb-1">
+          DÉTAIL DES PRODUITS
+        </h3>
         <div className="overflow-x-auto">
-          <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+          <table className="w-full text-sm border border-gray-300 rounded-lg overflow-hidden">
             <thead>
               <tr className="bg-[#477A0C] text-white">
-                <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Désignation</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold">Qté</th>
-                <th className="border border-gray-300 px-3 py-3 text-right font-semibold">PU TTC</th>
-                <th className="border border-gray-300 px-3 py-3 text-right font-semibold">Remise</th>
-                <th className="border border-gray-300 px-3 py-3 text-right font-semibold">Total TTC</th>
+                <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Désignation</th>
+                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Qté</th>
+                <th className="border border-gray-300 px-2 py-2 text-right font-semibold">PU TTC</th>
+                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Remise</th>
+                <th className="border border-gray-300 px-2 py-2 text-right font-semibold">Total TTC</th>
               </tr>
             </thead>
             <tbody>
@@ -139,19 +166,19 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 
                 return (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border border-gray-300 px-4 py-3">
+                    <td className="border border-gray-300 px-3 py-2">
                       <div className="font-medium">{item.name}</div>
                       {item.category && (
                         <div className="text-xs text-gray-500">{item.category}</div>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center font-semibold">
+                    <td className="border border-gray-300 px-2 py-2 text-center font-semibold">
                       {item.quantity}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-right">
+                    <td className="border border-gray-300 px-2 py-2 text-right">
                       {formatCurrency(item.priceTTC)}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-right">
+                    <td className="border border-gray-300 px-2 py-2 text-center">
                       {item.discount > 0 ? (
                         <span className="text-red-600 font-medium">
                           -{item.discountType === 'percent' 
@@ -163,7 +190,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-right font-bold">
+                    <td className="border border-gray-300 px-2 py-2 text-right font-bold">
                       {formatCurrency(totalProduct)}
                     </td>
                   </tr>
@@ -171,7 +198,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               })}
               {invoice.products.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="border border-gray-300 px-4 py-6 text-center text-gray-500">
+                  <td colSpan={5} className="border border-gray-300 px-3 py-6 text-center text-gray-500">
                     Aucun produit ajouté
                   </td>
                 </tr>
@@ -188,16 +215,18 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="font-medium">Total HT:</span>
-                <span className="font-medium">
-                  {formatCurrency(totalTTC / (1 + (invoice.taxRate / 100)))}
-                </span>
+                <span className="font-medium">{formatCurrency(totalHT)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="font-medium">TVA ({invoice.taxRate}%):</span>
-                <span className="font-medium">
-                  {formatCurrency(totalTTC - (totalTTC / (1 + (invoice.taxRate / 100))))}
-                </span>
+                <span className="font-medium">{formatCurrency(totalTVA)}</span>
               </div>
+              {totalDiscount > 0 && (
+                <div className="flex justify-between text-sm text-red-600">
+                  <span className="font-medium">Remise totale:</span>
+                  <span className="font-medium">-{formatCurrency(totalDiscount)}</span>
+                </div>
+              )}
               <div className="border-t border-gray-300 pt-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>TOTAL TTC:</span>
@@ -229,46 +258,37 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
         </div>
       </div>
 
-      {/* Informations de paiement */}
-      {invoice.payment.method && (
-        <div className="mb-6">
-          <h3 className="text-md font-semibold text-gray-800 mb-2">Mode de paiement</h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-blue-800 font-medium">{invoice.payment.method}</p>
-            {acompteAmount > 0 && (
-              <p className="text-blue-700 text-sm mt-1">
-                Acompte de {formatCurrency(acompteAmount)} versé
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Notes */}
-      {invoice.invoiceNotes && (
-        <div className="mb-6">
-          <h3 className="text-md font-semibold text-gray-800 mb-2">Remarques</h3>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p className="text-gray-700">{invoice.invoiceNotes}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Signature */}
+      {/* Signature client */}
       {invoice.signature && (
         <div className="mb-6">
-          <h3 className="text-md font-semibold text-gray-800 mb-2">Signature client</h3>
-          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-            <div className="flex items-center justify-center h-20">
-              <img 
-                src={invoice.signature} 
-                alt="Signature client" 
-                className="max-h-full max-w-full"
-              />
+          <div className="flex justify-end">
+            <div className="border border-gray-300 rounded-lg p-4 w-64">
+              <h4 className="text-[#477A0C] font-bold text-sm mb-2 text-center">
+                SIGNATURE CLIENT
+              </h4>
+              <div className="flex items-center justify-center h-16 bg-gray-50 rounded">
+                <img 
+                  src={invoice.signature} 
+                  alt="Signature client" 
+                  className="max-h-full max-w-full"
+                />
+              </div>
+              <p className="text-xs text-gray-500 text-center mt-2">
+                Signé électroniquement le {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </p>
             </div>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              Signé électroniquement le {new Date().toLocaleDateString('fr-FR')}
-            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Notes si présentes */}
+      {invoice.invoiceNotes && (
+        <div className="mb-6">
+          <h3 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
+            REMARQUES
+          </h3>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p className="text-gray-700 text-sm">{invoice.invoiceNotes}</p>
           </div>
         </div>
       )}
