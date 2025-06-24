@@ -1,7 +1,6 @@
 import React from 'react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
-import { Zap } from 'lucide-react';
 
 interface InvoicePDFProps {
   invoice: Invoice;
@@ -49,19 +48,32 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
   return (
     <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif' }}>
       {/* En-tête de la facture */}
-      <div className="p-8 border-b-4 border-blue-600">
+      <div className="p-8 border-b-4 border-[#477A0C]">
         <div className="flex justify-between items-start">
           {/* Logo et informations entreprise */}
           <div className="flex-1">
             <div className="flex items-center mb-6">
-              <div className="bg-blue-600 rounded-lg p-3 mr-4">
-                <Zap className="w-10 h-10 text-white" />
+              <div className="bg-[#477A0C] rounded-lg p-3 mr-4">
+                <img 
+                  src="/public/logo.svg" 
+                  alt="MYCONFORT Logo" 
+                  className="w-10 h-10"
+                  onError={(e) => {
+                    // Fallback si le logo ne charge pas
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="hidden w-10 h-10 flex items-center justify-center">
+                  <span className="text-[#F2EFE2] font-bold text-2xl">M</span>
+                </div>
               </div>
               <div>
-                <h1 className="text-4xl font-black text-blue-600 tracking-tight">
-                  FactuFlash
+                <h1 className="text-4xl font-black text-[#477A0C] tracking-tight">
+                  MYCONFORT
                 </h1>
-                <p className="text-lg text-gray-600 font-medium">Facturation Professionnelle</p>
+                <p className="text-lg text-[#14281D] font-medium">Facturation Professionnelle</p>
               </div>
             </div>
             
@@ -78,14 +90,14 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
 
           {/* Informations facture */}
           <div className="text-right">
-            <div className="bg-blue-600 text-white px-8 py-4 rounded-lg mb-6">
+            <div className="bg-[#477A0C] text-[#F2EFE2] px-8 py-4 rounded-lg mb-6">
               <h2 className="text-2xl font-bold">FACTURE</h2>
             </div>
             
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center min-w-[200px]">
                 <span className="font-semibold text-gray-600">N° Facture:</span>
-                <span className="font-bold text-xl text-blue-600">{invoice.invoiceNumber}</span>
+                <span className="font-bold text-xl text-[#477A0C]">{invoice.invoiceNumber}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-600">Date:</span>
@@ -106,7 +118,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
       <div className="p-8 border-b border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-lg font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+            <h3 className="text-lg font-bold text-[#477A0C] mb-4 border-b-2 border-[#477A0C] pb-2">
               FACTURER À
             </h3>
             <div className="space-y-2 text-sm">
@@ -126,7 +138,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-blue-600 mb-4 border-b-2 border-blue-600 pb-2">
+            <h3 className="text-lg font-bold text-[#477A0C] mb-4 border-b-2 border-[#477A0C] pb-2">
               INFORMATIONS COMPLÉMENTAIRES
             </h3>
             <div className="space-y-2 text-sm">
@@ -149,14 +161,14 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
 
       {/* Tableau des produits */}
       <div className="p-8">
-        <h3 className="text-lg font-bold text-blue-600 mb-6 border-b-2 border-blue-600 pb-2">
+        <h3 className="text-lg font-bold text-[#477A0C] mb-6 border-b-2 border-[#477A0C] pb-2">
           DÉTAIL DES PRODUITS
         </h3>
         
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
             <thead>
-              <tr className="bg-blue-600 text-white">
+              <tr className="bg-[#477A0C] text-[#F2EFE2]">
                 <th className="border border-gray-300 px-4 py-4 text-left font-bold">DÉSIGNATION</th>
                 <th className="border border-gray-300 px-3 py-4 text-center font-bold">QTÉ</th>
                 <th className="border border-gray-300 px-3 py-4 text-right font-bold">PU HT</th>
@@ -229,7 +241,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                 <div className="border-t border-gray-300 pt-3">
                   <div className="flex justify-between text-xl font-bold">
                     <span>TOTAL TTC:</span>
-                    <span className="text-blue-600">{formatCurrency(totals.totalWithTax)}</span>
+                    <span className="text-[#477A0C]">{formatCurrency(totals.totalWithTax)}</span>
                   </div>
                 </div>
                 
@@ -255,7 +267,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
       <div className="p-8 border-t border-gray-200 bg-gray-50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-lg font-bold text-blue-600 mb-4">MODALITÉS DE PAIEMENT</h3>
+            <h3 className="text-lg font-bold text-[#477A0C] mb-4">MODALITÉS DE PAIEMENT</h3>
             <div className="space-y-2 text-sm">
               {invoice.payment.method && (
                 <p><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
@@ -271,7 +283,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           <div>
             {invoice.invoiceNotes && (
               <>
-                <h3 className="text-lg font-bold text-blue-600 mb-4">REMARQUES</h3>
+                <h3 className="text-lg font-bold text-[#477A0C] mb-4">REMARQUES</h3>
                 <div className="text-sm bg-white p-4 rounded border">
                   <p>{invoice.invoiceNotes}</p>
                 </div>
@@ -280,7 +292,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             
             {invoice.delivery.notes && (
               <>
-                <h3 className="text-lg font-bold text-blue-600 mb-4 mt-6">LIVRAISON</h3>
+                <h3 className="text-lg font-bold text-[#477A0C] mb-4 mt-6">LIVRAISON</h3>
                 <div className="text-sm bg-white p-4 rounded border">
                   <p>{invoice.delivery.notes}</p>
                 </div>
@@ -291,15 +303,28 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
       </div>
 
       {/* Pied de page */}
-      <div className="p-8 border-t-4 border-blue-600 bg-blue-600 text-white">
+      <div className="p-8 border-t-4 border-[#477A0C] bg-[#477A0C] text-[#F2EFE2]">
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <Zap className="w-8 h-8 mr-3" />
-            <span className="text-2xl font-bold">FactuFlash</span>
+            <img 
+              src="/public/logo.svg" 
+              alt="MYCONFORT Logo" 
+              className="w-8 h-8 mr-3"
+              onError={(e) => {
+                // Fallback si le logo ne charge pas
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="hidden w-8 h-8 mr-3 flex items-center justify-center">
+              <span className="text-[#F2EFE2] font-bold text-xl">M</span>
+            </div>
+            <span className="text-2xl font-bold">MYCONFORT</span>
           </div>
           <p className="font-bold text-lg mb-2">Merci de votre confiance !</p>
           <p className="text-sm opacity-90">
-            Facturation professionnelle rapide et élégante
+            Votre spécialiste en matelas et literie de qualité
           </p>
           <div className="mt-4 text-xs opacity-75">
             <p>TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530</p>

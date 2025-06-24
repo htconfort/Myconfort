@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, FileText, User, Send, Users, Package, Zap } from 'lucide-react';
+import { Save, FileText, User, Send, Users, Package } from 'lucide-react';
 
 interface HeaderProps {
   onSave: () => void;
@@ -19,17 +19,30 @@ export const Header: React.FC<HeaderProps> = ({
   onScrollToProducts
 }) => {
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-xl sticky top-0 z-40">
+    <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <div className="bg-white rounded-lg p-2">
-            <Zap className="w-8 h-8 text-blue-600" />
+          <div className="bg-[#F2EFE2] rounded-lg p-2">
+            <img 
+              src="/public/logo.svg" 
+              alt="MYCONFORT Logo" 
+              className="w-8 h-8"
+              onError={(e) => {
+                // Fallback si le logo ne charge pas
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="hidden w-8 h-8 bg-[#477A0C] rounded flex items-center justify-center">
+              <span className="text-[#F2EFE2] font-bold text-lg">M</span>
+            </div>
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">
-              FactuFlash
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#F2EFE2]">
+              MYCONFORT
             </h1>
-            <p className="text-blue-100 text-sm font-medium">Facturation Professionnelle</p>
+            <p className="text-[#F2EFE2]/80 text-sm font-medium">Facturation Professionnelle</p>
           </div>
         </div>
         
@@ -38,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex items-center space-x-2">
             <button
               onClick={onScrollToClient}
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-white"
+              className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
               title="Aller à la section client"
             >
               <User size={16} />
@@ -47,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
             
             <button
               onClick={onScrollToProducts}
-              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-white"
+              className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
               title="Aller à la section produits"
             >
               <Package size={16} />
@@ -58,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Actions principales */}
           <button
             onClick={onSave}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
             title="Enregistrer le brouillon"
           >
             <Save size={18} />
@@ -67,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           <button
             onClick={onGeneratePDF}
-            className="bg-green-500 hover:bg-green-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            className="bg-[#F55D3E] hover:bg-[#E54D2E] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
             title="Générer le PDF"
           >
             <FileText size={18} />
@@ -76,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           <button
             onClick={onShowClients}
-            className="bg-purple-500 hover:bg-purple-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            className="bg-[#D68FD6] hover:bg-[#C67FC6] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#14281D]"
             title="Gérer les clients"
           >
             <Users size={18} />
@@ -85,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
           
           <button
             onClick={onSendEmail}
-            className="bg-orange-500 hover:bg-orange-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            className="bg-[#89BBFE] hover:bg-[#79ABEE] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#14281D]"
             title="Envoyer par email"
           >
             <Send size={18} />

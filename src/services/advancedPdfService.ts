@@ -35,12 +35,12 @@ export interface InvoiceData {
 
 export class AdvancedPDFService {
   private static readonly COLORS = {
-    primary: '#2563eb',
+    primary: '#477A0C',
     secondary: '#64748b',
     success: '#059669',
     danger: '#dc2626',
-    dark: '#1e293b',
-    light: '#f8fafc'
+    dark: '#14281D',
+    light: '#F2EFE2'
   };
 
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
@@ -125,20 +125,20 @@ export class AdvancedPDFService {
 
   private static async addLogo(doc: jsPDF): Promise<void> {
     try {
-      // Dessiner un logo FactuFlash moderne
+      // Dessiner un logo MYCONFORT moderne avec la charte graphique
       doc.setFillColor(this.COLORS.primary);
       doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
       
-      // Icône éclair
-      doc.setFillColor(255, 255, 255);
+      // Icône M pour MYCONFORT
+      doc.setFillColor(this.COLORS.light);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
-      doc.text('⚡', 20, 28);
+      doc.text('M', 22, 28);
       
-      // Texte FactuFlash
-      doc.setTextColor(255, 255, 255);
+      // Texte MYCONFORT
+      doc.setTextColor(this.COLORS.light);
       doc.setFontSize(12);
-      doc.text('FactuFlash', 28, 28);
+      doc.text('MYCONFORT', 28, 28);
     } catch (error) {
       console.warn('Erreur lors de l\'ajout du logo:', error);
     }
@@ -161,10 +161,10 @@ export class AdvancedPDFService {
   }
 
   private static addInvoiceInfo(doc: jsPDF, data: InvoiceData): void {
-    // Titre FACTURE
+    // Titre FACTURE avec couleur MYCONFORT
     doc.setFillColor(this.COLORS.primary);
     doc.roundedRect(140, 15, 55, 15, 3, 3, 'F');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(this.COLORS.light);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('FACTURE', 155, 26);
@@ -185,7 +185,7 @@ export class AdvancedPDFService {
   }
 
   private static addClientInfo(doc: jsPDF, data: InvoiceData): void {
-    // Titre section client
+    // Titre section client avec couleur MYCONFORT
     doc.setFillColor(this.COLORS.light);
     doc.rect(15, 95, 180, 8, 'F');
     doc.setTextColor(this.COLORS.primary);
@@ -226,7 +226,7 @@ export class AdvancedPDFService {
       theme: 'grid',
       headStyles: {
         fillColor: this.COLORS.primary,
-        textColor: 255,
+        textColor: this.COLORS.light,
         fontSize: 10,
         fontStyle: 'bold',
         halign: 'center'
@@ -351,7 +351,7 @@ export class AdvancedPDFService {
   private static addFooter(doc: jsPDF): void {
     const pageHeight = doc.internal.pageSize.height;
     
-    // Ligne de séparation
+    // Ligne de séparation avec couleur MYCONFORT
     doc.setDrawColor(this.COLORS.primary);
     doc.line(15, pageHeight - 25, 195, pageHeight - 25);
     
@@ -359,12 +359,12 @@ export class AdvancedPDFService {
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('FactuFlash - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
+    doc.text('MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Facturation professionnelle rapide et élégante', 105, pageHeight - 12, { align: 'center' });
+    doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 12, { align: 'center' });
     doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 8, { align: 'center' });
   }
 
