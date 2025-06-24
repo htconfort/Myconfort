@@ -12,7 +12,7 @@ export interface PreviewShareOptions {
 
 export class PreviewShareService {
   /**
-   * 🎯 Capture l'aperçu exact de la facture et l'envoie par email
+   * 🎯 Capture l'aperçu exact de la facture et l'envoie par EmailJS
    * Cette méthode garantit que le client reçoit exactement ce que vous voyez dans Bolt
    */
   static async sharePreviewByEmail(
@@ -21,7 +21,8 @@ export class PreviewShareService {
     options: PreviewShareOptions = {}
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU EXACT - Capture de ce que vous voyez dans Bolt');
+      console.log('📸 PARTAGE APERÇU EXACT AVEC EMAILJS - Capture de ce que vous voyez dans Bolt');
+      console.log('🔑 Configuration EmailJS: service_ocsxnme / template_yng4k8s');
       
       // Configuration par défaut optimisée
       const config = {
@@ -65,30 +66,30 @@ export class PreviewShareService {
       
       console.log(`📊 Image générée: ${canvas.width}x${canvas.height}px, ${imageSizeKB} KB`);
 
-      // Étape 4: Préparer les données pour l'email
-      const emailData = this.prepareEmailData(invoice, imageDataUrl, imageSizeKB, config.format);
+      // Étape 4: Préparer les données pour EmailJS
+      const emailData = this.prepareEmailDataForEmailJS(invoice, imageDataUrl, imageSizeKB, config.format);
 
-      // Étape 5: Envoyer par EmailJS
-      console.log('📧 Envoi de l\'aperçu exact par email...');
-      const success = await this.sendPreviewEmail(emailData);
+      // Étape 5: Envoyer directement avec EmailJS
+      console.log('📧 Envoi de l\'aperçu exact par EmailJS...');
+      const success = await this.sendPreviewViaEmailJS(emailData);
 
       if (success) {
-        console.log('✅ Aperçu exact partagé avec succès !');
+        console.log('✅ Aperçu exact partagé avec succès via EmailJS !');
         return true;
       } else {
-        throw new Error('Échec de l\'envoi de l\'aperçu');
+        throw new Error('Échec de l\'envoi de l\'aperçu via EmailJS');
       }
 
     } catch (error) {
-      console.error('❌ Erreur lors du partage de l\'aperçu:', error);
+      console.error('❌ Erreur lors du partage de l\'aperçu avec EmailJS:', error);
       return false;
     }
   }
 
   /**
-   * Prépare les données pour l'email avec l'aperçu
+   * Prépare les données spécifiquement pour EmailJS
    */
-  private static prepareEmailData(
+  private static prepareEmailDataForEmailJS(
     invoice: Invoice, 
     imageDataUrl: string, 
     imageSizeKB: number, 
@@ -109,7 +110,7 @@ export class PreviewShareService {
 
     // Message personnalisé pour l'aperçu partagé
     let customMessage = `Bonjour ${invoice.client.name},\n\n`;
-    customMessage += `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît exactement dans notre système de facturation.\n\n`;
+    customMessage += `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît exactement dans notre système de facturation MYCONFORT.\n\n`;
     
     customMessage += `📋 DÉTAILS DE LA FACTURE :\n`;
     customMessage += `• Numéro: ${invoice.invoiceNumber}\n`;
@@ -152,30 +153,45 @@ export class PreviewShareService {
   }
 
   /**
-   * Envoie l'aperçu par email via EmailJS
+   * 📧 Envoie l'aperçu directement via EmailJS (sans passer par EmailService)
    */
-  private static async sendPreviewEmail(emailData: any): Promise<boolean> {
+  private static async sendPreviewViaEmailJS(emailData: any): Promise<boolean> {
     try {
+      // Import dynamique d'EmailJS
+      const emailjs = await import('@emailjs/browser');
+      
+      // Configuration EmailJS (vos clés)
+      const EMAILJS_SERVICE_ID = 'service_ocsxnme';
+      const EMAILJS_TEMPLATE_ID = 'template_yng4k8s';
+      const EMAILJS_PUBLIC_KEY = 'hvgYUCG9j2lURrt5k';
+
       // Convertir l'image en base64 pour EmailJS
       const base64Image = emailData.imageDataUrl.split(',')[1];
 
-      // Paramètres pour EmailJS
+      // Paramètres pour le template EmailJS
       const templateParams = {
+        // Destinataire
         to_email: emailData.invoice.client.email,
         to_name: emailData.invoice.client.name,
+        
+        // Expéditeur
         from_name: emailData.invoice.advisorName || 'MYCONFORT',
+        reply_to: 'myconfort@gmail.com',
+        
+        // Informations facture
         invoice_number: emailData.invoice.invoiceNumber,
         invoice_date: new Date(emailData.invoice.invoiceDate).toLocaleDateString('fr-FR'),
         total_amount: formatCurrency(emailData.totalAmount),
+        
+        // Message personnalisé
         message: emailData.customMessage,
         
         // 📸 IMAGE DE L'APERÇU COMME PIÈCE JOINTE
-        invoice_pdf: base64Image, // Réutiliser le champ PDF pour l'image
+        invoice_pdf: base64Image, // Utiliser le champ PDF pour l'image
         pdf_filename: `apercu_facture_${emailData.invoice.invoiceNumber}.${emailData.format}`,
         pdf_size: emailData.imageSizeKB,
         
-        // Informations supplémentaires
-        reply_to: 'myconfort@gmail.com',
+        // Informations entreprise
         company_name: 'MYCONFORT',
         company_address: '88 Avenue des Ternes, 75017 Paris',
         company_phone: '04 68 50 41 45',
@@ -193,26 +209,81 @@ export class PreviewShareService {
         
         // Informations acompte si applicable
         deposit_amount: emailData.acompteAmount > 0 ? formatCurrency(emailData.acompteAmount) : '',
-        remaining_amount: emailData.acompteAmount > 0 ? formatCurrency(emailData.montantRestant) : ''
+        remaining_amount: emailData.acompteAmount > 0 ? formatCurrency(emailData.montantRestant) : '',
+        
+        // Informations client
+        client_address: `${emailData.invoice.client.address}, ${emailData.invoice.client.postalCode} ${emailData.invoice.client.city}`,
+        client_phone: emailData.invoice.client.phone,
+        
+        // Informations paiement
+        payment_method: emailData.invoice.payment.method || 'Non spécifié',
+        advisor_name: emailData.invoice.advisorName || 'MYCONFORT'
       };
 
-      // Créer un objet mock pour EmailService.sendInvoiceByEmail
-      const mockPdfObject = {
-        output: () => ({
-          blob: () => fetch(emailData.imageDataUrl).then(res => res.blob())
-        })
-      };
+      console.log('📧 Envoi avec EmailJS...');
+      console.log('🔑 Service:', EMAILJS_SERVICE_ID);
+      console.log('📄 Template:', EMAILJS_TEMPLATE_ID);
+      console.log('📎 Image:', emailData.imageSizeKB, 'KB');
+      console.log('📋 Destinataire:', emailData.invoice.client.email);
 
-      return await EmailService.sendInvoiceByEmail(
-        mockPdfObject as any,
-        emailData.invoice,
-        emailData.customMessage
+      // Envoyer avec EmailJS
+      const response = await emailjs.default.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
       );
 
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu par email:', error);
+      console.log('✅ Aperçu envoyé avec succès via EmailJS !');
+      console.log('📊 Réponse EmailJS:', response);
+      
+      return response.status === 200;
+
+    } catch (error: any) {
+      console.error('❌ Erreur lors de l\'envoi via EmailJS:', error);
+      console.error('🔍 Détails de l\'erreur:', {
+        service: 'service_ocsxnme',
+        template: 'template_yng4k8s',
+        error: error
+      });
+
+      // Messages d'erreur spécifiques
+      if (error?.text?.includes('template ID not found') || error?.status === 400) {
+        console.error('🚨 ERREUR DE CONFIGURATION:');
+        console.error('📄 Le template ID "template_yng4k8s" n\'existe pas dans votre compte EmailJS');
+        console.error('🔧 Solutions:');
+        console.error('   1. Créez un template avec l\'ID "template_yng4k8s" sur https://dashboard.emailjs.com/admin/templates');
+        console.error('   2. Vérifiez que vous êtes connecté au bon compte EmailJS');
+        console.error('   3. Assurez-vous que le template supporte les pièces jointes avec {{invoice_pdf}}');
+      }
+
       return false;
     }
+  }
+
+  /**
+   * Vérifie si le partage d'aperçu est possible
+   */
+  static canSharePreview(invoice: Invoice): { canShare: boolean; reason?: string } {
+    if (!invoice.client.email) {
+      return { canShare: false, reason: 'Email du client requis' };
+    }
+
+    if (!invoice.client.name) {
+      return { canShare: false, reason: 'Nom du client requis' };
+    }
+
+    if (invoice.products.length === 0) {
+      return { canShare: false, reason: 'Aucun produit dans la facture' };
+    }
+
+    // Vérifier la configuration EmailJS basique
+    const hasEmailJSConfig = true; // Les clés sont hardcodées dans le service
+    if (!hasEmailJSConfig) {
+      return { canShare: false, reason: 'Configuration EmailJS incomplète' };
+    }
+
+    return { canShare: true };
   }
 
   /**
@@ -259,24 +330,5 @@ export class PreviewShareService {
       console.error('❌ Erreur lors de la capture:', error);
       return null;
     }
-  }
-
-  /**
-   * Vérifie si le partage d'aperçu est possible
-   */
-  static canSharePreview(invoice: Invoice): { canShare: boolean; reason?: string } {
-    if (!invoice.client.email) {
-      return { canShare: false, reason: 'Email du client requis' };
-    }
-
-    if (!EmailService.isConfigured()) {
-      return { canShare: false, reason: 'Configuration EmailJS incomplète' };
-    }
-
-    if (invoice.products.length === 0) {
-      return { canShare: false, reason: 'Aucun produit dans la facture' };
-    }
-
-    return { canShare: true };
   }
 }

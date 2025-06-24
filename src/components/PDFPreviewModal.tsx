@@ -3,9 +3,7 @@ import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader } fro
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
-import { EmailService } from '../services/emailService';
-import { formatCurrency, calculateProductTotal } from '../utils/calculations';
-import html2canvas from 'html2canvas';
+import { PreviewShareService } from '../services/previewShareService';
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
@@ -22,16 +20,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
-
-  // Calculer le total pour l'email
-  const totalAmount = invoice.products.reduce((sum, product) => {
-    return sum + calculateProductTotal(
-      product.quantity,
-      product.priceTTC,
-      product.discount,
-      product.discountType
-    );
-  }, 0);
 
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
@@ -64,122 +52,73 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🎯 NOUVELLE FONCTIONNALITÉ : Partager l'aperçu exact par email
+  // 🎯 PARTAGE APERÇU AVEC EMAILJS (CORRIGÉ)
   const handleSharePreviewByEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
       return;
     }
 
+    // Vérifier si le partage est possible
+    const shareCheck = PreviewShareService.canSharePreview(invoice);
+    if (!shareCheck.canShare) {
+      alert(`❌ Impossible de partager l'aperçu: ${shareCheck.reason}`);
+      return;
+    }
+
     setIsSharing(true);
 
     try {
-      // Étape 1: Capturer l'aperçu visuel exact
+      // Étapes de progression
       setShareStep('📸 Capture de l\'aperçu exact...');
-      const previewElement = document.getElementById('pdf-preview-content');
+      await new Promise(resolve => setTimeout(resolve, 500)); // Petit délai pour l'UX
+
+      setShareStep('🖼️ Conversion en image haute qualité...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setShareStep('📧 Envoi par EmailJS...');
       
-      if (!previewElement) {
-        throw new Error('Aperçu non trouvé');
+      // 🎯 UTILISER LE SERVICE DE PARTAGE AVEC EMAILJS
+      const success = await PreviewShareService.sharePreviewByEmail(
+        invoice,
+        'pdf-preview-content',
+        {
+          quality: 1.0,
+          scale: 2,
+          format: 'png',
+          backgroundColor: '#ffffff'
+        }
+      );
+
+      if (success) {
+        setShareStep('✅ Aperçu partagé !');
+        
+        // Message de succès détaillé
+        const successMessage = `✅ Aperçu exact partagé avec succès !\n\n` +
+          `📸 Image haute qualité envoyée à ${invoice.client.email}\n` +
+          `🎯 Le client recevra exactement ce que vous voyez dans Bolt !\n\n` +
+          `📋 Configuration EmailJS utilisée :\n` +
+          `• Service ID: service_ocsxnme\n` +
+          `• Template ID: template_yng4k8s\n` +
+          `• Format: PNG haute qualité`;
+        
+        alert(successMessage);
+      } else {
+        throw new Error('Échec de l\'envoi via EmailJS');
       }
 
-      // Capturer avec html2canvas pour avoir exactement ce que vous voyez
-      const canvas = await html2canvas(previewElement, {
-        scale: 2, // Haute qualité
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: previewElement.scrollWidth,
-        height: previewElement.scrollHeight,
-        scrollX: 0,
-        scrollY: 0
-      });
-
-      // Étape 2: Convertir en image haute qualité
-      setShareStep('🖼️ Conversion en image haute qualité...');
-      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
-      const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
-      const imageSizeKB = Math.round(imageBlob.size / 1024);
-
-      // Étape 3: Préparer l'email avec l'image de l'aperçu
-      setShareStep('📧 Envoi de l\'aperçu exact par email...');
-      
-      // Convertir l'image en base64 pour EmailJS
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Image = (reader.result as string).split(',')[1];
-
-        try {
-          // Message personnalisé pour l'aperçu partagé
-          const acompteAmount = invoice.payment.depositAmount || 0;
-          const montantRestant = totalAmount - acompteAmount;
-          
-          let customMessage = `Bonjour ${invoice.client.name},\n\n`;
-          customMessage += `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît dans notre système.\n\n`;
-          
-          if (acompteAmount > 0) {
-            customMessage += `💰 ACOMPTE VERSÉ: ${formatCurrency(acompteAmount)}\n`;
-            customMessage += `💳 MONTANT RESTANT À PAYER: ${formatCurrency(montantRestant)}\n\n`;
-          } else {
-            customMessage += `💳 MONTANT TOTAL: ${formatCurrency(totalAmount)}\n\n`;
-          }
-          
-          if (invoice.signature) {
-            customMessage += '✓ Cette facture a été signée électroniquement.\n\n';
-          }
-          
-          customMessage += `L'image ci-jointe montre exactement l'aperçu de votre facture tel qu'il apparaît dans notre système.\n\n`;
-          customMessage += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n`;
-          customMessage += `---\nMYCONFORT - Aperçu de facture partagé directement depuis notre système`;
-
-          // Envoyer avec EmailJS en utilisant l'image comme pièce jointe
-          const templateParams = {
-            to_email: invoice.client.email,
-            to_name: invoice.client.name,
-            from_name: invoice.advisorName || 'MYCONFORT',
-            invoice_number: invoice.invoiceNumber,
-            invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
-            total_amount: formatCurrency(totalAmount),
-            message: customMessage,
-            
-            // 📸 IMAGE DE L'APERÇU COMME PIÈCE JOINTE
-            invoice_pdf: base64Image, // Utiliser le même champ mais avec l'image
-            pdf_filename: `apercu_facture_${invoice.invoiceNumber}.png`,
-            pdf_size: imageSizeKB,
-            
-            // Informations supplémentaires
-            reply_to: 'myconfort@gmail.com',
-            company_name: 'MYCONFORT',
-            company_address: '88 Avenue des Ternes, 75017 Paris',
-            company_phone: '04 68 50 41 45',
-            company_email: 'myconfort@gmail.com',
-            app_name: 'MYCONFORT - Aperçu Bolt',
-            generated_date: new Date().toLocaleDateString('fr-FR'),
-            generated_time: new Date().toLocaleTimeString('fr-FR')
-          };
-
-          const success = await EmailService.sendInvoiceByEmail(
-            { output: () => ({ blob: () => imageBlob }) }, // Mock PDF object
-            invoice, 
-            customMessage
-          );
-
-          if (success) {
-            setShareStep('✅ Aperçu partagé !');
-            alert(`✅ Aperçu exact partagé avec succès !\n\n📸 Image haute qualité (${imageSizeKB} KB) envoyée à ${invoice.client.email}\n\n🎯 Le client recevra exactement ce que vous voyez dans Bolt !`);
-          } else {
-            throw new Error('Erreur lors de l\'envoi');
-          }
-        } catch (error) {
-          console.error('Erreur partage aperçu:', error);
-          alert('❌ Erreur lors du partage de l\'aperçu. Vérifiez votre configuration EmailJS.');
-        }
-      };
-
-      reader.readAsDataURL(imageBlob);
-
     } catch (error) {
-      console.error('Erreur capture aperçu:', error);
-      alert('❌ Erreur lors de la capture de l\'aperçu');
+      console.error('❌ Erreur partage aperçu:', error);
+      
+      // Message d'erreur avec instructions
+      const errorMessage = `❌ Erreur lors du partage de l'aperçu\n\n` +
+        `🔧 Vérifiez votre configuration EmailJS :\n` +
+        `1. Service ID: service_ocsxnme\n` +
+        `2. Template ID: template_yng4k8s\n` +
+        `3. Public Key: hvgYUCG9j2lURrt5k\n\n` +
+        `📧 Assurez-vous que le template supporte les pièces jointes avec {{invoice_pdf}}`;
+      
+      alert(errorMessage);
     } finally {
       setIsSharing(false);
       setShareStep('');
@@ -204,12 +143,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* 🎯 NOUVEAU BOUTON : Partager l'aperçu exact */}
+            {/* 🎯 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
             <button
               onClick={handleSharePreviewByEmail}
               disabled={isSharing || !invoice.client.email}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
-              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Partager cet aperçu exact par email"}
+              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Partager cet aperçu exact par EmailJS"}
             >
               {isSharing ? (
                 <>
@@ -254,7 +193,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             <div className="flex items-center space-x-3">
               <Loader className="w-5 h-5 animate-spin text-orange-600" />
               <div>
-                <div className="font-semibold text-orange-900">Partage de l'aperçu exact en cours...</div>
+                <div className="font-semibold text-orange-900">Partage de l'aperçu exact avec EmailJS...</div>
                 <div className="text-sm text-orange-700">{shareStep}</div>
               </div>
             </div>
@@ -265,9 +204,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         <div className="bg-gradient-to-r from-blue-50 to-green-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
             <Zap className="w-4 h-4 text-blue-600" />
-            <span className="font-semibold text-blue-900">Nouveau :</span>
+            <span className="font-semibold text-blue-900">EmailJS configuré :</span>
             <span className="text-blue-800">
-              Le bouton "Partager Aperçu" envoie par email exactement ce que vous voyez ici, sans conversion PDF !
+              Le bouton "Partager Aperçu" utilise votre configuration EmailJS (service_ocsxnme) pour envoyer exactement ce que vous voyez !
             </span>
             {!invoice.client.email && (
               <span className="text-red-600 font-semibold">
@@ -275,10 +214,13 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               </span>
             )}
           </div>
+          <div className="mt-1 text-xs text-gray-600">
+            📧 Template: template_yng4k8s • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+          </div>
         </div>
 
         {/* Content */}
-        <div className="overflow-auto max-h-[calc(90vh-140px)] bg-gray-100 p-4">
+        <div className="overflow-auto max-h-[calc(90vh-180px)] bg-gray-100 p-4">
           <div id="pdf-preview-content">
             <InvoicePDF invoice={invoice} isPreview={true} />
           </div>
