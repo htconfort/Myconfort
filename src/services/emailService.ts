@@ -4,7 +4,9 @@ import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
 // Configuration EmailJS avec vos clés
 const EMAILJS_SERVICE_ID = 'service_ocsxnme';
-const EMAILJS_TEMPLATE_ID = 'template_invoice';
+// ⚠️ IMPORTANT: Remplacez 'template_invoice' par l'ID réel de votre template EmailJS
+// Vous pouvez trouver cet ID sur https://dashboard.emailjs.com/admin/templates
+const EMAILJS_TEMPLATE_ID = 'template_invoice'; // ← À MODIFIER avec votre vrai template ID
 const EMAILJS_PUBLIC_KEY = 'hvgYUCG9j2lURrt5k';
 
 export interface EmailData {
@@ -24,6 +26,7 @@ export class EmailService {
       emailjs.init(EMAILJS_PUBLIC_KEY);
       console.log('✅ EmailJS initialisé avec succès !');
       console.log('🔑 Service ID:', EMAILJS_SERVICE_ID);
+      console.log('📄 Template ID:', EMAILJS_TEMPLATE_ID);
       console.log('🔑 Public Key:', EMAILJS_PUBLIC_KEY);
       return true;
     } catch (error) {
@@ -34,6 +37,11 @@ export class EmailService {
 
   static async sendInvoiceByEmail(pdf: any, invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
+      // Vérifier la configuration avant l'envoi
+      if (!this.isConfigured()) {
+        throw new Error('Configuration EmailJS incomplète. Vérifiez vos clés et template ID.');
+      }
+
       // Convertir le PDF en blob puis en base64 pour l'attachement
       const pdfBlob = pdf.output('blob');
       const base64PDF = await this.blobToBase64(pdfBlob);
@@ -112,7 +120,7 @@ export class EmailService {
       console.log('✅ Email envoyé avec succès !');
       console.log('📊 Réponse EmailJS:', response);
       return response.status === 200;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
       console.error('🔍 Détails de l\'erreur:', {
         service: EMAILJS_SERVICE_ID,
@@ -120,6 +128,17 @@ export class EmailService {
         publicKey: EMAILJS_PUBLIC_KEY,
         error: error
       });
+
+      // Messages d'erreur spécifiques pour aider au diagnostic
+      if (error?.text?.includes('template ID not found') || error?.status === 400) {
+        console.error('🚨 ERREUR DE CONFIGURATION:');
+        console.error('📄 Le template ID "' + EMAILJS_TEMPLATE_ID + '" n\'existe pas dans votre compte EmailJS');
+        console.error('🔧 Solutions:');
+        console.error('   1. Créez un template avec l\'ID "' + EMAILJS_TEMPLATE_ID + '" sur https://dashboard.emailjs.com/admin/templates');
+        console.error('   2. OU modifiez EMAILJS_TEMPLATE_ID dans emailService.ts avec un template existant');
+        console.error('   3. Vérifiez que vous êtes connecté au bon compte EmailJS');
+      }
+
       return false;
     }
   }
@@ -248,8 +267,10 @@ export class EmailService {
 
   // Vérifier si EmailJS est configuré
   static isConfigured(): boolean {
-    return EMAILJS_PUBLIC_KEY === 'hvgYUCG9j2lURrt5k' && 
-           EMAILJS_SERVICE_ID === 'service_ocsxnme';
+    return EMAILJS_PUBLIC_KEY !== '' && 
+           EMAILJS_SERVICE_ID !== '' &&
+           EMAILJS_TEMPLATE_ID !== '' &&
+           EMAILJS_TEMPLATE_ID !== 'template_invoice'; // Vérifier que le template par défaut a été changé
   }
 
   // Méthode pour tester la configuration
@@ -260,7 +281,15 @@ export class EmailService {
       console.log('🔑 Public Key:', EMAILJS_PUBLIC_KEY);
       console.log('📄 Template ID:', EMAILJS_TEMPLATE_ID);
       
-      // Test simple sans envoi réel
+      // Vérifier si le template ID par défaut est encore utilisé
+      if (EMAILJS_TEMPLATE_ID === 'template_invoice') {
+        console.error('⚠️ ATTENTION: Vous utilisez encore le template ID par défaut!');
+        console.error('🔧 Veuillez remplacer "template_invoice" par votre vrai template ID');
+        console.error('🌐 Trouvez votre template ID sur: https://dashboard.emailjs.com/admin/templates');
+        return false;
+      }
+
+      // Test simple de validation des paramètres
       const testParams = {
         to_email: 'test@example.com',
         to_name: 'Test Client',
@@ -272,8 +301,9 @@ export class EmailService {
         company_name: 'MYCONFORT'
       };
 
-      console.log('✅ Configuration EmailJS valide');
+      console.log('✅ Configuration EmailJS semble valide');
       console.log('📋 Paramètres de test préparés');
+      console.log('💡 Pour un test complet, essayez d\'envoyer un email réel');
       
       return true;
     } catch (error) {
@@ -289,8 +319,15 @@ export class EmailService {
 
 🔧 Configuration requise dans EmailJS :
 Service ID: ${EMAILJS_SERVICE_ID}
-Template ID: ${EMAILJS_TEMPLATE_ID}
+Template ID: ${EMAILJS_TEMPLATE_ID} ⚠️ VÉRIFIEZ QUE CE TEMPLATE EXISTE!
 Public Key: ${EMAILJS_PUBLIC_KEY}
+
+🚨 ÉTAPES POUR CORRIGER L'ERREUR:
+
+1. 🌐 Allez sur https://dashboard.emailjs.com/admin/templates
+2. 📋 Vérifiez vos templates existants
+3. 🔧 Soit créez un nouveau template avec l'ID "${EMAILJS_TEMPLATE_ID}"
+4. 🔄 Soit modifiez EMAILJS_TEMPLATE_ID dans emailService.ts avec un ID existant
 
 📝 TEMPLATE RECOMMANDÉ :
 
@@ -340,12 +377,33 @@ des pièces jointes.
 
   // Méthode pour afficher les informations de configuration
   static getConfigurationInfo(): object {
+    const isConfigured = this.isConfigured();
     return {
       serviceId: EMAILJS_SERVICE_ID,
       templateId: EMAILJS_TEMPLATE_ID,
       publicKey: EMAILJS_PUBLIC_KEY,
-      isConfigured: this.isConfigured(),
-      status: '✅ Prêt pour l\'envoi avec PDF'
+      isConfigured: isConfigured,
+      status: isConfigured ? '✅ Prêt pour l\'envoi avec PDF' : '❌ Configuration incomplète',
+      warning: EMAILJS_TEMPLATE_ID === 'template_invoice' ? 
+        '⚠️ Template ID par défaut détecté - veuillez le modifier' : null
     };
+  }
+
+  // Nouvelle méthode pour obtenir l'URL du dashboard EmailJS
+  static getDashboardURL(): string {
+    return 'https://dashboard.emailjs.com/admin/templates';
+  }
+
+  // Méthode pour obtenir des instructions de dépannage
+  static getTroubleshootingSteps(): string[] {
+    return [
+      '1. 🌐 Connectez-vous à https://dashboard.emailjs.com',
+      '2. 📋 Allez dans "Email Templates"',
+      '3. 🔍 Vérifiez si un template avec l\'ID "' + EMAILJS_TEMPLATE_ID + '" existe',
+      '4. 🆕 Si non, créez un nouveau template avec cet ID exact',
+      '5. 🔄 OU copiez l\'ID d\'un template existant et modifiez emailService.ts',
+      '6. 💾 Sauvegardez et testez à nouveau',
+      '7. 📧 Assurez-vous que votre template supporte les variables PDF ({{invoice_pdf}})'
+    ];
   }
 }
