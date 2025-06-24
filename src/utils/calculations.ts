@@ -1,9 +1,13 @@
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('fr-FR', {
+  return Number(amount).toLocaleString('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
-  }).format(amount);
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+  });
 };
+
+// Alias pour compatibilité avec votre fonction
+export const formatEuro = formatCurrency;
 
 export const calculateHT = (ttcPrice: number, taxRate: number): number => {
   return ttcPrice / (1 + (taxRate / 100));
@@ -71,4 +75,40 @@ export const formatPhoneNumber = (phone: string): string => {
     return cleaned.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
   }
   return phone;
+};
+
+// Fonctions utilitaires supplémentaires pour le formatage français
+export const formatNumber = (value: number, decimals: number = 2): string => {
+  return Number(value).toLocaleString('fr-FR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
+
+export const formatPercentage = (value: number): string => {
+  return Number(value).toLocaleString('fr-FR', {
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
+export const formatDate = (date: string | Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+export const formatDateTime = (date: string | Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
