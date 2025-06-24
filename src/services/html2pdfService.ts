@@ -39,8 +39,8 @@ export class Html2PdfService {
     margin: 0
   };
 
-  // URL de votre Google Apps Script (mise à jour avec votre ID)
-  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso/exec';
+  // URL de votre Google Apps Script (mise à jour avec votre nouvel ID)
+  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec';
 
   /**
    * 📄 Génère un PDF à partir de l'élément HTML et l'envoie via Google Apps Script
@@ -218,7 +218,7 @@ export class Html2PdfService {
         const result = await response.text();
         console.log('📨 Réponse du script:', result);
 
-        const isSuccess = result.includes('Test réussi') || 
+        const isSuccess = result.includes('Script actif') || 
                          result.includes('success') || 
                          result.includes('OK') ||
                          response.status === 200;
@@ -380,7 +380,7 @@ export class Html2PdfService {
         console.log('📨 Réponse Google Apps Script:', result);
 
         // Vérifier si l'envoi a réussi
-        const isSuccess = result.includes('Email envoyé') || 
+        const isSuccess = result.includes('Script actif') || 
                          result.includes('success') || 
                          result.includes('OK');
 

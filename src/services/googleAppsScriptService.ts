@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 VOTRE GOOGLE APPS SCRIPT ID COMPLET
-  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
+  // 🔑 VOTRE NOUVEL ID GOOGLE APPS SCRIPT COMPLET
+  private static readonly SCRIPT_ID = 'AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION FINALE');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVEL ID');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       

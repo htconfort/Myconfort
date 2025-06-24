@@ -18,8 +18,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportStep, setExportStep] = useState('');
 
-  // VOTRE SCRIPT ID COMPLET
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso/exec";
+  // VOTRE NOUVEL ID GOOGLE APPS SCRIPT COMPLET
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec";
 
   const handleExportAndSend = async () => {
     if (!invoice.client.email) {
@@ -304,7 +304,7 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
         <p className="mt-1 text-xs text-green-200">
-          🔗 Script: AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso
+          🔗 Script: AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO
         </p>
       </div>
     </div>
