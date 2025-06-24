@@ -39,7 +39,7 @@ export class Html2PdfService {
     margin: 0
   };
 
-  // URL de votre Google Apps Script (mise à jour avec votre nouvelle URL)
+  // URL de votre Google Apps Script (mise à jour avec votre nouvelle URL finale)
   private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO/exec';
 
   /**
