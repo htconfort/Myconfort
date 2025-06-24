@@ -49,6 +49,7 @@ export class AdvancedPDFService {
     // Convertir les données de la facture
     const invoiceData = this.convertInvoiceData(invoice);
     
+    // PAGE 1 - FACTURE
     // Ajouter le logo MYCONFORT
     await this.addLogo(doc);
     
@@ -72,6 +73,10 @@ export class AdvancedPDFService {
     
     // Ajouter le pied de page
     this.addFooter(doc);
+    
+    // PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE
+    doc.addPage();
+    this.addCGVPage(doc);
     
     return doc;
   }
@@ -422,6 +427,148 @@ export class AdvancedPDFService {
     doc.setFont('helvetica', 'normal');
     doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 12, { align: 'center' });
     doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 8, { align: 'center' });
+  }
+
+  // NOUVELLE MÉTHODE : PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE
+  private static addCGVPage(doc: jsPDF): void {
+    console.log('📄 Ajout de la page 2 - Conditions Générales de Vente');
+    
+    // En-tête de la page CGV
+    doc.setFillColor(this.COLORS.primary);
+    doc.rect(15, 15, 180, 15, 'F');
+    
+    doc.setTextColor(this.COLORS.light);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONDITIONS GÉNÉRALES DE VENTE', 105, 26, { align: 'center' });
+    
+    let yPos = 45;
+    const lineHeight = 5;
+    const marginLeft = 15;
+    const marginRight = 195;
+    const textWidth = marginRight - marginLeft;
+    
+    // Articles des CGV
+    const cgvArticles = [
+      {
+        title: 'Art. 1 - Livraison',
+        content: 'Une fois la commande expédiée, vous serez contacté par SMS ou mail pour programmer la livraison en fonction de vos disponibilités (à la journée ou demi-journée). Le transporteur livre le produit au pas de porte ou en bas de l\'immeuble. Veuillez vérifier que les dimensions du produit permettent son passage dans les escaliers, couloirs et portes. Aucun service d\'installation ou de reprise de l\'ancienne literie n\'est prévu.'
+      },
+      {
+        title: 'Art. 2 - Délais de Livraison',
+        content: 'Les délais de livraison sont donnés à titre indicatif et ne constituent pas un engagement ferme. En cas de retard, aucune indemnité ou annulation ne sera acceptée, notamment en cas de force majeure. Nous déclinons toute responsabilité en cas de délai dépassé.'
+      },
+      {
+        title: 'Art. 3 - Risques de Transport',
+        content: 'Les marchandises voyagent aux risques du destinataire. En cas d\'avarie ou de perte, il appartient au client de faire les réserves nécessaires obligatoire sur le bordereau du transporteur. En cas de non-respect de cette obligation on ne peut pas se retourner contre le transporteur.'
+      },
+      {
+        title: 'Art. 4 - Acceptation des Conditions',
+        content: 'Toute livraison implique l\'acceptation des présentes conditions. Le transporteur livre à l\'adresse indiquée sans monter les étages. Le client est responsable de vérifier et d\'accepter les marchandises lors de la livraison.'
+      },
+      {
+        title: 'Art. 5 - Réclamations',
+        content: 'Les réclamations concernant la qualité des marchandises doivent être formulées par écrit dans les huit jours suivant la livraison, par lettre recommandée avec accusé de réception.'
+      },
+      {
+        title: 'Art. 6 - Retours',
+        content: 'Aucun retour de marchandises ne sera accepté sans notre accord écrit préalable. Cet accord n\'implique aucune reconnaissance.'
+      },
+      {
+        title: 'Art. 7 - Tailles des Matelas',
+        content: 'Les dimensions des matelas peuvent varier de +/- 5 cm en raison de la thermosensibilité des mousses viscoélastiques. Les tailles standards sont données à titre indicatif et ne constituent pas une obligation contractuelle. Les matelas sur mesure doivent inclure les spécifications exactes du cadre de lit.'
+      },
+      {
+        title: 'Art. 8 - Odeur des Matériaux',
+        content: 'Les mousses viscoélastiques naturelles (à base d\'huile de ricin) et les matériaux de conditionnement peuvent émettre une légère odeur qui disparaît après déballage. Cela ne constitue pas un défaut.'
+      },
+      {
+        title: 'Art. 9 - Règlements et Remises',
+        content: 'Sauf accord express, aucun rabais ou escompte ne sera appliqué pour paiement comptant. La garantie couvre les mousses, mais pas les textiles et accessoires.'
+      },
+      {
+        title: 'Art. 10 - Paiement',
+        content: 'Les factures sont payables par chèque, virement, carte bancaire ou espèce à réception.'
+      },
+      {
+        title: 'Art. 11 - Pénalités de Retard',
+        content: 'En cas de non-paiement, une majoration de 10% avec un minimum de 300 € sera appliquée, sans préjudice des intérêts de retard. Nous nous réservons le droit de résilier la vente sans sommation.'
+      },
+      {
+        title: 'Art. 12 - Exigibilité en Cas de Non-Paiement',
+        content: 'Le non-paiement d\'une échéance rend immédiatement exigible le solde de toutes les échéances à venir.'
+      },
+      {
+        title: 'Art. 13 - Livraison Incomplète ou Non-Conforme',
+        content: 'En cas de livraison endommagée ou non conforme, mentionnez-le sur le bon de livraison et refusez le produit. Si l\'erreur est constatée après le départ du transporteur, contactez-nous sous 72h ouvrables.'
+      },
+      {
+        title: 'Art. 14 - Litiges',
+        content: 'Tout litige sera de la compétence exclusive du Tribunal de Commerce de Perpignan ou du tribunal compétent du prestataire.'
+      },
+      {
+        title: 'Art. 15 - Horaires de Livraison',
+        content: 'Les livraisons sont effectuées du lundi au vendredi (hors jours fériés). Une personne majeure doit être présente à l\'adresse lors de la livraison. Toute modification d\'adresse après commande doit être signalée immédiatement à myconfort66@gmail.com.'
+      }
+    ];
+    
+    // Ajouter chaque article
+    for (const article of cgvArticles) {
+      // Vérifier si on a assez de place pour l'article
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 30;
+      }
+      
+      // Titre de l'article
+      doc.setTextColor(this.COLORS.primary);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(article.title, marginLeft, yPos);
+      yPos += lineHeight + 1;
+      
+      // Contenu de l'article
+      doc.setTextColor(this.COLORS.dark);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      
+      const splitText = doc.splitTextToSize(article.content, textWidth);
+      doc.text(splitText, marginLeft, yPos);
+      yPos += splitText.length * lineHeight + 3;
+    }
+    
+    // Date de mise à jour
+    yPos += 10;
+    if (yPos > 270) {
+      doc.addPage();
+      yPos = 30;
+    }
+    
+    doc.setTextColor(this.COLORS.secondary);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Les présentes Conditions générales ont été mises à jour le 23 août 2025', 105, yPos, { align: 'center' });
+    
+    // Pied de page pour la page CGV
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Ligne de séparation
+    doc.setDrawColor(this.COLORS.primary);
+    doc.line(15, pageHeight - 25, 195, pageHeight - 25);
+    
+    // Informations entreprise
+    doc.setTextColor(this.COLORS.primary);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MYCONFORT', 105, pageHeight - 18, { align: 'center' });
+    
+    doc.setTextColor(this.COLORS.secondary);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('88 Avenue des Ternes, 75017 Paris - Tél: 04 68 50 41 45', 105, pageHeight - 12, { align: 'center' });
+    doc.text('Email: myconfort@gmail.com - SIRET: 824 313 530 00027', 105, pageHeight - 8, { align: 'center' });
+    
+    console.log('✅ Page CGV ajoutée avec succès');
   }
 
   static async downloadPDF(invoice: Invoice): Promise<void> {
