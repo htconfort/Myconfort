@@ -125,38 +125,22 @@ export class AdvancedPDFService {
 
   private static async addLogo(doc: jsPDF): Promise<void> {
     try {
-      // Charger le logo SVG
-      const logoResponse = await fetch('/logo.svg');
-      const logoSvg = await logoResponse.text();
-      
-      // Convertir SVG en image
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      return new Promise((resolve) => {
-        img.onload = () => {
-          canvas.width = 200;
-          canvas.height = 80;
-          ctx?.drawImage(img, 0, 0, 200, 80);
-          
-          const imgData = canvas.toDataURL('image/png');
-          doc.addImage(imgData, 'PNG', 15, 15, 50, 20);
-          resolve();
-        };
-        
-        const blob = new Blob([logoSvg], { type: 'image/svg+xml' });
-        img.src = URL.createObjectURL(blob);
-      });
-    } catch (error) {
-      console.warn('Impossible de charger le logo:', error);
-      // Fallback: dessiner un logo simple
+      // Dessiner un logo FactuFlash moderne
       doc.setFillColor(this.COLORS.primary);
-      doc.rect(15, 15, 50, 20, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
+      doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
+      
+      // Icône éclair
+      doc.setFillColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.text('FactuFlash', 20, 28);
+      doc.setFontSize(16);
+      doc.text('⚡', 20, 28);
+      
+      // Texte FactuFlash
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.text('FactuFlash', 28, 28);
+    } catch (error) {
+      console.warn('Erreur lors de l\'ajout du logo:', error);
     }
   }
 
@@ -179,7 +163,7 @@ export class AdvancedPDFService {
   private static addInvoiceInfo(doc: jsPDF, data: InvoiceData): void {
     // Titre FACTURE
     doc.setFillColor(this.COLORS.primary);
-    doc.rect(140, 15, 55, 15, 'F');
+    doc.roundedRect(140, 15, 55, 15, 3, 3, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
@@ -270,7 +254,7 @@ export class AdvancedPDFService {
     
     // Cadre pour les totaux
     doc.setDrawColor(this.COLORS.secondary);
-    doc.rect(130, finalY, 65, 45);
+    doc.roundedRect(130, finalY, 65, 45, 3, 3);
     
     doc.setTextColor(this.COLORS.dark);
     doc.setFontSize(10);
