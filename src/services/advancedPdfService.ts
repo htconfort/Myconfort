@@ -49,15 +49,12 @@ export class AdvancedPDFService {
     // Convertir les données de la facture
     const invoiceData = this.convertInvoiceData(invoice);
     
-    // PAGE 1 - FACTURE (format original)
+    // PAGE 1 - FACTURE
     // Ajouter l'en-tête de l'entreprise (sans logo)
     this.addCompanyHeader(doc);
     
     // Ajouter les informations de la facture
     this.addInvoiceInfo(doc, invoiceData);
-    
-    // Ajouter la mention Loi Hammon
-    this.addLoiHammonNotice(doc);
     
     // Ajouter les informations client
     this.addClientInfo(doc, invoiceData);
@@ -174,44 +171,48 @@ export class AdvancedPDFService {
     doc.text(new Date(data.invoiceDate).toLocaleDateString('fr-FR'), 170, 47);
   }
 
-  private static addLoiHammonNotice(doc: jsPDF): void {
-    // Mention Loi Hammon au-dessus de "FACTURER À"
+  private static addClientInfo(doc: jsPDF, data: InvoiceData): void {
+    // Titre section client avec couleur MYCONFORT
+    doc.setFillColor(this.COLORS.light);
+    doc.rect(15, 95, 180, 8, 'F');
+    doc.setTextColor(this.COLORS.primary);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FACTURER À', 20, 101);
+    
+    // Informations client (colonne gauche)
+    doc.setTextColor(this.COLORS.dark);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.clientName, 20, 112);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(data.clientAddress, 20, 119);
+    doc.text(`${data.clientPostalCode} ${data.clientCity}`, 20, 126);
+    doc.text(`Tél: ${data.clientPhone}`, 20, 133);
+    doc.text(`Email: ${data.clientEmail}`, 20, 140);
+
+    // Section "INFORMATIONS COMPLÉMENTAIRES" (colonne droite)
+    doc.setTextColor(this.COLORS.primary);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INFORMATIONS COMPLÉMENTAIRES', 110, 101);
+    
+    // Mention Loi Hammon sous "INFORMATIONS COMPLÉMENTAIRES"
     doc.setTextColor(this.COLORS.danger);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('LOI HAMMON', 15, 85);
+    doc.text('LOI HAMMON', 110, 112);
     
     doc.setTextColor(this.COLORS.dark);
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     
     const loiHammonText = 'Les achats effectués sur les foires expositions et salon, à l\'exception de ceux faisant l\'objet d\'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.';
     
-    const splitText = doc.splitTextToSize(loiHammonText, 180);
-    doc.text(splitText, 15, 90);
-  }
-
-  private static addClientInfo(doc: jsPDF, data: InvoiceData): void {
-    // Titre section client avec couleur MYCONFORT (décalé vers le bas)
-    doc.setFillColor(this.COLORS.light);
-    doc.rect(15, 105, 180, 8, 'F');
-    doc.setTextColor(this.COLORS.primary);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FACTURER À', 20, 111);
-    
-    // Informations client (décalées vers le bas)
-    doc.setTextColor(this.COLORS.dark);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text(data.clientName, 20, 122);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(data.clientAddress, 20, 129);
-    doc.text(`${data.clientPostalCode} ${data.clientCity}`, 20, 136);
-    doc.text(`Tél: ${data.clientPhone}`, 20, 143);
-    doc.text(`Email: ${data.clientEmail}`, 20, 150);
+    const splitText = doc.splitTextToSize(loiHammonText, 80); // Largeur réduite pour la colonne droite
+    doc.text(splitText, 110, 117);
   }
 
   private static addProductsTable(doc: jsPDF, data: InvoiceData): void {
@@ -227,7 +228,7 @@ export class AdvancedPDFService {
     ]);
 
     autoTable(doc, {
-      startY: 160, // Décalé vers le bas pour faire place à la mention Loi Hammon
+      startY: 150, // Position normale du tableau
       head: [['DÉSIGNATION', 'QTÉ', 'PU HT', 'PU TTC', 'REMISE', 'TOTAL TTC']],
       body: tableData,
       theme: 'grid',
