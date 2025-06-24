@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube } from 'lucide-react';
+import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube, FileText, Paperclip } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { EmailService } from '../services/emailService';
@@ -32,6 +32,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [emailMethod, setEmailMethod] = useState<'emailjs' | 'client'>('emailjs');
   const [showConfiguration, setShowConfiguration] = useState(false);
+  const [pdfSize, setPdfSize] = useState<number>(0);
 
   const totalAmount = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -82,20 +83,32 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
     try {
       // Générer le PDF avec jsPDF
+      console.log('📄 Génération du PDF...');
       const pdfDoc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
-      // Envoyer l'email avec EmailJS
+      // Calculer la taille du PDF
+      const pdfBlob = pdfDoc.output('blob');
+      const sizeKB = Math.round(pdfBlob.size / 1024);
+      setPdfSize(sizeKB);
+      
+      console.log('📎 PDF généré:', sizeKB, 'KB');
+      
+      // Optimiser le PDF si nécessaire
+      const optimizedPDF = await EmailService.optimizePDFForEmail(pdfBlob);
+      
+      // Envoyer l'email avec EmailJS et le PDF en pièce jointe
+      console.log('📧 Envoi de l\'email avec PDF en pièce jointe...');
       const success = await EmailService.sendInvoiceByEmail(pdfDoc, invoice, emailData.message);
 
       if (success) {
-        onSuccess('Facture envoyée avec succès par email !');
+        onSuccess(`✅ Facture envoyée avec succès par email avec PDF en pièce jointe (${sizeKB} KB) !`);
         onClose();
       } else {
-        onError('Erreur lors de l\'envoi de l\'email. Veuillez vérifier votre configuration EmailJS.');
+        onError('❌ Erreur lors de l\'envoi de l\'email. Veuillez vérifier votre configuration EmailJS.');
       }
     } catch (error) {
-      console.error('Erreur lors de l\'envoi:', error);
-      onError('Erreur lors de la génération ou de l\'envoi de la facture.');
+      console.error('❌ Erreur lors de l\'envoi:', error);
+      onError('Erreur lors de la génération ou de l\'envoi de la facture avec PDF.');
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +128,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
       // Ouvrir le client email
       EmailService.openEmailClient(invoice, emailData.message);
       
-      onSuccess('PDF téléchargé et client email ouvert. Veuillez attacher le PDF manuellement.');
+      onSuccess('📎 PDF téléchargé et client email ouvert. Veuillez attacher le PDF manuellement.');
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
@@ -146,9 +159,9 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     try {
       const success = await EmailService.testConfiguration();
       if (success) {
-        onSuccess('Configuration EmailJS testée avec succès !');
+        onSuccess('✅ Configuration EmailJS testée avec succès !');
       } else {
-        onError('Erreur lors du test de configuration EmailJS');
+        onError('❌ Erreur lors du test de configuration EmailJS');
       }
     } catch (error) {
       onError('Erreur lors du test de configuration');
@@ -182,6 +195,16 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <span className="font-medium">Montant:</span> {formatCurrency(totalAmount)}
             </div>
           </div>
+          
+          {/* Indicateur de pièce jointe PDF */}
+          <div className="mt-3 flex items-center space-x-2 p-2 bg-green-100 border border-green-200 rounded">
+            <Paperclip className="w-4 h-4 text-green-600" />
+            <FileText className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">
+              PDF sera automatiquement attaché en pièce jointe
+              {pdfSize > 0 && ` (${pdfSize} KB)`}
+            </span>
+          </div>
         </div>
 
         {/* Configuration EmailJS */}
@@ -209,6 +232,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 <li>• Service ID: service_ocsxnme ✅</li>
                 <li>• Template ID: template_invoice (à configurer)</li>
                 <li>• Public Key: (à configurer)</li>
+                <li>• 📎 Attachement PDF: Automatique</li>
               </ul>
               <div className="mt-3 flex items-center space-x-2">
                 <button
@@ -246,8 +270,10 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 onChange={(e) => setEmailMethod(e.target.value as 'emailjs')}
                 className="form-radio h-4 w-4 text-blue-600"
               />
-              <span className="ml-2 text-sm text-gray-700">
-                Envoi automatique avec EmailJS (service_ocsxnme)
+              <span className="ml-2 text-sm text-gray-700 flex items-center space-x-1">
+                <span>Envoi automatique avec EmailJS (service_ocsxnme)</span>
+                <Paperclip className="w-3 h-3 text-green-600" />
+                <span className="text-green-600 font-medium">PDF attaché</span>
               </span>
             </label>
             <label className="flex items-center">
@@ -357,14 +383,15 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <>
                 <Loader className="w-4 h-4 animate-spin" />
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoi en cours...' : 'Préparation...'}
+                  {emailMethod === 'emailjs' ? 'Envoi avec PDF...' : 'Préparation...'}
                 </span>
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
+                {emailMethod === 'emailjs' && <Paperclip className="w-3 h-3" />}
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoyer avec EmailJS' : 'Ouvrir client email'}
+                  {emailMethod === 'emailjs' ? 'Envoyer avec PDF' : 'Ouvrir client email'}
                 </span>
               </>
             )}
@@ -373,15 +400,17 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
         {/* Instructions pour finaliser la configuration */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-          <h5 className="font-semibold text-blue-900 mb-2">Pour finaliser la configuration EmailJS :</h5>
-          <ol className="list-decimal list-inside text-blue-700 space-y-1">
-            <li>Connectez-vous à votre <a href="https://dashboard.emailjs.com/" target="_blank" rel="noopener noreferrer" className="underline">dashboard EmailJS</a></li>
-            <li>Créez un template d'email avec les variables : to_email, to_name, invoice_number, message, invoice_pdf</li>
-            <li>Récupérez votre Template ID et Public Key</li>
-            <li>Remplacez les valeurs dans le fichier <code>emailService.ts</code></li>
-          </ol>
+          <h5 className="font-semibold text-blue-900 mb-2">📧 Template EmailJS pour PDF en pièce jointe :</h5>
+          <div className="bg-blue-100 p-3 rounded border font-mono text-xs overflow-x-auto">
+            <div className="mb-2"><strong>Variables disponibles :</strong></div>
+            <div>• <code>{'{{invoice_pdf}}'}</code> - Données PDF base64</div>
+            <div>• <code>{'{{pdf_filename}}'}</code> - Nom du fichier PDF</div>
+            <div>• <code>{'{{pdf_size}}'}</code> - Taille du PDF en KB</div>
+            <div>• <code>{'{{to_email}}'}</code>, <code>{'{{to_name}}'}</code>, <code>{'{{message}}'}</code></div>
+            <div>• <code>{'{{invoice_number}}'}</code>, <code>{'{{total_amount}}'}</code></div>
+          </div>
           <p className="mt-2 text-blue-600 font-medium">
-            ✅ Votre Service ID <code>service_ocsxnme</code> est déjà configuré !
+            ✅ Service ID <code>service_ocsxnme</code> configuré | 📎 PDF automatiquement attaché
           </p>
         </div>
       </div>
