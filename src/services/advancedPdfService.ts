@@ -125,8 +125,10 @@ export class AdvancedPDFService {
 
   private static async addLogo(doc: jsPDF): Promise<void> {
     try {
+      console.log('🎨 Chargement du logo MYCONFORT...');
+      
       // Charger le vrai logo MYCONFORT SVG
-      const logoPath = '/public/logo.svg';
+      const logoPath = '/logo.svg'; // ✅ Chemin corrigé vers le logo copié
       
       // Créer une image pour charger le logo
       const img = new Image();
@@ -136,9 +138,9 @@ export class AdvancedPDFService {
       const logoLoaded = new Promise<boolean>((resolve) => {
         img.onload = () => {
           try {
-            // Ajouter le logo SVG au PDF
+            // Ajouter le logo SVG au PDF avec les bonnes dimensions
             doc.addImage(img, 'SVG', 15, 15, 50, 20);
-            console.log('✅ Logo MYCONFORT ajouté au PDF');
+            console.log('✅ Logo MYCONFORT SVG ajouté au PDF avec succès !');
             resolve(true);
           } catch (error) {
             console.warn('⚠️ Erreur lors de l\'ajout du logo SVG:', error);
@@ -146,29 +148,32 @@ export class AdvancedPDFService {
           }
         };
         
-        img.onerror = () => {
-          console.warn('⚠️ Impossible de charger le logo SVG');
+        img.onerror = (error) => {
+          console.warn('⚠️ Impossible de charger le logo SVG depuis:', logoPath);
+          console.warn('🔍 Erreur de chargement:', error);
           resolve(false);
         };
         
-        // Timeout de 2 secondes pour éviter les blocages
+        // Timeout de 3 secondes pour éviter les blocages
         setTimeout(() => {
-          console.warn('⏱️ Timeout lors du chargement du logo');
+          console.warn('⏱️ Timeout lors du chargement du logo (3s)');
           resolve(false);
-        }, 2000);
+        }, 3000);
       });
       
       // Tenter de charger le logo
+      console.log('📂 Tentative de chargement depuis:', logoPath);
       img.src = logoPath;
       const logoSuccess = await logoLoaded;
       
       // Si le logo n'a pas pu être chargé, utiliser un fallback
       if (!logoSuccess) {
+        console.log('🔄 Utilisation du logo de fallback MYCONFORT');
         this.addFallbackLogo(doc);
       }
       
     } catch (error) {
-      console.warn('❌ Erreur lors du chargement du logo:', error);
+      console.warn('❌ Erreur générale lors du chargement du logo:', error);
       this.addFallbackLogo(doc);
     }
   }
@@ -189,7 +194,7 @@ export class AdvancedPDFService {
       doc.setFontSize(10);
       doc.text('MYCONFORT', 30, 28);
       
-      console.log('🔄 Logo de fallback MYCONFORT utilisé');
+      console.log('🔄 Logo de fallback MYCONFORT créé avec succès');
     } catch (error) {
       console.error('❌ Erreur lors de la création du logo de fallback:', error);
     }
