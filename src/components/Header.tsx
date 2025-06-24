@@ -22,9 +22,6 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <div className="text-[#F2EFE2] text-2xl">
-            🌸
-          </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#F2EFE2]">
               MYCONFORT

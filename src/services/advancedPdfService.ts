@@ -50,10 +50,7 @@ export class AdvancedPDFService {
     const invoiceData = this.convertInvoiceData(invoice);
     
     // PAGE 1 - FACTURE
-    // Ajouter le logo MYCONFORT (fleur blanche) - SIMPLIFIÉ
-    this.addSimpleLogo(doc);
-    
-    // Ajouter l'en-tête de l'entreprise
+    // Ajouter l'en-tête de l'entreprise (sans logo)
     this.addCompanyHeader(doc);
     
     // Ajouter les informations de la facture
@@ -128,90 +125,26 @@ export class AdvancedPDFService {
     };
   }
 
-  // NOUVELLE MÉTHODE SIMPLIFIÉE POUR LE LOGO
-  private static addSimpleLogo(doc: jsPDF): void {
-    try {
-      console.log('🌸 Ajout du logo fleur blanche MYCONFORT (version simplifiée)');
-      
-      // Dessiner directement la fleur blanche avec du SVG inline
-      // Utiliser les coordonnées du SVG fourni pour dessiner la fleur
-      doc.setFillColor(this.COLORS.light); // Couleur beige/blanc #F2EFE2
-      
-      // Position du logo
-      const logoX = 15;
-      const logoY = 15;
-      const logoSize = 20;
-      
-      // Dessiner les pétales de la fleur en utilisant des formes géométriques
-      // Pétale central (tige)
-      doc.ellipse(logoX + 10, logoY + 16, 1, 8, 'F');
-      
-      // Pétales latéraux (feuilles stylisées)
-      doc.ellipse(logoX + 6, logoY + 12, 3, 6, 'F');
-      doc.ellipse(logoX + 14, logoY + 12, 3, 6, 'F');
-      
-      // Pétales supérieurs
-      doc.ellipse(logoX + 8, logoY + 8, 2, 4, 'F');
-      doc.ellipse(logoX + 12, logoY + 8, 2, 4, 'F');
-      
-      // Centre de la fleur
-      doc.circle(logoX + 10, logoY + 10, 2, 'F');
-      
-      // Ajouter le texte MYCONFORT à côté
-      doc.setTextColor(this.COLORS.primary);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('MYCONFORT', logoX + 25, logoY + 12);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(this.COLORS.secondary);
-      doc.text('Votre spécialiste literie', logoX + 25, logoY + 18);
-      
-      console.log('✅ Logo fleur blanche MYCONFORT créé avec succès (version géométrique)');
-      
-    } catch (error) {
-      console.warn('⚠️ Erreur lors de la création du logo fleur géométrique:', error);
-      this.addTextOnlyLogo(doc);
-    }
-  }
-
-  // Logo de fallback avec texte uniquement
-  private static addTextOnlyLogo(doc: jsPDF): void {
-    try {
-      console.log('🔄 Création du logo texte MYCONFORT');
-      
-      // Logo simple avec texte et emoji fleur
-      doc.setTextColor(this.COLORS.primary);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.text('🌸 MYCONFORT', 15, 25);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(this.COLORS.secondary);
-      doc.text('Votre spécialiste en matelas et literie de qualité', 15, 32);
-      
-      console.log('✅ Logo texte MYCONFORT créé avec succès');
-    } catch (error) {
-      console.error('❌ Erreur lors de la création du logo texte:', error);
-    }
-  }
-
   private static addCompanyHeader(doc: jsPDF): void {
-    doc.setTextColor(this.COLORS.dark);
-    doc.setFontSize(12);
+    // En-tête simple sans logo
+    doc.setTextColor(this.COLORS.primary);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 15, 45);
+    doc.text('MYCONFORT', 15, 25);
     
-    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(this.COLORS.dark);
     doc.setFontSize(10);
-    doc.text('88 Avenue des Ternes', 15, 52);
-    doc.text('75017 Paris, France', 15, 58);
-    doc.text('SIRET: 824 313 530 00027', 15, 64);
-    doc.text('Tél: 04 68 50 41 45', 15, 70);
-    doc.text('Email: myconfort@gmail.com', 15, 76);
-    doc.text('Site web: https://www.htconfort.com', 15, 82);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Votre spécialiste en matelas et literie de qualité', 15, 32);
+    
+    // Informations de l'entreprise
+    doc.setFontSize(10);
+    doc.text('88 Avenue des Ternes', 15, 45);
+    doc.text('75017 Paris, France', 15, 52);
+    doc.text('SIRET: 824 313 530 00027', 15, 58);
+    doc.text('Tél: 04 68 50 41 45', 15, 64);
+    doc.text('Email: myconfort@gmail.com', 15, 70);
+    doc.text('Site web: https://www.htconfort.com', 15, 76);
   }
 
   private static addInvoiceInfo(doc: jsPDF, data: InvoiceData): void {
@@ -409,11 +342,11 @@ export class AdvancedPDFService {
     doc.setDrawColor(this.COLORS.primary);
     doc.line(15, pageHeight - 25, 195, pageHeight - 25);
     
-    // Texte du pied de page avec fleur
+    // Texte du pied de page
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('🌸 MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
+    doc.text('MYCONFORT - Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
@@ -430,11 +363,10 @@ export class AdvancedPDFService {
     doc.setFillColor(this.COLORS.primary);
     doc.rect(15, 15, 180, 15, 'F');
     
-    // Ajouter la fleur dans l'en-tête CGV
     doc.setTextColor(this.COLORS.light);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('🌸 CONDITIONS GÉNÉRALES DE VENTE', 105, 26, { align: 'center' });
+    doc.text('CONDITIONS GÉNÉRALES DE VENTE', 105, 26, { align: 'center' });
     
     let yPos = 45;
     const lineHeight = 5;
@@ -550,11 +482,11 @@ export class AdvancedPDFService {
     doc.setDrawColor(this.COLORS.primary);
     doc.line(15, pageHeight - 25, 195, pageHeight - 25);
     
-    // Informations entreprise avec fleur
+    // Informations entreprise
     doc.setTextColor(this.COLORS.primary);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('🌸 MYCONFORT', 105, pageHeight - 18, { align: 'center' });
+    doc.text('MYCONFORT', 105, pageHeight - 18, { align: 'center' });
     
     doc.setTextColor(this.COLORS.secondary);
     doc.setFontSize(8);
