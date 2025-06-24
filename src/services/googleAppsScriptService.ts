@@ -10,12 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 PLACEHOLDER SCRIPT ID - NEEDS TO BE REPLACED WITH ACTUAL DEPLOYED SCRIPT
-  // To fix this error, you need to:
-  // 1. Deploy your Google Apps Script as a web app
-  // 2. Set permissions to "Anyone, even anonymous"
-  // 3. Replace this SCRIPT_ID with your actual deployment ID
-  private static readonly SCRIPT_ID = 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID';
+  // 🔑 YOUR ACTUAL GOOGLE APPS SCRIPT ID (extracted from your URL)
+  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -23,12 +19,6 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      // Check if script is properly configured
-      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
-        console.error('❌ Google Apps Script non configuré. Veuillez remplacer SCRIPT_ID par votre ID de déploiement.');
-        throw new Error('Google Apps Script non configuré. Veuillez configurer le SCRIPT_ID dans googleAppsScriptService.ts');
-      }
-
       console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION FINALE');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
@@ -174,12 +164,6 @@ export class GoogleAppsScriptService {
     format: string = 'png'
   ): Promise<boolean> {
     try {
-      // Check if script is properly configured
-      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
-        console.error('❌ Google Apps Script non configuré.');
-        return false;
-      }
-
       console.log('📸 PARTAGE APERÇU VIA GOOGLE APPS SCRIPT');
       
       // Calculer les montants
@@ -288,18 +272,10 @@ export class GoogleAppsScriptService {
   }
 
   /**
-   * 🧪 Test de la connexion avec Google Apps Script (CORRIGÉ)
+   * 🧪 Test de la connexion avec Google Apps Script
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      // Check if script is properly configured
-      if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
-        return {
-          success: false,
-          message: '⚠️ Google Apps Script non configuré. Veuillez remplacer SCRIPT_ID par votre ID de déploiement dans googleAppsScriptService.ts'
-        };
-      }
-
       console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
       console.log('🔗 URL de test:', GoogleAppsScriptService.SCRIPT_URL);
       
@@ -455,12 +431,10 @@ export class GoogleAppsScriptService {
    * Obtient l'URL du script pour information
    */
   static getScriptInfo(): { scriptId: string; scriptUrl: string; status: string } {
-    const isConfigured = GoogleAppsScriptService.SCRIPT_ID !== 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID';
-    
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: isConfigured ? '✅ Configuré' : '⚠️ Non configuré - Remplacez SCRIPT_ID'
+      status: '✅ Configuré avec votre script'
     };
   }
 
@@ -469,11 +443,6 @@ export class GoogleAppsScriptService {
    */
   static validateEmailData(invoice: Invoice): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-
-    // Check if script is configured
-    if (GoogleAppsScriptService.SCRIPT_ID === 'REPLACE_WITH_YOUR_ACTUAL_SCRIPT_ID') {
-      errors.push('Google Apps Script non configuré - Remplacez SCRIPT_ID');
-    }
 
     if (!invoice.client.email) {
       errors.push('Email du client requis');
