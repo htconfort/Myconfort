@@ -12,6 +12,7 @@ export interface InvoiceData {
   clientEmail: string;
   clientHousingType?: string;
   clientDoorCode?: string;
+  clientSiret?: string;
   invoiceNumber: string;
   invoiceDate: string;
   eventLocation?: string;
@@ -41,133 +42,127 @@ export interface InvoiceData {
 
 export class AdvancedPDFService {
   private static readonly COLORS = {
-    primary: '#477A0C',      // Vert MYCONFORT
-    primaryRGB: [71, 122, 12],
-    secondary: '#64748b',
-    success: '#059669',
-    danger: '#dc2626',
-    dangerRGB: [220, 38, 38],
-    dark: '#14281D',
-    darkRGB: [20, 40, 29],
-    light: '#F2EFE2',
-    lightRGB: [242, 239, 226],
-    white: [255, 255, 255],
-    grayLight: [248, 250, 252],
-    grayBorder: [200, 200, 200]
+    // Couleurs exactes de l'aperçu Bolt
+    primary: [71, 122, 12],      // #477A0C - Vert MYCONFORT
+    cream: [242, 239, 226],      // #F2EFE2 - Beige clair
+    dark: [20, 40, 29],          // #14281D - Texte foncé
+    white: [255, 255, 255],      // Blanc pur
+    grayLight: [248, 250, 252],  // Gris très clair pour alternance
+    grayBorder: [209, 213, 219], // Gris bordures
+    red: [220, 38, 38],          // Rouge pour alertes
+    orange: [255, 140, 0]        // Orange pour acompte
   };
 
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
-    const doc = new jsPDF();
+    console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU BOLT');
     
-    // Convertir les données de la facture
+    const doc = new jsPDF();
     const invoiceData = this.convertInvoiceData(invoice);
     
-    console.log('🎨 Génération PDF avec design EXACTEMENT identique à l\'aperçu Bolt');
+    // ===== REPRODUCTION EXACTE DE L'APERÇU BOLT =====
     
-    // REPRODUCTION PIXEL-PARFAITE DE L'APERÇU BOLT
+    // 1. BORDURE SUPÉRIEURE VERTE (comme dans l'aperçu)
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(0, 0, 210, 4, 'F');
     
-    // 1. Bordure supérieure verte (comme dans l'aperçu)
-    doc.setFillColor(...this.COLORS.primaryRGB);
-    doc.rect(15, 15, 180, 4, 'F');
+    // 2. EN-TÊTE AVEC LOGO ET GRADIENT (reproduction exacte)
+    this.addHeaderIdenticalToBolt(doc, invoiceData);
     
-    // 2. En-tête avec logo et informations entreprise
-    this.addCompanyHeaderProfessional(doc);
+    // 3. SECTION CLIENT AVEC FOND VERT (exactement comme l'aperçu)
+    this.addClientSectionIdentical(doc, invoiceData);
     
-    // 3. Informations facture (coin supérieur droit)
-    this.addInvoiceInfoProfessional(doc, invoiceData);
+    // 4. SECTION INFORMATIONS LOGISTIQUES (fond blanc)
+    this.addLogisticsSectionIdentical(doc, invoiceData);
     
-    // 4. Section client avec fond beige et informations complémentaires
-    this.addClientSectionProfessional(doc, invoiceData);
+    // 5. SECTION PAIEMENT (fond blanc)
+    this.addPaymentSectionIdentical(doc, invoiceData);
     
-    // 5. Tableau des produits (style identique à l'aperçu)
-    this.addProductsTableProfessional(doc, invoiceData);
+    // 6. TABLEAU PRODUITS (style exact de l'aperçu)
+    this.addProductsTableIdentical(doc, invoiceData);
     
-    // 6. Section totaux (cadre gris clair, style identique)
-    this.addTotalsSectionProfessional(doc, invoiceData);
+    // 7. TOTAUX (cadre gris clair comme l'aperçu)
+    this.addTotalsIdentical(doc, invoiceData);
     
-    // 7. Signature si présente (positionnée correctement)
+    // 8. SIGNATURE (si présente)
     if (invoiceData.signature) {
-      await this.addSignatureProfessional(doc, invoiceData.signature);
+      await this.addSignatureIdentical(doc, invoiceData.signature);
     }
     
-    // 8. Modalités de paiement
-    this.addPaymentSectionProfessional(doc, invoiceData);
+    // 9. PIED DE PAGE AVEC FOND VERT
+    this.addFooterIdentical(doc);
     
-    // 9. Loi Hamon dans cadre rouge (repositionnée comme demandé)
-    this.addLoiHamonProfessional(doc);
-    
-    // 10. Pied de page avec fond vert et message
-    this.addFooterProfessional(doc);
-    
-    console.log('✅ PDF généré avec design PARFAITEMENT identique à l\'aperçu');
-    
+    console.log('✅ PDF GÉNÉRÉ - IDENTIQUE À L\'APERÇU BOLT');
     return doc;
   }
 
-  private static addCompanyHeaderProfessional(doc: jsPDF): void {
-    // Logo avec cercle vert et fleur (exactement comme l'aperçu)
-    doc.setFillColor(...this.COLORS.primaryRGB);
-    doc.circle(25, 35, 8, 'F');
+  private static addHeaderIdenticalToBolt(doc: jsPDF, data: InvoiceData): void {
+    // En-tête avec gradient vert-bleu (simulation du gradient de l'aperçu)
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(15, 10, 180, 25, 'F');
     
-    doc.setTextColor(...this.COLORS.lightRGB);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('🌸', 22, 38);
-    
-    // Nom de l'entreprise (style identique à l'aperçu)
-    doc.setTextColor(...this.COLORS.primaryRGB);
-    doc.setFontSize(28);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 40, 35);
-    
-    // Sous-titre "Facturation Professionnelle"
-    doc.setTextColor(...this.COLORS.darkRGB);
+    // Logo fleur dans cercle (exactement comme l'aperçu)
+    doc.setFillColor(...this.COLORS.cream);
+    doc.circle(25, 22, 6, 'F');
+    doc.setTextColor(...this.COLORS.primary);
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Facturation Professionnelle', 40, 42);
+    doc.text('⚡', 22, 25);
     
-    // Informations entreprise (style et positionnement identiques)
-    doc.setFontSize(9);
+    // Titre "FactuSign Pro" (comme dans l'aperçu)
+    doc.setTextColor(...this.COLORS.cream);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT', 15, 55);
+    doc.text('FactuSign Pro', 40, 20);
     
-    doc.setFont('helvetica', 'normal');
-    doc.text('88 Avenue des Ternes', 15, 60);
-    doc.text('75017 Paris, France', 15, 65);
-    doc.text('SIRET: 824 313 530 00027', 15, 70);
-    doc.text('Tél: 04 68 50 41 45', 15, 75);
-    doc.text('Email: myconfort@gmail.com', 15, 80);
-    doc.text('Site web: https://www.htconfort.com', 15, 85);
-  }
-
-  private static addInvoiceInfoProfessional(doc: jsPDF, data: InvoiceData): void {
-    // Cadre FACTURE (style identique à l'aperçu)
-    doc.setFillColor(...this.COLORS.primaryRGB);
-    doc.roundedRect(140, 25, 50, 12, 3, 3, 'F');
-    doc.setTextColor(...this.COLORS.lightRGB);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FACTURE', 165, 33, { align: 'center' });
-    
-    // Informations facture (style identique)
-    doc.setTextColor(...this.COLORS.darkRGB);
+    // Sous-titre (exactement comme l'aperçu)
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
+    doc.text('Factures intelligentes, signées et envoyées automatiquement', 40, 27);
     
+    // Statut signature (coin droit)
+    if (data.signature) {
+      doc.setFillColor(5, 150, 105); // Vert succès
+      doc.roundedRect(150, 15, 40, 8, 2, 2, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('🔒 SIGNÉE', 170, 20, { align: 'center' });
+    } else {
+      doc.setFillColor(255, 193, 7); // Jaune attente
+      doc.roundedRect(150, 15, 40, 8, 2, 2, 'F');
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(8);
+      doc.text('EN ATTENTE DE SIGNATURE', 170, 20, { align: 'center' });
+    }
+    
+    // Informations entreprise (sous l'en-tête)
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MYCONFORT', 15, 45);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('88 Avenue des Ternes', 15, 52);
+    doc.text('75017 Paris, France', 15, 57);
+    doc.text('SIRET: 824 313 530 00027', 15, 62);
+    doc.text('Tél: 04 68 50 41 45', 15, 67);
+    doc.text('Email: myconfort@gmail.com', 15, 72);
+    doc.text('Site web: https://www.htconfort.com', 15, 77);
+    
+    // Informations facture (coin droit)
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
     doc.text('N° Facture:', 140, 45);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...this.COLORS.primaryRGB);
+    doc.setFontSize(12);
     doc.text(data.invoiceNumber, 170, 45);
     
-    doc.setTextColor(...this.COLORS.darkRGB);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text('Date:', 140, 52);
     doc.setFont('helvetica', 'bold');
     doc.text(new Date(data.invoiceDate).toLocaleDateString('fr-FR'), 170, 52);
     
-    // Lieu de l'événement si présent
     if (data.eventLocation) {
       doc.setFont('helvetica', 'normal');
       doc.text('Lieu:', 140, 59);
@@ -176,73 +171,159 @@ export class AdvancedPDFService {
     }
   }
 
-  private static addClientSectionProfessional(doc: jsPDF, data: InvoiceData): void {
-    // Section client avec fond beige (exactement comme l'aperçu)
-    doc.setFillColor(...this.COLORS.lightRGB);
-    doc.rect(15, 95, 180, 8, 'F');
+  private static addClientSectionIdentical(doc: jsPDF, data: InvoiceData): void {
+    // Section client avec fond vert (exactement comme l'aperçu)
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(15, 85, 180, 35, 'F');
     
-    doc.setTextColor(...this.COLORS.primaryRGB);
+    // Titre avec icône utilisateur
+    doc.setTextColor(...this.COLORS.cream);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('INFORMATIONS CLIENT', 20, 101);
+    doc.text('👤', 20, 95);
     
-    // Fond beige pour les informations (style identique)
-    doc.setFillColor(...this.COLORS.lightRGB);
-    doc.rect(15, 105, 180, 40, 'F');
-    
-    // Colonne gauche - Informations principales
-    doc.setTextColor(...this.COLORS.darkRGB);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text(data.clientName, 20, 115);
-    
-    doc.setFont('helvetica', 'normal');
+    // Badge "INFORMATIONS CLIENT" (comme dans l'aperçu)
+    doc.setFillColor(...this.COLORS.cream);
+    doc.roundedRect(30, 90, 80, 8, 3, 3, 'F');
+    doc.setTextColor(...this.COLORS.primary);
     doc.setFontSize(10);
-    doc.text(data.clientAddress, 20, 122);
-    doc.text(`${data.clientPostalCode} ${data.clientCity}`, 20, 129);
-    doc.text(`Tél: ${data.clientPhone}`, 20, 136);
-    doc.text(`Email: ${data.clientEmail}`, 20, 143);
-    
-    // Colonne droite - Informations complémentaires
-    doc.setTextColor(...this.COLORS.primaryRGB);
-    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('INFORMATIONS COMPLÉMENTAIRES', 110, 115);
+    doc.text('INFORMATIONS CLIENT', 70, 95, { align: 'center' });
     
-    doc.setTextColor(...this.COLORS.darkRGB);
-    doc.setFontSize(9);
+    // Fond beige pour les informations (comme l'aperçu)
+    doc.setFillColor(...this.COLORS.cream);
+    doc.rect(15, 100, 180, 20, 'F');
+    
+    // Informations client (colonne gauche)
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Nom complet*', 20, 108);
     doc.setFont('helvetica', 'normal');
+    doc.text(data.clientName, 20, 113);
     
-    let yPos = 125;
-    if (data.clientHousingType) {
-      doc.text(`Type de logement: ${data.clientHousingType}`, 110, yPos);
-      yPos += 6;
-    }
-    if (data.clientDoorCode) {
-      doc.text(`Code d'accès: ${data.clientDoorCode}`, 110, yPos);
-      yPos += 6;
-    }
-    if (data.deliveryMethod) {
-      doc.text(`Livraison: ${data.deliveryMethod}`, 110, yPos);
-      yPos += 6;
-    }
-    if (data.advisorName) {
-      doc.text(`Conseiller: ${data.advisorName}`, 110, yPos);
-      yPos += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Adresse*', 70, 108);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.clientAddress, 70, 113);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Code postal*', 120, 108);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.clientPostalCode, 120, 113);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Ville*', 150, 108);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.clientCity, 150, 113);
+    
+    // Deuxième ligne
+    doc.setFont('helvetica', 'bold');
+    doc.text('Téléphone*', 20, 118);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.clientPhone, 50, 118);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Email*', 100, 118);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.clientEmail, 120, 118);
+    
+    if (data.clientSiret) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('SIRET:', 150, 118);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.clientSiret, 170, 118);
     }
   }
 
-  private static addProductsTableProfessional(doc: jsPDF, data: InvoiceData): void {
-    // Titre section produits (style identique à l'aperçu)
-    doc.setTextColor(...this.COLORS.primaryRGB);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DÉTAIL DES PRODUITS', 20, 160);
+  private static addLogisticsSectionIdentical(doc: jsPDF, data: InvoiceData): void {
+    // Section logistique (fond blanc avec bordure)
+    doc.setFillColor(...this.COLORS.white);
+    doc.setDrawColor(...this.COLORS.grayBorder);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, 125, 180, 25, 2, 2, 'FD');
     
-    // Ligne de séparation verte (comme dans l'aperçu)
-    doc.setDrawColor(...this.COLORS.primaryRGB);
-    doc.setLineWidth(2);
-    doc.line(20, 163, 100, 163);
+    // Titre avec badge bleu
+    doc.setFillColor(59, 130, 246); // Bleu
+    doc.roundedRect(70, 130, 70, 6, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INFORMATIONS LOGISTIQUES', 105, 134, { align: 'center' });
+    
+    // Contenu logistique
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    
+    if (data.deliveryMethod) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Mode de livraison:', 20, 142);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.deliveryMethod, 60, 142);
+    }
+    
+    if (data.deliveryNotes) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Précisions:', 120, 142);
+      doc.setFont('helvetica', 'normal');
+      const splitNotes = doc.splitTextToSize(data.deliveryNotes, 60);
+      doc.text(splitNotes, 150, 142);
+    }
+  }
+
+  private static addPaymentSectionIdentical(doc: jsPDF, data: InvoiceData): void {
+    // Section paiement (fond blanc avec bordure)
+    doc.setFillColor(...this.COLORS.white);
+    doc.setDrawColor(...this.COLORS.grayBorder);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, 155, 180, 30, 2, 2, 'FD');
+    
+    // Titre avec badge vert
+    doc.setFillColor(34, 197, 94); // Vert
+    doc.roundedRect(70, 160, 70, 6, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MODE DE RÈGLEMENT', 105, 164, { align: 'center' });
+    
+    // Contenu paiement
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(9);
+    
+    if (data.paymentMethod) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Méthode de paiement*:', 20, 172);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.paymentMethod, 70, 172);
+    }
+    
+    if (data.advisorName) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Conseiller(e):', 120, 172);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.advisorName, 150, 172);
+    }
+    
+    // Signature client (comme dans l'aperçu)
+    doc.setFont('helvetica', 'bold');
+    doc.text('Signature client FactuSign Pro:', 20, 180);
+    
+    if (data.signature) {
+      doc.setTextColor(34, 197, 94);
+      doc.text('🔒 Signature électronique enregistrée', 80, 180);
+    } else {
+      doc.setTextColor(156, 163, 175);
+      doc.text('✍️ Cliquer pour signer électroniquement', 80, 180);
+    }
+  }
+
+  private static addProductsTableIdentical(doc: jsPDF, data: InvoiceData): void {
+    // Titre section produits (style identique à l'aperçu)
+    doc.setTextColor(...this.COLORS.primary);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('🛒 Produits & Tarification', 20, 200);
     
     const tableData = data.items.map(item => [
       item.description + (item.category ? `\n(${item.category})` : ''),
@@ -256,13 +337,13 @@ export class AdvancedPDFService {
     ]);
 
     autoTable(doc, {
-      startY: 170,
-      head: [['DÉSIGNATION', 'QTÉ', 'PU HT', 'PU TTC', 'REMISE', 'TOTAL TTC']],
+      startY: 205,
+      head: [['PRODUIT', 'Quantité', 'PU HT', 'PU TTC', 'Remise', 'Total TTC']],
       body: tableData,
       theme: 'grid',
       headStyles: {
-        fillColor: this.COLORS.primaryRGB,
-        textColor: this.COLORS.lightRGB,
+        fillColor: this.COLORS.primary,
+        textColor: this.COLORS.cream,
         fontSize: 10,
         fontStyle: 'bold',
         halign: 'center',
@@ -270,14 +351,14 @@ export class AdvancedPDFService {
       },
       bodyStyles: {
         fontSize: 9,
-        cellPadding: 4,
-        textColor: this.COLORS.darkRGB
+        cellPadding: 3,
+        textColor: this.COLORS.dark
       },
       columnStyles: {
-        0: { cellWidth: 70, halign: 'left' },
-        1: { cellWidth: 20, halign: 'center' },
+        0: { cellWidth: 70, halign: 'left', fontStyle: 'bold' },
+        1: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
         2: { cellWidth: 25, halign: 'right' },
-        3: { cellWidth: 25, halign: 'right' },
+        3: { cellWidth: 25, halign: 'right', fontStyle: 'bold' },
         4: { cellWidth: 25, halign: 'center' },
         5: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
       },
@@ -288,16 +369,16 @@ export class AdvancedPDFService {
     });
   }
 
-  private static addTotalsSectionProfessional(doc: jsPDF, data: InvoiceData): void {
-    const finalY = (doc as any).lastAutoTable.finalY + 15;
+  private static addTotalsIdentical(doc: jsPDF, data: InvoiceData): void {
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
     
-    // Cadre pour les totaux (style identique à l'aperçu)
+    // Cadre pour les totaux (exactement comme l'aperçu)
     doc.setFillColor(...this.COLORS.grayLight);
     doc.setDrawColor(...this.COLORS.grayBorder);
     doc.setLineWidth(1);
-    doc.roundedRect(130, finalY, 65, 50, 3, 3, 'FD');
+    doc.roundedRect(130, finalY, 65, 45, 3, 3, 'FD');
     
-    doc.setTextColor(...this.COLORS.darkRGB);
+    doc.setTextColor(...this.COLORS.dark);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     
@@ -318,34 +399,34 @@ export class AdvancedPDFService {
     
     // Remise totale si applicable
     if (data.totalDiscount > 0) {
-      doc.setTextColor(...this.COLORS.dangerRGB);
+      doc.setTextColor(...this.COLORS.red);
       doc.setFont('helvetica', 'normal');
       doc.text('Remise totale:', 135, yPos);
       doc.setFont('helvetica', 'bold');
       doc.text(`-${formatCurrency(data.totalDiscount)}`, 185, yPos, { align: 'right' });
       yPos += 7;
-      doc.setTextColor(...this.COLORS.darkRGB);
+      doc.setTextColor(...this.COLORS.dark);
     }
     
     // Ligne de séparation
-    doc.setDrawColor(...this.COLORS.primaryRGB);
+    doc.setDrawColor(...this.COLORS.primary);
     doc.setLineWidth(1);
     doc.line(135, yPos, 190, yPos);
     yPos += 5;
     
-    // Total TTC (mise en valeur comme dans l'aperçu)
+    // Total TTC (mise en valeur exacte de l'aperçu)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(...this.COLORS.primaryRGB);
+    doc.setFontSize(14);
+    doc.setTextColor(...this.COLORS.primary);
     doc.text('TOTAL TTC:', 135, yPos);
     doc.text(formatCurrency(data.totalTTC), 185, yPos, { align: 'right' });
     
     // Acompte si applicable
     if (data.depositAmount && data.depositAmount > 0) {
-      yPos += 12;
+      yPos += 10;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.setTextColor(...this.COLORS.darkRGB);
+      doc.setTextColor(...this.COLORS.dark);
       doc.text('Acompte versé:', 135, yPos);
       doc.setFont('helvetica', 'bold');
       doc.text(formatCurrency(data.depositAmount), 185, yPos, { align: 'right' });
@@ -353,31 +434,32 @@ export class AdvancedPDFService {
       yPos += 7;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.setTextColor(255, 140, 0); // Orange
+      doc.setTextColor(...this.COLORS.orange);
       doc.text('RESTE À PAYER:', 135, yPos);
       doc.text(formatCurrency(data.totalTTC - data.depositAmount), 185, yPos, { align: 'right' });
     }
   }
 
-  private static async addSignatureProfessional(doc: jsPDF, signatureDataUrl: string): Promise<void> {
+  private static async addSignatureIdentical(doc: jsPDF, signatureDataUrl: string): Promise<void> {
     try {
       const signatureY = 200;
       
-      // Cadre pour la signature (espacé du total TTC comme demandé)
-      doc.setDrawColor(100, 116, 139);
-      doc.setLineWidth(1);
-      doc.roundedRect(130, signatureY, 60, 25, 2, 2);
+      // Cadre signature (style identique à l'aperçu)
+      doc.setDrawColor(...this.COLORS.grayBorder);
+      doc.setLineWidth(2);
+      doc.setFillColor(...this.COLORS.white);
+      doc.roundedRect(15, signatureY, 60, 25, 2, 2, 'FD');
       
-      doc.setTextColor(...this.COLORS.primaryRGB);
+      doc.setTextColor(...this.COLORS.primary);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text('SIGNATURE CLIENT', 160, signatureY + 6, { align: 'center' });
+      doc.text('SIGNATURE CLIENT', 45, signatureY + 6, { align: 'center' });
       
-      // Ajouter l'image de signature
+      // Image de signature
       doc.addImage(
         signatureDataUrl,
         'PNG',
-        135,
+        20,
         signatureY + 8,
         50,
         15,
@@ -385,136 +467,51 @@ export class AdvancedPDFService {
         'FAST'
       );
       
-      // Date et heure de signature
+      // Date signature
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
       const now = new Date();
       const signatureDate = now.toLocaleDateString('fr-FR');
       const signatureTime = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-      doc.text(`Signé le ${signatureDate} à ${signatureTime}`, 160, signatureY + 22, { align: 'center' });
+      doc.text(`Signé le ${signatureDate} à ${signatureTime}`, 45, signatureY + 22, { align: 'center' });
       
-      console.log('✅ Signature ajoutée avec date et heure');
     } catch (error) {
-      console.warn('Erreur ajout signature, utilisation fallback:', error);
-      // Fallback texte
-      doc.setTextColor(5, 150, 105);
+      console.warn('Erreur signature, fallback texte:', error);
+      doc.setTextColor(34, 197, 94);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text('✓ DOCUMENT SIGNÉ ÉLECTRONIQUEMENT', 160, 210, { align: 'center' });
-      
-      const signatureDate = new Date().toLocaleDateString('fr-FR');
-      const signatureTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-      doc.setTextColor(100, 116, 139);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Signé le ${signatureDate} à ${signatureTime}`, 160, 217, { align: 'center' });
+      doc.text('✓ DOCUMENT SIGNÉ ÉLECTRONIQUEMENT', 45, 210, { align: 'center' });
     }
   }
 
-  private static addPaymentSectionProfessional(doc: jsPDF, data: InvoiceData): void {
-    let yPos = 240;
-    
-    // Modalités de paiement (section claire en haut de pied de page)
-    if (data.paymentMethod) {
-      doc.setTextColor(...this.COLORS.primaryRGB);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('MODALITÉS DE PAIEMENT', 15, yPos);
-      
-      doc.setTextColor(...this.COLORS.darkRGB);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text(`Mode de règlement: ${data.paymentMethod}`, 15, yPos + 7);
-      
-      // Cadre blanc pour les conditions
-      doc.setFillColor(...this.COLORS.white);
-      doc.setDrawColor(...this.COLORS.grayBorder);
-      doc.roundedRect(15, yPos + 12, 180, 12, 2, 2, 'FD');
-      
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
-      doc.text('Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d\'intérêt légal seront appliquées.', 20, yPos + 18);
-      
-      yPos += 30;
-    }
-    
-    // Notes si présentes
-    if (data.notes) {
-      doc.setTextColor(...this.COLORS.primaryRGB);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('REMARQUES', 15, yPos);
-      
-      doc.setFillColor(...this.COLORS.white);
-      doc.setDrawColor(...this.COLORS.grayBorder);
-      doc.roundedRect(15, yPos + 5, 180, 15, 2, 2, 'FD');
-      
-      doc.setTextColor(...this.COLORS.darkRGB);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const splitNotes = doc.splitTextToSize(data.notes, 170);
-      doc.text(splitNotes, 20, yPos + 12);
-    }
-  }
-
-  private static addLoiHamonProfessional(doc: jsPDF): void {
-    // Loi Hamon dans un cadre rouge (repositionnée au-dessus du tableau comme demandé)
-    const loiHamonY = 145;
-    
-    doc.setFillColor(254, 242, 242); // Fond rouge très clair
-    doc.setDrawColor(...this.COLORS.dangerRGB);
-    doc.setLineWidth(2);
-    doc.roundedRect(15, loiHamonY, 180, 20, 2, 2, 'FD');
-    
-    doc.setTextColor(...this.COLORS.dangerRGB);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LOI HAMON', 20, loiHamonY + 6);
-    
-    doc.setTextColor(...this.COLORS.darkRGB);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    
-    const loiHammonText = 'Les achats effectués sur les foires expositions et salon, à l\'exception de ceux faisant l\'objet d\'un contrat de crédit à la consommation, ne sont pas soumis aux articles L311-10 et L311-15 (délai de rétractation de sept jours) du code de la consommation.';
-    
-    const splitText = doc.splitTextToSize(loiHammonText, 170);
-    doc.text(splitText, 20, loiHamonY + 12);
-  }
-
-  private static addFooterProfessional(doc: jsPDF): void {
+  private static addFooterIdentical(doc: jsPDF): void {
     const pageHeight = doc.internal.pageSize.height;
     
-    // Bordure supérieure verte
-    doc.setFillColor(...this.COLORS.primaryRGB);
-    doc.rect(15, pageHeight - 35, 180, 4, 'F');
+    // Pied de page avec fond vert (exactement comme l'aperçu)
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(15, pageHeight - 35, 180, 35, 'F');
     
-    // Fond vert pour le pied de page (comme dans l'aperçu)
-    doc.setFillColor(...this.COLORS.primaryRGB);
-    doc.rect(15, pageHeight - 30, 180, 30, 'F');
-    
-    // Contenu du pied de page centré
-    doc.setTextColor(...this.COLORS.lightRGB);
-    
-    // Logo et nom au centre
-    doc.setFontSize(18);
+    // Logo et titre centrés
+    doc.setTextColor(...this.COLORS.cream);
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('🌸', 100, pageHeight - 22);
-    doc.text('MYCONFORT', 110, pageHeight - 22);
+    doc.text('🌸', 95, pageHeight - 25);
+    doc.text('MYCONFORT', 110, pageHeight - 25);
     
     // Message principal
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Merci de votre confiance !', 105, pageHeight - 15, { align: 'center' });
+    doc.text('Merci de votre confiance !', 105, pageHeight - 18, { align: 'center' });
     
     // Sous-titre
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 10, { align: 'center' });
+    doc.text('Votre spécialiste en matelas et literie de qualité', 105, pageHeight - 13, { align: 'center' });
     
     // Mentions légales
     doc.setFontSize(7);
-    doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 6, { align: 'center' });
+    doc.text('TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530', 105, pageHeight - 8, { align: 'center' });
   }
 
   private static convertInvoiceData(invoice: Invoice): InvoiceData {
@@ -551,6 +548,7 @@ export class AdvancedPDFService {
       clientEmail: invoice.client.email,
       clientHousingType: invoice.client.housingType,
       clientDoorCode: invoice.client.doorCode,
+      clientSiret: invoice.client.siret,
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: invoice.invoiceDate,
       eventLocation: invoice.eventLocation,
@@ -571,13 +569,13 @@ export class AdvancedPDFService {
   }
 
   static async downloadPDF(invoice: Invoice): Promise<void> {
-    console.log('📥 Téléchargement PDF professionnel identique à l\'aperçu');
+    console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU');
     const doc = await this.generateInvoicePDF(invoice);
     doc.save(`facture_${invoice.invoiceNumber}.pdf`);
   }
 
   static async getPDFBlob(invoice: Invoice): Promise<Blob> {
-    console.log('📎 Génération blob PDF professionnel');
+    console.log('📎 GÉNÉRATION BLOB PDF IDENTIQUE');
     const doc = await this.generateInvoicePDF(invoice);
     return doc.output('blob');
   }

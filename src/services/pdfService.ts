@@ -3,25 +3,75 @@ import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
 export class PDFService {
-  // Méthode principale utilisant le service avancé qui reproduit l'aperçu
+  // Méthode principale - UTILISE MAINTENANT LE SERVICE IDENTIQUE À L'APERÇU
   static async generateInvoicePDF(invoice: Invoice, elementId?: string): Promise<Blob> {
     try {
-      // Utiliser le service PDF avancé qui reproduit exactement l'aperçu
-      console.log('🎨 Génération PDF avec design identique à l\'aperçu Bolt');
+      console.log('🎨 GÉNÉRATION PDF AVEC DESIGN IDENTIQUE À L\'APERÇU BOLT');
+      
+      // UTILISER EXCLUSIVEMENT LE SERVICE QUI REPRODUIT L'APERÇU
       return await AdvancedPDFService.getPDFBlob(invoice);
     } catch (error) {
-      console.error('Erreur avec le service avancé, fallback vers html2pdf:', error);
+      console.error('❌ Erreur avec le service identique, tentative fallback:', error);
       
-      // Fallback vers html2pdf si le service avancé échoue
+      // Fallback uniquement si le service principal échoue
       if (elementId) {
         return await this.generateHTMLToPDF(invoice, elementId);
       }
-      throw new Error('Impossible de générer le PDF');
+      throw new Error('Impossible de générer le PDF identique à l\'aperçu');
     }
   }
 
-  // Méthode de fallback utilisant html2pdf
+  // Méthode de téléchargement - UTILISE LE SERVICE IDENTIQUE
+  static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
+    try {
+      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU BOLT');
+      
+      // UTILISER EXCLUSIVEMENT LE SERVICE QUI REPRODUIT L'APERÇU
+      await AdvancedPDFService.downloadPDF(invoice);
+    } catch (error) {
+      console.error('❌ Erreur téléchargement identique, tentative fallback:', error);
+      
+      // Fallback uniquement si le service principal échoue
+      if (elementId) {
+        const element = document.getElementById(elementId);
+        
+        if (!element) {
+          throw new Error('Élément PDF non trouvé');
+        }
+
+        const options = {
+          margin: 0,
+          filename: `facture_${invoice.invoiceNumber}.pdf`,
+          image: { 
+            type: 'jpeg', 
+            quality: 0.98 
+          },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            compress: true
+          }
+        };
+
+        await html2pdf().from(element).set(options).save();
+      } else {
+        throw new Error('Impossible de télécharger le PDF identique');
+      }
+    }
+  }
+
+  // Méthode de fallback (html2pdf) - UTILISÉE SEULEMENT EN CAS D'ÉCHEC
   private static async generateHTMLToPDF(invoice: Invoice, elementId: string): Promise<Blob> {
+    console.warn('⚠️ Utilisation du fallback html2pdf - Le design pourrait différer');
+    
     const element = document.getElementById(elementId);
     
     if (!element) {
@@ -54,53 +104,8 @@ export class PDFService {
       const pdf = await html2pdf().from(element).set(options).outputPdf('blob');
       return pdf;
     } catch (error) {
-      console.error('Erreur lors de la génération PDF:', error);
-      throw new Error('Impossible de générer le PDF');
-    }
-  }
-
-  static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
-    try {
-      // Utiliser le service avancé qui reproduit exactement l'aperçu
-      console.log('📥 Téléchargement PDF avec design identique à l\'aperçu');
-      await AdvancedPDFService.downloadPDF(invoice);
-    } catch (error) {
-      console.error('Erreur avec le service avancé, fallback vers html2pdf:', error);
-      
-      // Fallback vers html2pdf
-      if (elementId) {
-        const element = document.getElementById(elementId);
-        
-        if (!element) {
-          throw new Error('Élément PDF non trouvé');
-        }
-
-        const options = {
-          margin: 0,
-          filename: `facture_${invoice.invoiceNumber}.pdf`,
-          image: { 
-            type: 'jpeg', 
-            quality: 0.98 
-          },
-          html2canvas: { 
-            scale: 2,
-            useCORS: true,
-            letterRendering: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff'
-          },
-          jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait',
-            compress: true
-          }
-        };
-
-        await html2pdf().from(element).set(options).save();
-      } else {
-        throw new Error('Impossible de télécharger le PDF');
-      }
+      console.error('Erreur lors de la génération PDF fallback:', error);
+      throw new Error('Impossible de générer le PDF avec le fallback');
     }
   }
 

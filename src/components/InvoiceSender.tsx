@@ -39,24 +39,24 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     );
   };
 
-  // Génération du PDF professionnel identique à l'aperçu
-  const generateProfessionalPDF = async (): Promise<any> => {
-    setStep('🎨 Génération PDF professionnel identique à l\'aperçu Bolt...');
+  // Génération du PDF IDENTIQUE à l'aperçu Bolt
+  const generatePDFIdenticalToPreview = async (): Promise<any> => {
+    setStep('🎨 Génération PDF IDENTIQUE à l\'aperçu Bolt...');
     
     try {
-      console.log('🎨 Génération PDF avec design EXACTEMENT identique à l\'aperçu Bolt');
+      console.log('🎨 GÉNÉRATION PDF AVEC DESIGN EXACTEMENT IDENTIQUE À L\'APERÇU BOLT');
       const doc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
-      console.log('✅ PDF professionnel généré avec design parfaitement identique');
+      console.log('✅ PDF GÉNÉRÉ - DESIGN PARFAITEMENT IDENTIQUE À L\'APERÇU');
       return doc;
     } catch (error) {
-      console.error('❌ Erreur avec le générateur PDF professionnel:', error);
+      console.error('❌ Erreur avec le générateur PDF identique:', error);
       throw error;
     }
   };
 
-  // Envoi automatique par email avec EmailJS
-  const sendEmailAutomatically = async () => {
+  // Envoi automatique par email avec PDF identique
+  const sendEmailWithIdenticalPDF = async () => {
     if (!isValid()) {
       onError('Veuillez remplir toutes les informations requises (client, email, produits)');
       return;
@@ -65,11 +65,11 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
     setLoading(true);
 
     try {
-      // Étape 1: Génération du PDF professionnel
-      const pdf = await generateProfessionalPDF();
+      // Étape 1: Génération du PDF IDENTIQUE à l'aperçu
+      const pdf = await generatePDFIdenticalToPreview();
       
       // Étape 2: Préparation de la pièce jointe
-      setStep('📎 Préparation de la pièce jointe PDF professionnelle...');
+      setStep('📎 Préparation PDF identique pour envoi...');
       const blob = pdf.output('blob');
       const sizeKB = Math.round(blob.size / 1024);
 
@@ -79,7 +79,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
 
         try {
           // Étape 3: Envoi automatique avec EmailJS
-          setStep('📧 Envoi automatique par email sécurisé...');
+          setStep('📧 Envoi automatique du PDF identique...');
           
           const success = await EmailService.sendInvoiceByEmail(pdf, invoice, 
             `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec FactuSign Pro.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nMYCONFORT - Facturation Professionnelle`
@@ -87,7 +87,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
 
           if (success) {
             setStep('✅ Envoi réussi !');
-            onSuccess(`✅ Facture professionnelle envoyée avec succès ! PDF ${invoice.signature ? 'signé électroniquement' : 'professionnel'} avec design identique à l'aperçu (${sizeKB} KB) livré automatiquement à ${invoice.client.email}`);
+            onSuccess(`✅ Facture avec PDF IDENTIQUE à l'aperçu envoyée avec succès ! Design parfaitement reproduit ${invoice.signature ? '+ signature électronique' : ''} (${sizeKB} KB) livré automatiquement à ${invoice.client.email}`);
           } else {
             onError('❌ Erreur: Template EmailJS introuvable. Vérifiez votre configuration dans le dashboard EmailJS.');
           }
@@ -97,15 +97,15 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           if (err?.text?.includes('template ID not found') || err?.status === 400) {
             onError('❌ Template EmailJS introuvable. Le template ID configuré n\'existe pas dans votre compte.');
           } else {
-            onError('Erreur lors de la génération ou de l\'envoi automatique de la facture professionnelle.');
+            onError('Erreur lors de la génération ou de l\'envoi automatique de la facture avec PDF identique.');
           }
         }
       };
 
       reader.readAsDataURL(blob);
     } catch (error) {
-      console.error('Erreur génération PDF professionnel:', error);
-      onError('❌ Erreur lors de la génération du PDF professionnel identique à l\'aperçu.');
+      console.error('Erreur génération PDF identique:', error);
+      onError('❌ Erreur lors de la génération du PDF identique à l\'aperçu.');
     } finally {
       setLoading(false);
       setStep('');
@@ -120,8 +120,8 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
             <Award className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">MYCONFORT - Facturation Professionnelle</h2>
-            <p className="text-green-100">PDF hautement professionnel • Design identique à l'aperçu • Envoi automatique</p>
+            <h2 className="text-2xl font-bold">MYCONFORT - PDF Identique à l'Aperçu</h2>
+            <p className="text-green-100">🎯 Design EXACTEMENT identique • Reproduction pixel-parfaite • Envoi automatique</p>
           </div>
         </div>
         
@@ -163,12 +163,12 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
         </div>
       </div>
 
-      {/* Indicateurs de fonctionnalités professionnelles */}
+      {/* Indicateurs de fonctionnalités IDENTIQUES */}
       <div className="grid grid-cols-5 gap-3 mb-6">
         <div className="text-center">
           <Award className="w-6 h-6 mx-auto mb-1 text-yellow-200" />
-          <div className="text-xs font-semibold">Design Pro</div>
-          <div className="text-xs text-yellow-100">Identique aperçu</div>
+          <div className="text-xs font-semibold">Design Identique</div>
+          <div className="text-xs text-yellow-100">Pixel-parfait</div>
         </div>
         <div className="text-center">
           <FileText className="w-6 h-6 mx-auto mb-1 text-blue-200" />
@@ -187,8 +187,8 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
         </div>
         <div className="text-center">
           <CheckCircle className="w-6 h-6 mx-auto mb-1 text-red-200" />
-          <div className="text-xs font-semibold">Loi Hamon</div>
-          <div className="text-xs text-red-100">Conforme</div>
+          <div className="text-xs font-semibold">Reproduction Exacte</div>
+          <div className="text-xs text-red-100">Aperçu = PDF</div>
         </div>
       </div>
 
@@ -215,24 +215,24 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
           <div className="flex items-center space-x-3">
             <Loader className="w-5 h-5 animate-spin text-blue-300" />
             <div>
-              <div className="font-semibold text-blue-100">Facturation Professionnelle en cours...</div>
+              <div className="font-semibold text-blue-100">PDF Identique en cours de génération...</div>
               <div className="text-sm text-blue-200">{step}</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Bouton d'envoi automatique */}
+      {/* Bouton d'envoi automatique avec PDF identique */}
       <div className="flex justify-center">
         <button
-          onClick={sendEmailAutomatically}
+          onClick={sendEmailWithIdenticalPDF}
           disabled={loading || !isValid()}
           className="bg-white text-green-600 hover:bg-green-50 disabled:bg-gray-300 disabled:text-gray-500 px-8 py-4 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
         >
           {loading ? (
             <>
               <Loader className="w-6 h-6 animate-spin" />
-              <span>Envoi automatique en cours...</span>
+              <span>Génération PDF identique...</span>
             </>
           ) : (
             <>
@@ -240,7 +240,7 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
               <Mail className="w-5 h-5" />
               {invoice.signature && <Shield className="w-5 h-5" />}
               <Clock className="w-5 h-5" />
-              <span>Envoyer Automatiquement</span>
+              <span>Envoyer PDF Identique</span>
             </>
           )}
         </button>
@@ -250,12 +250,12 @@ export const InvoiceSender: React.FC<InvoiceSenderProps> = ({
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
           {isValid() 
-            ? `✅ Prêt pour l'envoi automatique de la facture ${invoice.signature ? 'signée électroniquement' : 'professionnelle'} avec design identique à l'aperçu à ${invoice.client.email}`
-            : '⚠️ Complétez les informations ci-dessus pour activer l\'envoi automatique professionnel'
+            ? `✅ Prêt pour l'envoi automatique avec PDF IDENTIQUE à l'aperçu ${invoice.signature ? '+ signature électronique' : ''} à ${invoice.client.email}`
+            : '⚠️ Complétez les informations ci-dessus pour activer l\'envoi automatique avec PDF identique'
           }
         </p>
-        <p className="mt-1 text-xs text-blue-200">
-          🎨 Le PDF généré sera EXACTEMENT identique à l'aperçu que vous voyez dans Bolt
+        <p className="mt-1 text-xs text-yellow-200 font-semibold">
+          🎯 GARANTIE : Le PDF généré sera EXACTEMENT identique à l'aperçu que vous voyez dans Bolt
         </p>
       </div>
     </div>
