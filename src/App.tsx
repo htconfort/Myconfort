@@ -9,6 +9,7 @@ import { GoogleAppsScriptModal } from './components/GoogleAppsScriptModal';
 import { SignaturePad } from './components/SignaturePad';
 import { GoogleAppsScriptSender } from './components/GoogleAppsScriptSender';
 import { Html2PdfSender } from './components/Html2PdfSender';
+import { SimpleHtml2PdfExporter } from './components/SimpleHtml2PdfExporter';
 import { InvoicePreview } from './components/InvoicePreview';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
@@ -476,6 +477,13 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* NOUVEAU: Export PDF Simple avec votre code */}
+        <SimpleHtml2PdfExporter
+          invoice={invoice}
+          onSuccess={handleGoogleScriptSuccess}
+          onError={handleGoogleScriptError}
+        />
 
         {/* Google Apps Script Sender */}
         <GoogleAppsScriptSender
