@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import html2pdf from 'html2pdf.js';
-import { Loader, FileText, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader, FileText, Send, CheckCircle, AlertCircle, TestTube, ExternalLink } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
@@ -17,9 +17,93 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportStep, setExportStep] = useState('');
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
 
-  // VOTRE NOUVEL ID GOOGLE APPS SCRIPT COMPLET
+  // VOTRE GOOGLE APPS SCRIPT ID COMPLET - URL DE DÉPLOIEMENT
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso/exec";
+
+  const handleTestConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+
+    try {
+      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
+      
+      const testData = {
+        requestType: 'test',
+        message: 'Test de connexion depuis MYCONFORT Simple Exporter',
+        timestamp: new Date().toISOString()
+      };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData),
+          mode: 'cors',
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          setTestResult({
+            success: false,
+            message: `❌ Erreur HTTP: ${response.status} ${response.statusText}`
+          });
+          return;
+        }
+
+        const result = await response.text();
+        console.log('📨 Réponse du script:', result);
+
+        const isSuccess = result.includes('Test réussi') || 
+                         result.includes('success') || 
+                         result.includes('OK') ||
+                         response.status === 200;
+
+        setTestResult({
+          success: isSuccess,
+          message: isSuccess 
+            ? `✅ Connexion réussie ! Réponse: "${result}"`
+            : `⚠️ Réponse inattendue: "${result}"`
+        });
+
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        
+        let errorMessage = '❌ Erreur de connexion: ';
+        
+        if (fetchError.name === 'AbortError') {
+          errorMessage += 'Timeout - Le script met trop de temps à répondre';
+        } else if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
+          errorMessage += 'Impossible de joindre le script. Vérifiez le déploiement.';
+        } else {
+          errorMessage += fetchError.message;
+        }
+
+        setTestResult({
+          success: false,
+          message: errorMessage
+        });
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erreur test connexion:', error);
+      setTestResult({
+        success: false,
+        message: `❌ Erreur: ${error.message}`
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const handleExportAndSend = async () => {
     if (!invoice.client.email) {
@@ -133,8 +217,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
           },
           body: JSON.stringify(requestData),
           signal: controller.signal,
-          mode: 'cors', // Explicitly set CORS mode
-          credentials: 'omit' // Don't send credentials for cross-origin requests
+          mode: 'cors',
+          credentials: 'omit'
         });
 
         clearTimeout(timeoutId);
@@ -151,8 +235,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
         
         let successMessage = `✅ Facture enregistrée dans Drive !`;
         
-        // Votre script répond "Script actif." donc on considère que c'est un succès
-        if (result.includes('Script actif') || response.ok) {
+        // Votre script répond donc on considère que c'est un succès si pas d'erreur
+        if (response.ok) {
           successMessage += `\n📧 Envoyée à ${invoice.client.email}`;
           
           if (acompteAmount > 0) {
@@ -229,6 +313,51 @@ Erreur technique: ${fetchError.message}`);
             </div>
           )}
         </div>
+      </div>
+
+      {/* Configuration Google Apps Script */}
+      <div className="bg-white/10 rounded-lg p-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-300" />
+            <h4 className="font-semibold text-blue-100">Google Apps Script Configuré</h4>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleTestConnection}
+              disabled={isTesting}
+              className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center space-x-1"
+            >
+              <TestTube className="w-3 h-3" />
+              <span>Tester</span>
+            </button>
+            <a 
+              href="https://script.google.com/home" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline text-sm flex items-center space-x-1 text-blue-200 hover:text-white"
+            >
+              <ExternalLink className="w-3 h-3" />
+              <span>Google Apps Script</span>
+            </a>
+          </div>
+        </div>
+        
+        <div className="text-sm text-blue-200">
+          <div className="flex items-center space-x-2">
+            <span>Script ID: AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso</span>
+          </div>
+          <div className="text-xs mt-1">
+            URL: {GOOGLE_SCRIPT_URL}
+          </div>
+        </div>
+        
+        {/* Résultat du test */}
+        {testResult && (
+          <div className={`mt-2 p-2 rounded text-xs ${testResult.success ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}`}>
+            {testResult.message}
+          </div>
+        )}
       </div>
 
       {/* Informations de la facture */}
@@ -328,11 +457,12 @@ Erreur technique: ${fetchError.message}`);
           🔗 Script: AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso
         </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
-          <p className="font-semibold">⚠️ Si l'erreur persiste, vérifiez que votre Google Apps Script est :</p>
+          <p className="font-semibold">💡 Pour configurer votre Google Apps Script :</p>
           <ul className="list-disc list-inside mt-1 text-left">
-            <li>Déployé comme "Web app"</li>
-            <li>Configuré avec l'accès "Anyone" ou "Anyone, even anonymous"</li>
-            <li>Exécuté en tant que "Me" (votre compte)</li>
+            <li>Déployez comme "Web app"</li>
+            <li>Configurez l'accès sur "Anyone" ou "Anyone, even anonymous"</li>
+            <li>Exécutez en tant que "Me" (votre compte)</li>
+            <li>Utilisez l'URL /exec (pas /dev) pour la production</li>
           </ul>
         </div>
       </div>

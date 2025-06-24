@@ -10,7 +10,7 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 UPDATED WITH YOUR NEW COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
+  // 🔑 UPDATED WITH YOUR COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
   private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION MISE À JOUR');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION FINALE');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -131,7 +131,7 @@ export class GoogleAppsScriptService {
         console.log('📨 Réponse Google Apps Script:', result);
 
         // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT
-        if (result.includes('Script actif') || result.includes('success') || result.includes('OK') || response.ok) {
+        if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK') || response.ok) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
         } else {
@@ -259,7 +259,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse partage aperçu:', result);
 
-        return result.includes('Script actif') || result.includes('success') || result.includes('OK') || response.ok;
+        return result.includes('Email envoyé') || result.includes('success') || result.includes('OK') || response.ok;
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
         throw fetchError;
@@ -325,7 +325,7 @@ export class GoogleAppsScriptService {
         console.log('📨 Réponse complète du script:', result);
 
         // Vérifier différents types de réponses de succès
-        const isSuccess = result.includes('Script actif') || 
+        const isSuccess = result.includes('Test réussi') || 
                          result.includes('success') || 
                          result.includes('OK') ||
                          result.includes('test') ||
