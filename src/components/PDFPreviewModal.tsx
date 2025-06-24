@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
@@ -21,6 +21,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
 
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
@@ -53,7 +55,32 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT
+  // 🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT (CORRIGÉ)
+  const handleTestGoogleScript = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+
+    try {
+      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT DEPUIS L\'APERÇU');
+      
+      const result = await GoogleAppsScriptService.testConnection();
+      setTestResult(result);
+      
+      console.log('📊 Résultat du test:', result);
+      
+    } catch (error) {
+      console.error('❌ Erreur test:', error);
+      setTestResult({
+        success: false,
+        message: 'Erreur lors du test de connexion',
+        responseTime: 0
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT (CORRIGÉ)
   const handleSharePreviewViaGoogleScript = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
@@ -133,6 +160,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
   if (!isOpen) return null;
 
+  const scriptInfo = GoogleAppsScriptService.getScriptInfo();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
@@ -149,6 +178,27 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
+            {/* 🧪 BOUTON TEST GOOGLE APPS SCRIPT */}
+            <button
+              onClick={handleTestGoogleScript}
+              disabled={isTesting}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
+              title="Tester la connexion avec votre Google Apps Script"
+            >
+              {isTesting ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Test...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={18} />
+                  <Zap size={16} />
+                  <span>Tester Script</span>
+                </>
+              )}
+            </button>
+
             {/* 🚀 BOUTON PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT */}
             <button
               onClick={handleSharePreviewViaGoogleScript}
@@ -193,6 +243,28 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         </div>
 
+        {/* Résultat du test de connexion */}
+        {testResult && (
+          <div className={`border-b p-3 ${testResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+            <div className="flex items-center space-x-3">
+              {testResult.success ? (
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              )}
+              <div>
+                <div className={`font-semibold ${testResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                  {testResult.success ? '✅ Test de connexion réussi !' : '❌ Test de connexion échoué'}
+                </div>
+                <div className={`text-sm ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                  {testResult.message}
+                  {testResult.responseTime && <span className="ml-2">({testResult.responseTime}ms)</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Indicateur de partage en cours */}
         {isSharing && shareStep && (
           <div className="bg-purple-50 border-b border-purple-200 p-3">
@@ -206,13 +278,13 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         )}
 
-        {/* Instructions pour le partage */}
+        {/* Instructions pour Google Apps Script */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
             <Zap className="w-4 h-4 text-purple-600" />
             <span className="font-semibold text-purple-900">Google Apps Script configuré :</span>
             <span className="text-purple-800">
-              Le bouton "Partager Aperçu" utilise votre script personnalisé pour envoyer exactement ce que vous voyez !
+              Votre script personnalisé est prêt pour l'envoi automatique !
             </span>
             {!invoice.client.email && (
               <span className="text-red-600 font-semibold">
@@ -221,12 +293,15 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            🚀 Script: {GoogleAppsScriptService.getScriptInfo().scriptId.substring(0, 20)}... • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+            🚀 Script: {scriptInfo.scriptId.substring(0, 20)}... • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+          </div>
+          <div className="mt-1 text-xs text-blue-600 font-semibold">
+            💡 Cliquez sur "Tester Script" pour vérifier la connexion avec votre Google Apps Script
           </div>
         </div>
 
         {/* Content */}
-        <div className="overflow-auto max-h-[calc(90vh-180px)] bg-gray-100 p-4">
+        <div className="overflow-auto max-h-[calc(90vh-220px)] bg-gray-100 p-4">
           <div id="pdf-preview-content">
             <InvoicePDF invoice={invoice} isPreview={true} />
           </div>
