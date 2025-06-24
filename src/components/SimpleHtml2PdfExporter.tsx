@@ -120,19 +120,29 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
         generatedAt: new Date().toISOString()
       };
 
-      // Envoi exactement comme votre code avec timeout
+      // Envoi avec configuration CORS améliorée et gestion d'erreurs détaillée
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/plain, */*"
+          },
           body: JSON.stringify(requestData),
-          signal: controller.signal
+          signal: controller.signal,
+          mode: 'cors', // Explicitly set CORS mode
+          credentials: 'omit' // Don't send credentials for cross-origin requests
         });
 
         clearTimeout(timeoutId);
+
+        // Check if response is ok before trying to read it
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
@@ -162,7 +172,18 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
         clearTimeout(timeoutId);
         
         if (fetchError.name === 'AbortError') {
-          throw new Error('Timeout - Le script met trop de temps à répondre');
+          throw new Error('Timeout - Le script met trop de temps à répondre (30s)');
+        } else if (fetchError.message.includes('Failed to fetch')) {
+          // More specific error message for CORS/network issues
+          throw new Error(`Impossible de contacter Google Apps Script. Vérifiez que:
+• Le script est déployé comme "Web app"
+• L'accès est configuré sur "Anyone" ou "Anyone, even anonymous"
+• L'URL du script est correcte
+• Votre connexion internet fonctionne
+
+Erreur technique: ${fetchError.message}`);
+        } else if (fetchError.message.includes('CORS')) {
+          throw new Error(`Erreur CORS: Le script Google Apps Script doit être configuré pour accepter les requêtes cross-origin. Vérifiez les paramètres de déploiement.`);
         } else {
           throw new Error(`Erreur de connexion: ${fetchError.message}`);
         }
@@ -306,6 +327,14 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
         <p className="mt-1 text-xs text-green-200">
           🔗 Script: AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO
         </p>
+        <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
+          <p className="font-semibold">⚠️ Si l'erreur persiste, vérifiez que votre Google Apps Script est :</p>
+          <ul className="list-disc list-inside mt-1 text-left">
+            <li>Déployé comme "Web app"</li>
+            <li>Configuré avec l'accès "Anyone" ou "Anyone, even anonymous"</li>
+            <li>Exécuté en tant que "Me" (votre compte)</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
