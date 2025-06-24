@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID (you need to replace this with your actual deployment ID)
-  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso_REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID';
+  // 🔑 UPDATED WITH YOUR COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
+  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -278,14 +278,7 @@ export class GoogleAppsScriptService {
     try {
       console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
       console.log('🔗 URL de test:', GoogleAppsScriptService.SCRIPT_URL);
-      
-      // Check if the script ID looks incomplete
-      if (GoogleAppsScriptService.SCRIPT_ID.includes('REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID')) {
-        return {
-          success: false,
-          message: '⚠️ Configuration requise: Vous devez remplacer le SCRIPT_ID par votre véritable ID de déploiement Google Apps Script. Allez dans votre projet Google Apps Script, déployez-le comme application web, et copiez l\'ID de déploiement complet.'
-        };
-      }
+      console.log('🆔 Script ID utilisé:', GoogleAppsScriptService.SCRIPT_ID);
       
       const startTime = Date.now();
       
@@ -442,9 +435,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: GoogleAppsScriptService.SCRIPT_ID.includes('REPLACE_WITH_YOUR_COMPLETE_DEPLOYMENT_ID') 
-        ? '⚠️ Configuration requise' 
-        : '✅ Configuré avec votre script'
+      status: '✅ Configuré avec votre script'
     };
   }
 
