@@ -4,9 +4,7 @@ import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
 // Configuration EmailJS avec vos clés
 const EMAILJS_SERVICE_ID = 'service_ocsxnme';
-// ⚠️ IMPORTANT: Remplacez 'template_invoice' par l'ID réel de votre template EmailJS
-// Vous pouvez trouver cet ID sur https://dashboard.emailjs.com/admin/templates
-const EMAILJS_TEMPLATE_ID = 'template_invoice'; // ← À MODIFIER avec votre vrai template ID
+const EMAILJS_TEMPLATE_ID = 'template_yng4k8s'; // ✅ Template ID mis à jour
 const EMAILJS_PUBLIC_KEY = 'hvgYUCG9j2lURrt5k';
 
 export interface EmailData {
@@ -319,15 +317,8 @@ export class EmailService {
 
 🔧 Configuration requise dans EmailJS :
 Service ID: ${EMAILJS_SERVICE_ID}
-Template ID: ${EMAILJS_TEMPLATE_ID} ⚠️ VÉRIFIEZ QUE CE TEMPLATE EXISTE!
+Template ID: ${EMAILJS_TEMPLATE_ID} ✅ CONFIGURÉ
 Public Key: ${EMAILJS_PUBLIC_KEY}
-
-🚨 ÉTAPES POUR CORRIGER L'ERREUR:
-
-1. 🌐 Allez sur https://dashboard.emailjs.com/admin/templates
-2. 📋 Vérifiez vos templates existants
-3. 🔧 Soit créez un nouveau template avec l'ID "${EMAILJS_TEMPLATE_ID}"
-4. 🔄 Soit modifiez EMAILJS_TEMPLATE_ID dans emailService.ts avec un ID existant
 
 📝 TEMPLATE RECOMMANDÉ :
 
