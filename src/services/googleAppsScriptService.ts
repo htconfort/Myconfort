@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 UPDATED WITH YOUR COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
-  private static readonly SCRIPT_ID = 'AKfycbyhbn24rcJth75pgWWL5jdfCqsyu2U3RUZZkitxaso';
+  // 🔑 UPDATED WITH YOUR NEW COMPLETE GOOGLE APPS SCRIPT DEPLOYMENT ID
+  private static readonly SCRIPT_ID = 'AKfycbz3lJFpjFvGzNnbNAdwf26MhlqxmBvkzsMstQrpCH2Z_9qnxfeDCnijlJjo3bV57yqO';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - CONFIGURATION FINALE');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVELLE URL');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -130,7 +130,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
 
-        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT
+        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE NOUVEAU SCRIPT
         if (result.includes('Email envoyé') || result.includes('success') || result.includes('OK') || response.ok) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
@@ -490,7 +490,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Configuré avec votre script'
+      status: '✅ Configuré avec votre nouveau script'
     };
   }
 
