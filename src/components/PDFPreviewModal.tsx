@@ -3,7 +3,8 @@ import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader } fro
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
-import { PreviewShareService } from '../services/previewShareService';
+import { GoogleAppsScriptService } from '../services/googleAppsScriptService';
+import html2canvas from 'html2canvas';
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
@@ -52,17 +53,10 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🎯 PARTAGE APERÇU AVEC EMAILJS (CORRIGÉ)
-  const handleSharePreviewByEmail = async () => {
+  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT
+  const handleSharePreviewViaGoogleScript = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
-      return;
-    }
-
-    // Vérifier si le partage est possible
-    const shareCheck = PreviewShareService.canSharePreview(invoice);
-    if (!shareCheck.canShare) {
-      alert(`❌ Impossible de partager l'aperçu: ${shareCheck.reason}`);
       return;
     }
 
@@ -71,52 +65,64 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     try {
       // Étapes de progression
       setShareStep('📸 Capture de l\'aperçu exact...');
-      await new Promise(resolve => setTimeout(resolve, 500)); // Petit délai pour l'UX
-
-      setShareStep('🖼️ Conversion en image haute qualité...');
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      setShareStep('📧 Envoi par EmailJS...');
+      // Capturer l'aperçu avec html2canvas
+      const element = document.getElementById('pdf-preview-content');
+      if (!element) {
+        throw new Error('Élément aperçu non trouvé');
+      }
+
+      setShareStep('🖼️ Conversion en image haute qualité...');
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        logging: false
+      });
+
+      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
+      const imageSizeKB = Math.round(imageBlob.size / 1024);
+
+      setShareStep('🚀 Envoi via Google Apps Script...');
       
-      // 🎯 UTILISER LE SERVICE DE PARTAGE AVEC EMAILJS
-      const success = await PreviewShareService.sharePreviewByEmail(
+      // Envoyer via Google Apps Script
+      const success = await GoogleAppsScriptService.sharePreviewViaScript(
         invoice,
-        'pdf-preview-content',
-        {
-          quality: 1.0,
-          scale: 2,
-          format: 'png',
-          backgroundColor: '#ffffff'
-        }
+        imageDataUrl,
+        imageSizeKB,
+        'png'
       );
 
       if (success) {
         setShareStep('✅ Aperçu partagé !');
         
-        // Message de succès détaillé
         const successMessage = `✅ Aperçu exact partagé avec succès !\n\n` +
           `📸 Image haute qualité envoyée à ${invoice.client.email}\n` +
           `🎯 Le client recevra exactement ce que vous voyez dans Bolt !\n\n` +
-          `📋 Configuration EmailJS utilisée :\n` +
-          `• Service ID: service_ocsxnme\n` +
-          `• Template ID: template_yng4k8s\n` +
-          `• Format: PNG haute qualité`;
+          `🚀 Envoyé via votre Google Apps Script personnalisé\n` +
+          `📊 Taille: ${imageSizeKB} KB • Format: PNG haute qualité`;
         
         alert(successMessage);
       } else {
-        throw new Error('Échec de l\'envoi via EmailJS');
+        throw new Error('Échec de l\'envoi via Google Apps Script');
       }
 
     } catch (error) {
       console.error('❌ Erreur partage aperçu:', error);
       
-      // Message d'erreur avec instructions
       const errorMessage = `❌ Erreur lors du partage de l'aperçu\n\n` +
-        `🔧 Vérifiez votre configuration EmailJS :\n` +
-        `1. Service ID: service_ocsxnme\n` +
-        `2. Template ID: template_yng4k8s\n` +
-        `3. Public Key: hvgYUCG9j2lURrt5k\n\n` +
-        `📧 Assurez-vous que le template supporte les pièces jointes avec {{invoice_pdf}}`;
+        `🔧 Vérifiez votre Google Apps Script :\n` +
+        `• Script ID: ${GoogleAppsScriptService.getScriptInfo().scriptId}\n` +
+        `• Le script doit être déployé comme application web\n` +
+        `• Les autorisations doivent être accordées\n\n` +
+        `💡 Consultez la console pour plus de détails`;
       
       alert(errorMessage);
     } finally {
@@ -143,12 +149,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* 🎯 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
+            {/* 🚀 BOUTON PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT */}
             <button
-              onClick={handleSharePreviewByEmail}
+              onClick={handleSharePreviewViaGoogleScript}
               disabled={isSharing || !invoice.client.email}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
-              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Partager cet aperçu exact par EmailJS"}
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
+              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Partager cet aperçu exact via Google Apps Script"}
             >
               {isSharing ? (
                 <>
@@ -158,7 +164,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               ) : (
                 <>
                   <Share2 size={18} />
-                  <Camera size={16} />
+                  <Zap size={16} />
                   <span>Partager Aperçu</span>
                 </>
               )}
@@ -189,24 +195,24 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
         {/* Indicateur de partage en cours */}
         {isSharing && shareStep && (
-          <div className="bg-orange-50 border-b border-orange-200 p-3">
+          <div className="bg-purple-50 border-b border-purple-200 p-3">
             <div className="flex items-center space-x-3">
-              <Loader className="w-5 h-5 animate-spin text-orange-600" />
+              <Loader className="w-5 h-5 animate-spin text-purple-600" />
               <div>
-                <div className="font-semibold text-orange-900">Partage de l'aperçu exact avec EmailJS...</div>
-                <div className="text-sm text-orange-700">{shareStep}</div>
+                <div className="font-semibold text-purple-900">Partage de l'aperçu exact avec Google Apps Script...</div>
+                <div className="text-sm text-purple-700">{shareStep}</div>
               </div>
             </div>
           </div>
         )}
 
         {/* Instructions pour le partage */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 border-b p-3">
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
-            <Zap className="w-4 h-4 text-blue-600" />
-            <span className="font-semibold text-blue-900">EmailJS configuré :</span>
-            <span className="text-blue-800">
-              Le bouton "Partager Aperçu" utilise votre configuration EmailJS (service_ocsxnme) pour envoyer exactement ce que vous voyez !
+            <Zap className="w-4 h-4 text-purple-600" />
+            <span className="font-semibold text-purple-900">Google Apps Script configuré :</span>
+            <span className="text-purple-800">
+              Le bouton "Partager Aperçu" utilise votre script personnalisé pour envoyer exactement ce que vous voyez !
             </span>
             {!invoice.client.email && (
               <span className="text-red-600 font-semibold">
@@ -215,7 +221,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            📧 Template: template_yng4k8s • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+            🚀 Script: {GoogleAppsScriptService.getScriptInfo().scriptId.substring(0, 20)}... • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
           </div>
         </div>
 

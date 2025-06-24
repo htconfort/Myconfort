@@ -8,6 +8,7 @@ import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailModal } from './components/EmailModal';
 import { SignaturePad } from './components/SignaturePad';
 import { InvoiceSender } from './components/InvoiceSender';
+import { GoogleAppsScriptSender } from './components/GoogleAppsScriptSender';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
@@ -478,8 +479,15 @@ function App() {
           </div>
         </div>
 
-        {/* FactuSign Pro - Composant d'envoi automatique */}
+        {/* FactuSign Pro - Composant d'envoi automatique avec EmailJS */}
         <InvoiceSender
+          invoice={invoice}
+          onSuccess={handleEmailSuccess}
+          onError={handleEmailError}
+        />
+
+        {/* 🚀 NOUVEAU: Google Apps Script Sender */}
+        <GoogleAppsScriptSender
           invoice={invoice}
           onSuccess={handleEmailSuccess}
           onError={handleEmailError}
