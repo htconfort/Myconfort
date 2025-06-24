@@ -5,9 +5,8 @@ import { ClientSection } from './components/ClientSection';
 import { ProductSection } from './components/ProductSection';
 import { ClientListModal } from './components/ClientListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
-import { EmailModal } from './components/EmailModal';
+import { GoogleAppsScriptModal } from './components/GoogleAppsScriptModal';
 import { SignaturePad } from './components/SignaturePad';
-import { InvoiceSender } from './components/InvoiceSender';
 import { GoogleAppsScriptSender } from './components/GoogleAppsScriptSender';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
@@ -15,7 +14,6 @@ import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient } from './utils/storage';
 import { PDFService } from './services/pdfService';
 import { AdvancedPDFService } from './services/advancedPdfService';
-import { EmailService } from './services/emailService';
 
 function App() {
   const [invoice, setInvoice] = useState<Invoice>({
@@ -49,7 +47,7 @@ function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [showClientsList, setShowClientsList] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showGoogleScriptModal, setShowGoogleScriptModal] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [toast, setToast] = useState({
     show: false,
@@ -64,9 +62,6 @@ function App() {
       setInvoice(draft);
       showToast('Brouillon chargé', 'success');
     }
-
-    // Initialiser EmailJS
-    EmailService.initialize();
 
     // Auto-save every 60 seconds
     const interval = setInterval(() => {
@@ -143,7 +138,7 @@ function App() {
     }
   };
 
-  const handleShowEmailModal = () => {
+  const handleShowGoogleScriptModal = () => {
     if (!invoice.client.email) {
       showToast('Veuillez renseigner l\'email du client', 'error');
       return;
@@ -160,14 +155,14 @@ function App() {
     }
 
     handleSave();
-    setShowEmailModal(true);
+    setShowGoogleScriptModal(true);
   };
 
-  const handleEmailSuccess = (message: string) => {
+  const handleGoogleScriptSuccess = (message: string) => {
     showToast(message, 'success');
   };
 
-  const handleEmailError = (message: string) => {
+  const handleGoogleScriptError = (message: string) => {
     showToast(message, 'error');
   };
 
@@ -259,7 +254,7 @@ function App() {
         onSave={handleSave}
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}
-        onSendEmail={handleShowEmailModal}
+        onSendEmail={handleShowGoogleScriptModal}
         onScrollToClient={() => scrollToSection('client-section')}
         onScrollToProducts={() => scrollToSection('products-section')}
       />
@@ -479,18 +474,11 @@ function App() {
           </div>
         </div>
 
-        {/* Composant d'envoi automatique avec EmailJS */}
-        <InvoiceSender
-          invoice={invoice}
-          onSuccess={handleEmailSuccess}
-          onError={handleEmailError}
-        />
-
         {/* Google Apps Script Sender */}
         <GoogleAppsScriptSender
           invoice={invoice}
-          onSuccess={handleEmailSuccess}
-          onError={handleEmailError}
+          onSuccess={handleGoogleScriptSuccess}
+          onError={handleGoogleScriptError}
         />
 
         {/* Action Buttons */}
@@ -523,11 +511,11 @@ function App() {
                 <span>NOUVELLE FACTURE</span>
               </button>
               <button
-                onClick={handleShowEmailModal}
-                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                onClick={handleShowGoogleScriptModal}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
               >
-                <span>📧</span>
-                <span>ENVOI EMAIL</span>
+                <span>🚀</span>
+                <span>GOOGLE SCRIPT</span>
               </button>
             </div>
           </div>
@@ -549,12 +537,12 @@ function App() {
         onDownload={handleGeneratePDF}
       />
 
-      <EmailModal
-        isOpen={showEmailModal}
-        onClose={() => setShowEmailModal(false)}
+      <GoogleAppsScriptModal
+        isOpen={showGoogleScriptModal}
+        onClose={() => setShowGoogleScriptModal(false)}
         invoice={invoice}
-        onSuccess={handleEmailSuccess}
-        onError={handleEmailError}
+        onSuccess={handleGoogleScriptSuccess}
+        onError={handleGoogleScriptError}
       />
 
       <SignaturePad

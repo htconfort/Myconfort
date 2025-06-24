@@ -35,7 +35,7 @@ export interface InvoiceData {
   advisorName?: string;
   paymentMethod?: string;
   depositAmount?: number;
-  montantRestant?: number; // Nouveau champ pour le montant restant
+  montantRestant?: number;
   signature?: string;
   deliveryMethod?: string;
   deliveryNotes?: string;
@@ -108,18 +108,18 @@ export class AdvancedPDFService {
     doc.circle(25, 22, 6, 'F');
     doc.setTextColor(...this.COLORS.primary);
     doc.setFontSize(14);
-    doc.text('⚡', 22, 25);
+    doc.text('🌸', 22, 25);
     
-    // Titre "FactuSign Pro" (comme dans l'aperçu)
+    // Titre "MYCONFORT" (comme dans l'aperçu)
     doc.setTextColor(...this.COLORS.cream);
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('FactuSign Pro', 40, 20);
+    doc.text('MYCONFORT', 40, 20);
     
     // Sous-titre (exactement comme l'aperçu)
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Factures intelligentes, signées et envoyées automatiquement', 40, 27);
+    doc.text('Facturation professionnelle avec signature électronique', 40, 27);
     
     // Statut signature (coin droit)
     if (data.signature) {
@@ -318,7 +318,7 @@ export class AdvancedPDFService {
     
     // Signature client (comme dans l'aperçu)
     doc.setFont('helvetica', 'bold');
-    doc.text('Signature client FactuSign Pro:', 20, 180);
+    doc.text('Signature client MYCONFORT:', 20, 180);
     
     if (data.signature) {
       doc.setTextColor(...this.COLORS.green);
