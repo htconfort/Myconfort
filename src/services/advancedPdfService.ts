@@ -50,7 +50,7 @@ export class AdvancedPDFService {
     const invoiceData = this.convertInvoiceData(invoice);
     
     // PAGE 1 - FACTURE
-    // Ajouter le logo MYCONFORT
+    // Ajouter le logo MYCONFORT (fleur blanche)
     await this.addLogo(doc);
     
     // Ajouter l'en-tête de l'entreprise
@@ -130,10 +130,10 @@ export class AdvancedPDFService {
 
   private static async addLogo(doc: jsPDF): Promise<void> {
     try {
-      console.log('🎨 Chargement du logo MYCONFORT...');
+      console.log('🌸 Chargement du logo fleur blanche MYCONFORT...');
       
-      // Charger le vrai logo MYCONFORT SVG
-      const logoPath = '/logo.svg'; // ✅ Chemin corrigé vers le logo copié
+      // Charger le logo fleur blanche MYCONFORT
+      const logoPath = '/logo.svg'; // ✅ Chemin vers le logo fleur blanche
       
       // Créer une image pour charger le logo
       const img = new Image();
@@ -143,63 +143,80 @@ export class AdvancedPDFService {
       const logoLoaded = new Promise<boolean>((resolve) => {
         img.onload = () => {
           try {
-            // Ajouter le logo SVG au PDF avec les bonnes dimensions
-            doc.addImage(img, 'SVG', 15, 15, 50, 20);
-            console.log('✅ Logo MYCONFORT SVG ajouté au PDF avec succès !');
+            // Créer le carré vert MYCONFORT pour l'en-tête
+            doc.setFillColor(this.COLORS.primary); // Vert MYCONFORT #477A0C
+            doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
+            
+            // Ajouter le logo fleur blanche au centre du carré vert
+            // Dimensions ajustées pour bien s'intégrer dans le carré
+            const logoX = 20; // Position X centrée dans le carré
+            const logoY = 18; // Position Y centrée dans le carré
+            const logoWidth = 14; // Largeur du logo
+            const logoHeight = 14; // Hauteur du logo
+            
+            doc.addImage(img, 'SVG', logoX, logoY, logoWidth, logoHeight);
+            
+            // Ajouter le texte MYCONFORT à côté du logo
+            doc.setTextColor(this.COLORS.light); // Blanc/beige
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('MYCONFORT', 36, 28);
+            
+            console.log('✅ Logo fleur blanche MYCONFORT intégré avec succès dans le carré vert !');
             resolve(true);
           } catch (error) {
-            console.warn('⚠️ Erreur lors de l\'ajout du logo SVG:', error);
+            console.warn('⚠️ Erreur lors de l\'ajout du logo fleur:', error);
             resolve(false);
           }
         };
         
         img.onerror = (error) => {
-          console.warn('⚠️ Impossible de charger le logo SVG depuis:', logoPath);
+          console.warn('⚠️ Impossible de charger le logo fleur depuis:', logoPath);
           console.warn('🔍 Erreur de chargement:', error);
           resolve(false);
         };
         
         // Timeout de 3 secondes pour éviter les blocages
         setTimeout(() => {
-          console.warn('⏱️ Timeout lors du chargement du logo (3s)');
+          console.warn('⏱️ Timeout lors du chargement du logo fleur (3s)');
           resolve(false);
         }, 3000);
       });
       
       // Tenter de charger le logo
-      console.log('📂 Tentative de chargement depuis:', logoPath);
+      console.log('📂 Tentative de chargement du logo fleur depuis:', logoPath);
       img.src = logoPath;
       const logoSuccess = await logoLoaded;
       
       // Si le logo n'a pas pu être chargé, utiliser un fallback
       if (!logoSuccess) {
-        console.log('🔄 Utilisation du logo de fallback MYCONFORT');
+        console.log('🔄 Utilisation du logo de fallback MYCONFORT avec carré vert');
         this.addFallbackLogo(doc);
       }
       
     } catch (error) {
-      console.warn('❌ Erreur générale lors du chargement du logo:', error);
+      console.warn('❌ Erreur générale lors du chargement du logo fleur:', error);
       this.addFallbackLogo(doc);
     }
   }
 
   private static addFallbackLogo(doc: jsPDF): void {
     try {
-      // Logo de fallback avec la charte graphique MYCONFORT
-      doc.setFillColor(this.COLORS.primary);
+      // Logo de fallback avec carré vert et texte MYCONFORT
+      doc.setFillColor(this.COLORS.primary); // Vert MYCONFORT
       doc.roundedRect(15, 15, 50, 20, 3, 3, 'F');
       
-      // Icône M pour MYCONFORT
-      doc.setTextColor(this.COLORS.light);
+      // Icône M stylisée pour MYCONFORT
+      doc.setTextColor(this.COLORS.light); // Blanc/beige
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
-      doc.text('M', 22, 28);
+      doc.text('🌸', 22, 28); // Emoji fleur comme fallback
       
       // Texte MYCONFORT
       doc.setFontSize(10);
       doc.text('MYCONFORT', 30, 28);
       
-      console.log('🔄 Logo de fallback MYCONFORT créé avec succès');
+      console.log('🔄 Logo de fallback MYCONFORT avec carré vert créé avec succès');
     } catch (error) {
       console.error('❌ Erreur lors de la création du logo de fallback:', error);
     }
@@ -433,9 +450,20 @@ export class AdvancedPDFService {
   private static addCGVPage(doc: jsPDF): void {
     console.log('📄 Ajout de la page 2 - Conditions Générales de Vente');
     
-    // En-tête de la page CGV
+    // En-tête de la page CGV avec logo fleur
     doc.setFillColor(this.COLORS.primary);
     doc.rect(15, 15, 180, 15, 'F');
+    
+    // Ajouter le logo fleur dans l'en-tête CGV aussi
+    try {
+      const img = new Image();
+      img.src = '/logo.svg';
+      img.onload = () => {
+        doc.addImage(img, 'SVG', 20, 18, 10, 10);
+      };
+    } catch (error) {
+      console.warn('Logo fleur non disponible pour la page CGV');
+    }
     
     doc.setTextColor(this.COLORS.light);
     doc.setFontSize(16);
