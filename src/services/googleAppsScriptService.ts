@@ -145,12 +145,13 @@ export class GoogleAppsScriptService {
 
     } catch (error: any) {
       console.error('❌ Erreur lors de l\'envoi via Google Apps Script:', error);
-      console.error('🔍 Détails:', {
-        scriptId: GoogleAppsScriptService.SCRIPT_ID,
-        scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-        error: error.message
-      });
-      return false;
+      
+      // Amélioration du message d'erreur avec diagnostic détaillé
+      let detailedError = this.generateDetailedErrorMessage(error);
+      console.error('🔍 Diagnostic détaillé:', detailedError);
+      
+      // Lancer une erreur avec plus de contexte
+      throw new Error(detailedError);
     }
   }
 
@@ -267,7 +268,12 @@ export class GoogleAppsScriptService {
 
     } catch (error: any) {
       console.error('❌ Erreur partage aperçu via Google Apps Script:', error);
-      return false;
+      
+      // Amélioration du message d'erreur
+      let detailedError = this.generateDetailedErrorMessage(error);
+      console.error('🔍 Diagnostic partage aperçu:', detailedError);
+      
+      throw new Error(detailedError);
     }
   }
 
@@ -347,23 +353,72 @@ export class GoogleAppsScriptService {
     } catch (error: any) {
       console.error('❌ Erreur test connexion:', error);
       
-      let errorMessage = '❌ Erreur de connexion: ';
+      // Générer un message d'erreur détaillé pour le test
+      const detailedError = this.generateDetailedErrorMessage(error);
       
-      if (error.name === 'AbortError') {
-        errorMessage += 'Timeout - Le script met trop de temps à répondre. Vérifiez votre connexion et le déploiement du script.';
-      } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        errorMessage += 'Impossible de joindre le script. Vérifiez que:\n• Le script est déployé comme application web\n• Les permissions sont définies sur "Anyone, even anonymous"\n• L\'ID du script est correct et complet\n• L\'URL du script est accessible';
-      } else if (error.message.includes('CORS')) {
-        errorMessage += 'Problème CORS. Vérifiez les autorisations du script.';
-      } else {
-        errorMessage += error.message;
-      }
-
       return {
         success: false,
-        message: errorMessage
+        message: detailedError
       };
     }
+  }
+
+  /**
+   * 🔍 Génère un message d'erreur détaillé avec diagnostic
+   */
+  private static generateDetailedErrorMessage(error: any): string {
+    let errorMessage = '❌ Erreur de connexion Google Apps Script:\n\n';
+    
+    if (error.name === 'AbortError') {
+      errorMessage += '⏱️ TIMEOUT - Le script met trop de temps à répondre (30s)\n\n';
+      errorMessage += '🔧 SOLUTIONS POSSIBLES:\n';
+      errorMessage += '• Vérifiez que votre script Google Apps Script fonctionne correctement\n';
+      errorMessage += '• Le script peut être surchargé ou avoir des erreurs internes\n';
+      errorMessage += '• Consultez les logs d\'exécution dans Google Apps Script\n\n';
+    } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      errorMessage += '🌐 IMPOSSIBLE DE JOINDRE LE SCRIPT\n\n';
+      errorMessage += '🔧 VÉRIFICATIONS NÉCESSAIRES:\n';
+      errorMessage += '1. ✅ Script déployé comme "Web app"\n';
+      errorMessage += '2. ✅ Permissions définies sur "Anyone" ou "Anyone, even anonymous"\n';
+      errorMessage += '3. ✅ URL correcte avec /exec (pas /dev)\n';
+      errorMessage += '4. ✅ Script ID complet et correct\n';
+      errorMessage += '5. ✅ Connexion internet fonctionnelle\n\n';
+      errorMessage += `📋 SCRIPT ACTUEL:\n`;
+      errorMessage += `• ID: ${GoogleAppsScriptService.SCRIPT_ID}\n`;
+      errorMessage += `• URL: ${GoogleAppsScriptService.SCRIPT_URL}\n\n`;
+      errorMessage += '🔗 ÉTAPES DE DÉPLOIEMENT:\n';
+      errorMessage += '1. Allez sur script.google.com/home\n';
+      errorMessage += '2. Ouvrez votre projet de script\n';
+      errorMessage += '3. Cliquez sur "Deploy" > "New deployment"\n';
+      errorMessage += '4. Sélectionnez "Web app" comme type\n';
+      errorMessage += '5. Configurez "Execute as: Me"\n';
+      errorMessage += '6. Configurez "Who has access: Anyone"\n';
+      errorMessage += '7. Cliquez "Deploy" et copiez l\'URL /exec\n\n';
+    } else if (error.message.includes('CORS')) {
+      errorMessage += '🚫 ERREUR CORS - Problème de permissions cross-origin\n\n';
+      errorMessage += '🔧 SOLUTION:\n';
+      errorMessage += '• Vérifiez que le script est configuré pour accepter les requêtes externes\n';
+      errorMessage += '• Les permissions doivent être sur "Anyone" ou "Anyone, even anonymous"\n\n';
+    } else if (error.message.includes('HTTP')) {
+      errorMessage += `🌐 ERREUR HTTP: ${error.message}\n\n`;
+      errorMessage += '🔧 VÉRIFICATIONS:\n';
+      errorMessage += '• Le script est-il correctement déployé ?\n';
+      errorMessage += '• Y a-t-il des erreurs dans le code du script ?\n';
+      errorMessage += '• Consultez les logs d\'exécution dans Google Apps Script\n\n';
+    } else {
+      errorMessage += `🔍 ERREUR TECHNIQUE: ${error.message}\n\n`;
+      errorMessage += '🔧 DIAGNOSTIC GÉNÉRAL:\n';
+      errorMessage += '• Vérifiez la console du navigateur pour plus de détails\n';
+      errorMessage += '• Testez l\'URL du script directement dans un navigateur\n';
+      errorMessage += '• Consultez les logs Google Apps Script\n\n';
+    }
+    
+    errorMessage += '💡 AIDE SUPPLÉMENTAIRE:\n';
+    errorMessage += '• Documentation: https://developers.google.com/apps-script/guides/web\n';
+    errorMessage += '• Vérifiez les quotas et limites Google Apps Script\n';
+    errorMessage += '• Testez avec un script simple d\'abord\n';
+    
+    return errorMessage;
   }
 
   /**
