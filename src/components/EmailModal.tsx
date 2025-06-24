@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube, FileText, Paperclip, AlertTriangle, Zap, Shield, Clock } from 'lucide-react';
+import { X, Send, Mail, AlertCircle, CheckCircle, Loader, Settings, ExternalLink, TestTube, FileText, Paperclip, AlertTriangle, Building2, Shield, Clock } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { EmailService } from '../services/emailService';
@@ -24,8 +24,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [emailData, setEmailData] = useState({
     to_email: invoice.client.email,
     to_name: invoice.client.name,
-    subject: `Facture ${invoice.invoiceNumber} - FactuSign Pro`,
-    message: `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée et signée électroniquement avec FactuSign Pro.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nFactuSign Pro - Factures intelligentes, signées et envoyées automatiquement`
+    subject: `Facture ${invoice.invoiceNumber} - MYCONFORT`,
+    message: `Bonjour ${invoice.client.name},\n\nVeuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec notre système MYCONFORT.\n\n${invoice.signature ? '✓ Cette facture a été signée électroniquement et est juridiquement valide.\n\n' : ''}Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n---\nMYCONFORT - Facturation professionnelle avec signature électronique`
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +87,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     try {
       // Étape 1: Génération du PDF
       setSendingStep('Génération du PDF avec signature...');
-      console.log('📄 Génération du PDF avec FactuSign Pro...');
+      console.log('📄 Génération du PDF avec MYCONFORT...');
       const pdfDoc = await AdvancedPDFService.generateInvoicePDF(invoice);
       
       // Calculer la taille du PDF
@@ -108,7 +108,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
       if (success) {
         setSendingStep('Envoi réussi !');
-        onSuccess(`✅ Facture FactuSign Pro envoyée avec succès ! PDF signé électroniquement (${sizeKB} KB) livré par email sécurisé.`);
+        onSuccess(`✅ Facture MYCONFORT envoyée avec succès ! PDF signé électroniquement (${sizeKB} KB) livré par email sécurisé.`);
         onClose();
       } else {
         onError('❌ Erreur: Template EmailJS introuvable. Vérifiez votre configuration dans le dashboard EmailJS.');
@@ -145,7 +145,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
       // Ouvrir le client email
       EmailService.openEmailClient(invoice, emailData.message);
       
-      onSuccess('📎 PDF FactuSign Pro téléchargé et client email ouvert. Veuillez attacher le PDF signé manuellement.');
+      onSuccess('📎 PDF MYCONFORT téléchargé et client email ouvert. Veuillez attacher le PDF signé manuellement.');
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
@@ -192,17 +192,17 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="FactuSign Pro - Envoi Automatique" maxWidth="max-w-3xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="MYCONFORT - Envoi Automatique" maxWidth="max-w-3xl">
       <div className="space-y-6">
-        {/* En-tête FactuSign Pro */}
+        {/* En-tête MYCONFORT */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg p-4">
           <div className="flex items-center space-x-3 mb-2">
             <div className="bg-white/20 p-2 rounded-full">
-              <Zap className="w-6 h-6" />
+              <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">FactuSign Pro</h3>
-              <p className="text-green-100">Factures intelligentes, signées et envoyées automatiquement</p>
+              <h3 className="text-xl font-bold">MYCONFORT</h3>
+              <p className="text-green-100">Facturation professionnelle avec signature électronique</p>
             </div>
           </div>
           
@@ -213,7 +213,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <div className="text-xs text-green-100">Conforme eIDAS</div>
             </div>
             <div className="text-center">
-              <Zap className="w-8 h-8 mx-auto mb-1 text-blue-200" />
+              <Mail className="w-8 h-8 mx-auto mb-1 text-blue-200" />
               <div className="text-sm font-semibold">Envoi Automatique</div>
               <div className="text-xs text-blue-100">PDF en pièce jointe</div>
             </div>
@@ -299,7 +299,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           {showConfiguration && (
             <div className={`mt-3 p-3 rounded border text-sm ${isEmailJSConfigured ? 'bg-green-100' : 'bg-red-100'}`}>
               <p className={`font-medium mb-2 ${isEmailJSConfigured ? 'text-green-900' : 'text-red-900'}`}>
-                Configuration FactuSign Pro :
+                Configuration MYCONFORT :
               </p>
               <ul className={`space-y-1 ${isEmailJSConfigured ? 'text-green-700' : 'text-red-700'}`}>
                 <li>• Service ID: {configInfo.serviceId} ✅</li>
@@ -350,7 +350,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                <h4 className="font-semibold text-yellow-900">Guide de dépannage FactuSign Pro</h4>
+                <h4 className="font-semibold text-yellow-900">Guide de dépannage MYCONFORT</h4>
               </div>
               <button
                 onClick={() => setShowTroubleshooting(false)}
@@ -380,7 +380,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
         {/* Sélection de la méthode d'envoi */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-semibold text-gray-900 mb-3">Méthode d'envoi FactuSign Pro</h4>
+          <h4 className="font-semibold text-gray-900 mb-3">Méthode d'envoi MYCONFORT</h4>
           <div className="space-y-2">
             <label className="flex items-center">
               <input
@@ -393,8 +393,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 disabled={!isEmailJSConfigured}
               />
               <span className={`ml-2 text-sm flex items-center space-x-1 ${!isEmailJSConfigured ? 'text-gray-400' : 'text-gray-700'}`}>
-                <Zap className="w-4 h-4 text-blue-600" />
-                <span>Envoi automatique FactuSign Pro (service_ocsxnme)</span>
+                <Building2 className="w-4 h-4 text-blue-600" />
+                <span>Envoi automatique MYCONFORT (service_ocsxnme)</span>
                 <Paperclip className="w-3 h-3 text-green-600" />
                 <Shield className="w-3 h-3 text-green-600" />
                 <span className="text-green-600 font-medium">PDF signé attaché</span>
@@ -496,7 +496,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             <div className="flex items-center space-x-3">
               <Loader className="w-5 h-5 animate-spin text-blue-600" />
               <div>
-                <div className="font-semibold text-blue-900">FactuSign Pro en action...</div>
+                <div className="font-semibold text-blue-900">MYCONFORT en action...</div>
                 <div className="text-sm text-blue-700">{sendingStep}</div>
               </div>
             </div>
@@ -522,16 +522,16 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <>
                 <Loader className="w-5 h-5 animate-spin" />
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoi FactuSign Pro...' : 'Préparation...'}
+                  {emailMethod === 'emailjs' ? 'Envoi MYCONFORT...' : 'Préparation...'}
                 </span>
               </>
             ) : (
               <>
-                <Zap className="w-5 h-5" />
+                <Building2 className="w-5 h-5" />
                 {emailMethod === 'emailjs' && <Paperclip className="w-4 h-4" />}
                 {emailMethod === 'emailjs' && <Shield className="w-4 h-4" />}
                 <span>
-                  {emailMethod === 'emailjs' ? 'Envoyer avec FactuSign Pro' : 'Ouvrir client email'}
+                  {emailMethod === 'emailjs' ? 'Envoyer avec MYCONFORT' : 'Ouvrir client email'}
                 </span>
               </>
             )}
@@ -540,15 +540,15 @@ export const EmailModal: React.FC<EmailModalProps> = ({
 
         {/* Instructions pour finaliser la configuration */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-          <h5 className="font-semibold text-blue-900 mb-2">📧 Template EmailJS pour FactuSign Pro :</h5>
+          <h5 className="font-semibold text-blue-900 mb-2">📧 Template EmailJS pour MYCONFORT :</h5>
           <div className="bg-blue-100 p-3 rounded border font-mono text-xs overflow-x-auto">
-            <div className="mb-2"><strong>Variables FactuSign Pro disponibles :</strong></div>
+            <div className="mb-2"><strong>Variables MYCONFORT disponibles :</strong></div>
             <div>• <code>{'{{invoice_pdf}}'}</code> - Données PDF base64 avec signature</div>
             <div>• <code>{'{{pdf_filename}}'}</code> - Nom du fichier PDF</div>
             <div>• <code>{'{{pdf_size}}'}</code> - Taille du PDF en KB</div>
             <div>• <code>{'{{to_email}}'}</code>, <code>{'{{to_name}}'}</code>, <code>{'{{message}}'}</code></div>
             <div>• <code>{'{{invoice_number}}'}</code>, <code>{'{{total_amount}}'}</code></div>
-            <div>• <code>{'{{app_name}}'}</code> - "FactuSign Pro"</div>
+            <div>• <code>{'{{app_name}}'}</code> - "MYCONFORT"</div>
           </div>
           <p className="mt-2 text-blue-600 font-medium">
             {isEmailJSConfigured ? (

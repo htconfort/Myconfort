@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, FileText, User, Send, Users, Package, Zap } from 'lucide-react';
+import { Save, FileText, User, Send, Users, Package, Building2 } from 'lucide-react';
 
 interface HeaderProps {
   onSave: () => void;
@@ -23,13 +23,13 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <div className="bg-white/20 p-2 rounded-full">
-            <Zap className="w-6 h-6 text-[#F2EFE2]" />
+            <Building2 className="w-6 h-6 text-[#F2EFE2]" />
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#F2EFE2]">
-              FactuSign Pro
+              MYCONFORT
             </h1>
-            <p className="text-[#F2EFE2]/80 text-sm font-medium">Factures intelligentes, signées et envoyées automatiquement</p>
+            <p className="text-[#F2EFE2]/80 text-sm font-medium">Facturation professionnelle avec signature électronique</p>
           </div>
         </div>
         
@@ -86,10 +86,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onSendEmail}
             className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
-            title="Envoyer avec FactuSign Pro"
+            title="Envoyer par email"
           >
-            <Zap size={18} />
-            <span className="hidden md:inline">FactuSign</span>
+            <Send size={18} />
+            <span className="hidden md:inline">Email</span>
           </button>
         </div>
       </div>

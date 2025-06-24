@@ -114,11 +114,11 @@ function App() {
   const handleGeneratePDF = async () => {
     try {
       handleSave();
-      showToast('Génération du PDF FactuSign Pro en cours...', 'success');
+      showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
       // Utiliser le service PDF avancé avec signature
       await AdvancedPDFService.downloadPDF(invoice);
-      showToast(`PDF FactuSign Pro téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
+      showToast(`PDF MYCONFORT téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
     } catch (error) {
       console.error('PDF generation error:', error);
       showToast('Erreur lors de la génération du PDF', 'error');
@@ -186,7 +186,7 @@ function App() {
 
   const handleSaveSignature = (signature: string) => {
     setInvoice(prev => ({ ...prev, signature }));
-    showToast('Signature enregistrée - Facture prête pour FactuSign Pro !', 'success');
+    showToast('Signature enregistrée - Facture prête pour envoi !', 'success');
   };
 
   const handleReset = () => {
@@ -265,16 +265,16 @@ function App() {
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
-        {/* En-tête FactuSign Pro */}
+        {/* En-tête MYCONFORT */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl shadow-xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-white/20 p-3 rounded-full">
-                <span className="text-2xl">⚡</span>
+                <span className="text-2xl">🌸</span>
               </div>
               <div>
-                <h1 className="text-3xl font-bold">FactuSign Pro</h1>
-                <p className="text-green-100">Factures intelligentes, signées et envoyées automatiquement</p>
+                <h1 className="text-3xl font-bold">MYCONFORT</h1>
+                <p className="text-green-100">Facturation professionnelle avec signature électronique</p>
               </div>
             </div>
             <div className="text-right">
@@ -448,7 +448,7 @@ function App() {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-gray-900 mb-1 font-semibold">Signature client FactuSign Pro</label>
+                  <label className="block text-gray-900 mb-1 font-semibold">Signature client MYCONFORT</label>
                   <div className="border-2 border-dashed border-gray-300 rounded h-20 flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
                     {invoice.signature ? (
                       <div className="text-center">
@@ -479,14 +479,14 @@ function App() {
           </div>
         </div>
 
-        {/* FactuSign Pro - Composant d'envoi automatique avec EmailJS */}
+        {/* Composant d'envoi automatique avec EmailJS */}
         <InvoiceSender
           invoice={invoice}
           onSuccess={handleEmailSuccess}
           onError={handleEmailError}
         />
 
-        {/* 🚀 NOUVEAU: Google Apps Script Sender */}
+        {/* Google Apps Script Sender */}
         <GoogleAppsScriptSender
           invoice={invoice}
           onSuccess={handleEmailSuccess}
@@ -526,8 +526,8 @@ function App() {
                 onClick={handleShowEmailModal}
                 className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
               >
-                <span>⚡</span>
-                <span>FACTUSIGN PRO</span>
+                <span>📧</span>
+                <span>ENVOI EMAIL</span>
               </button>
             </div>
           </div>

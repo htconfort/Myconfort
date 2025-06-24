@@ -97,7 +97,7 @@ export class EmailService {
         has_discount: invoice.products.some(p => p.discount > 0),
         
         // Informations techniques
-        app_name: 'FactuFlash',
+        app_name: 'MYCONFORT',
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR')
       };
