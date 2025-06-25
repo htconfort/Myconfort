@@ -344,7 +344,6 @@ export class AdvancedPDFService {
     doc.text('Merci de votre confiance !', 105, pageHeight - 7, { align: 'center' });
   }
 
-  // 📄 MÉTHODE STANDARD (INCHANGÉE)
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
     console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU AVEC SUPPORT ACOMPTE');
     
