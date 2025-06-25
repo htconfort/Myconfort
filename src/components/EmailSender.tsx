@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap } from 'lucide-react';
+import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { EmailService } from '../services/emailService';
@@ -76,27 +76,6 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     } catch (error: any) {
       console.error('❌ Erreur envoi EmailJS:', error);
       onError(`Erreur lors de l'envoi via EmailJS: ${error.message}`);
-    } finally {
-      setLoading(false);
-      setStep('');
-    }
-  };
-
-  // Test de connexion
-  const handleTestConnection = async () => {
-    setLoading(true);
-    setStep('🧪 Test de connexion EmailJS...');
-    
-    try {
-      const result = await EmailService.testConnection();
-      
-      if (result.success) {
-        onSuccess(`✅ Test réussi ! ${result.message}`);
-      } else {
-        onError(`❌ Test échoué: ${result.message}`);
-      }
-    } catch (error: any) {
-      onError(`Erreur lors du test de connexion: ${error.message}`);
     } finally {
       setLoading(false);
       setStep('');
@@ -259,32 +238,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         )}
 
-        {/* Boutons d'action */}
-        <div className="flex justify-center space-x-3">
-          <button
-            onClick={handleTestConnection}
-            disabled={loading || !emailConfig.configured}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
-          >
-            {loading && step.includes('Test') ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                <span>Test en cours...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5" />
-                <span>Tester EmailJS</span>
-              </>
-            )}
-          </button>
-
+        {/* Bouton d'action principal */}
+        <div className="flex justify-center">
           <button
             onClick={sendEmailWithPDF}
             disabled={loading || !validation.isValid}
             className="bg-[#477A0C] hover:bg-[#3A6A0A] disabled:bg-gray-400 disabled:text-gray-600 text-[#F2EFE2] px-8 py-3 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
           >
-            {loading && !step.includes('Test') ? (
+            {loading ? (
               <>
                 <Loader className="w-6 h-6 animate-spin" />
                 <span>Envoi en cours...</span>
