@@ -153,7 +153,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                   <span className="font-semibold">Compression PDF activée :</span>
                 </div>
                 <ul className="mt-1 ml-4 list-disc text-xs">
-                  <li>PDF automatiquement compressé si > 50KB</li>
+                  <li>PDF automatiquement compressé si &gt; 50KB</li>
                   <li>Optimisation intelligente pour EmailJS</li>
                   <li>Qualité préservée avec taille réduite</li>
                   <li>Fallback sans PDF si compression insuffisante</li>
