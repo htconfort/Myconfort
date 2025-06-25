@@ -21,8 +21,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<any>(null);
   
   const emailConfig = EmailService.getConfigInfo();
   const emailConfigured = emailConfig.configured;
@@ -55,36 +53,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         printWindow.document.close();
         printWindow.print();
       }
-    }
-  };
-
-  // 🧪 TEST DE CONNEXION EMAILJS
-  const handleTestEmailJS = async () => {
-    if (!emailConfigured) {
-      alert('Veuillez configurer EmailJS avant de tester la connexion');
-      return;
-    }
-
-    setIsTesting(true);
-    setTestResult(null);
-
-    try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS DEPUIS L\'APERÇU');
-      
-      const result = await EmailService.testConnection();
-      setTestResult(result);
-      
-      console.log('📊 Résultat du test:', result);
-      
-    } catch (error) {
-      console.error('❌ Erreur test:', error);
-      setTestResult({
-        success: false,
-        message: 'Erreur lors du test de connexion',
-        responseTime: 0
-      });
-    } finally {
-      setIsTesting(false);
     }
   };
 
@@ -259,27 +227,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* 🧪 BOUTON TEST EMAILJS */}
-            <button
-              onClick={handleTestEmailJS}
-              disabled={isTesting || !emailConfigured}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
-              title={emailConfigured ? "Tester la connexion avec EmailJS" : "Veuillez configurer EmailJS"}
-            >
-              {isTesting ? (
-                <>
-                  <Loader className="w-4 h-4 animate-spin" />
-                  <span>Test...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={18} />
-                  <Mail size={16} />
-                  <span>Tester Email</span>
-                </>
-              )}
-            </button>
-
             {/* 🚀 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
             <button
               onClick={handleSharePreviewViaEmail}
@@ -324,28 +271,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         </div>
 
-        {/* Résultat du test de connexion */}
-        {testResult && (
-          <div className={`border-b p-3 ${testResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-            <div className="flex items-center space-x-3">
-              {testResult.success ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              ) : (
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              )}
-              <div>
-                <div className={`font-semibold ${testResult.success ? 'text-green-900' : 'text-red-900'}`}>
-                  {testResult.success ? '✅ Test de connexion réussi !' : '❌ Test de connexion échoué'}
-                </div>
-                <div className={`text-sm ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
-                  {testResult.message}
-                  {testResult.responseTime && <span className="ml-2">({testResult.responseTime}ms)</span>}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Indicateur de partage en cours */}
         {isSharing && shareStep && (
           <div className="bg-purple-50 border-b border-purple-200 p-3">
@@ -381,7 +306,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
             💡 {emailConfigured 
-              ? "Cliquez sur \"Tester Email\" pour vérifier la connexion avec EmailJS"
+              ? "Cliquez sur \"Partager Aperçu\" pour envoyer l'image par email"
               : "Configurez EmailJS pour activer l'envoi d'emails"
             }
           </div>
