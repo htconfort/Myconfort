@@ -340,7 +340,7 @@ function App() {
   const validation = validateMandatoryFields();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter'] text-gray-900">
+    <div className="min-h-screen font-['Inter'] text-gray-100" style={{ backgroundColor: '#14281D' }}>
       <Header
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}
