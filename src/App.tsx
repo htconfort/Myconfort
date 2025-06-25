@@ -275,11 +275,16 @@ function App() {
     showToast('Signature enregistrée - Facture prête pour envoi !', 'success');
   };
 
-  const handleReset = () => {
-    if (window.confirm('Êtes-vous sûr de vouloir créer une nouvelle facture? Toutes les données non enregistrées seront perdues.')) {
+  // 🆕 FONCTION NOUVELLE FACTURE - REMISE À ZÉRO COMPLÈTE
+  const handleNewInvoice = () => {
+    if (window.confirm('Êtes-vous sûr de vouloir créer une nouvelle facture?\n\nToutes les données actuelles seront perdues et remises à zéro.')) {
+      // Générer un nouveau numéro de facture
+      const newInvoiceNumber = generateInvoiceNumber();
+      
+      // Remettre à zéro TOUTES les données
       setInvoice({
-        invoiceNumber: generateInvoiceNumber(),
-        invoiceDate: new Date().toISOString().split('T')[0],
+        invoiceNumber: newInvoiceNumber,
+        invoiceDate: new Date().toISOString().split('T')[0], // Date du jour
         eventLocation: '',
         advisorName: '',
         invoiceNotes: '',
@@ -306,7 +311,11 @@ function App() {
         products: [],
         signature: ''
       });
-      showToast('Nouvelle facture créée', 'success');
+      
+      // Effacer le brouillon
+      localStorage.removeItem('myconfortInvoiceDraft');
+      
+      showToast(`✅ Nouvelle facture créée : ${newInvoiceNumber}`, 'success');
     }
   };
 
@@ -377,8 +386,6 @@ function App() {
             </div>
           </div>
         </div>
-
-        {/* 🔒 BLOC D'ALERTE MASQUÉ - Le bloc des champs obligatoires manquants a été supprimé */}
 
         <InvoiceHeader
           invoice={invoice}
@@ -509,7 +516,7 @@ function App() {
           </div>
         )}
 
-        {/* Action Buttons - UNIFORMISÉ */}
+        {/* Action Buttons - UNIFORMISÉ AVEC NOUVELLE FACTURE CLIQUABLE */}
         <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
           <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
             <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
@@ -551,10 +558,13 @@ function App() {
                 >
                   <span>ENREGISTRER</span>
                 </button>
+                {/* 🆕 BOUTON NOUVELLE FACTURE MAINTENANT CLIQUABLE */}
                 <button
-                  onClick={handleReset}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                  onClick={handleNewInvoice}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                  title="Créer une nouvelle facture (remet tout à zéro)"
                 >
+                  <span>✨</span>
                   <span>NOUVELLE FACTURE</span>
                 </button>
                 <button
