@@ -3,10 +3,10 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS MISE À JOUR avec votre Template "Myconfort"
+// Configuration EmailJS MISE À JOUR avec votre Template ID correct
 const EMAILJS_CONFIG = {
   SERVICE_ID: 'service_ocsxnme', // ✅ VOTRE SERVICE ID
-  TEMPLATE_ID: 'Myconfort', // ✅ VOTRE NOUVEAU TEMPLATE "Myconfort"
+  TEMPLATE_ID: 'template_yng4k8s', // ✅ TEMPLATE ID CORRIGÉ (était 'Myconfort')
   USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ Votre API Key (Public Key)
   PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Votre Private Key
   CONFIGURED: true // ✅ CONFIGURATION 100% COMPLÈTE !
@@ -29,7 +29,7 @@ export class EmailService {
       emailjs.init(EMAILJS_CONFIG.USER_ID);
       console.log('✅ EmailJS initialisé avec votre API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ Service ID configuré:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('✅ Template "Myconfort" configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('✅ Template ID configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
@@ -41,10 +41,10 @@ export class EmailService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC TEMPLATE "Myconfort"');
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('🔑 API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Template "Myconfort":', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -77,7 +77,7 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Préparer les données pour votre Template "Myconfort"
+      // Préparer les données pour votre Template
       const templateParams = {
         // Destinataire
         to_email: invoice.client.email,
@@ -121,7 +121,7 @@ export class EmailService {
         // Mode de paiement
         payment_method: invoice.payment.method || 'Non spécifié',
         
-        // 📎 PDF EN BASE64 - POUR VOTRE TEMPLATE "Myconfort"
+        // 📎 PDF EN BASE64
         pdf_data: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
         pdf_filename: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
         pdf_size: `${pdfSizeKB} KB`,
@@ -136,26 +136,26 @@ export class EmailService {
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email avec Template "Myconfort" et PDF en base64...');
+      console.log('📧 Envoi email avec Template ID et PDF en base64...');
       console.log('📊 Données PDF:', {
         filename: templateParams.pdf_filename,
         size: templateParams.pdf_size,
         base64Length: templateParams.pdf_data.length
       });
 
-      // Envoyer via EmailJS avec votre Template "Myconfort"
+      // Envoyer via EmailJS avec le Template ID correct
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Utilise maintenant "Myconfort"
+        EMAILJS_CONFIG.TEMPLATE_ID, // Utilise maintenant template_yng4k8s
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Email avec PDF envoyé via Template "Myconfort":', response);
+      console.log('✅ Email avec PDF envoyé via Template ID:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec Template "Myconfort":', error);
+      console.error('❌ Erreur lors de l\'envoi avec Template ID:', error);
       
       // Fallback : envoyer sans PDF
       console.log('🔄 Tentative d\'envoi sans PDF...');
@@ -182,7 +182,7 @@ export class EmailService {
    */
   private static async sendEmailWithoutPDF(invoice: Invoice, pdfNote: string): Promise<boolean> {
     try {
-      console.log('📧 Envoi email sans PDF avec Template "Myconfort"...');
+      console.log('📧 Envoi email sans PDF avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -227,12 +227,12 @@ export class EmailService {
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template "Myconfort"
+        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Email sans PDF envoyé via Template "Myconfort":', response);
+      console.log('✅ Email sans PDF envoyé via Template ID:', response);
       return true;
     } catch (error) {
       console.error('❌ Erreur envoi sans PDF:', error);
@@ -248,7 +248,7 @@ export class EmailService {
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA TEMPLATE "Myconfort"');
+      console.log('📸 PARTAGE APERÇU VIA TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -312,7 +312,7 @@ export class EmailService {
       previewMessage += `L'image ci-jointe vous montre exactement l'aperçu de votre facture.\n\n`;
       previewMessage += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}`;
 
-      // Préparer les données pour votre Template "Myconfort"
+      // Préparer les données pour votre Template
       const templateParams = {
         to_email: invoice.client.email,
         to_name: invoice.client.name,
@@ -333,7 +333,7 @@ export class EmailService {
         company_name: 'MYCONFORT'
       };
 
-      console.log('📧 Envoi aperçu via Template "Myconfort"');
+      console.log('📧 Envoi aperçu via Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📊 Données image:', {
         filename: templateParams.image_filename,
         size: templateParams.image_size,
@@ -342,15 +342,15 @@ export class EmailService {
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template "Myconfort"
+        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Aperçu envoyé avec succès via Template "Myconfort":', response);
+      console.log('✅ Aperçu envoyé avec succès via Template ID:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu via Template "Myconfort":', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu via Template ID:', error);
       
       // Fallback sans image
       try {
@@ -366,7 +366,7 @@ export class EmailService {
    */
   private static async sendPreviewWithoutImage(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('📧 Envoi aperçu sans image avec Template "Myconfort"...');
+      console.log('📧 Envoi aperçu sans image avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       let previewMessage = `Bonjour ${invoice.client.name},\n\n`;
       previewMessage += `Voici les détails de votre facture n°${invoice.invoiceNumber} :\n\n`;
@@ -403,12 +403,12 @@ export class EmailService {
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template "Myconfort"
+        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Aperçu sans image envoyé via Template "Myconfort":', response);
+      console.log('✅ Aperçu sans image envoyé via Template ID:', response);
       return true;
     } catch (error) {
       console.error('❌ Erreur envoi aperçu sans image:', error);
@@ -421,24 +421,24 @@ export class EmailService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC TEMPLATE "Myconfort"');
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Template "Myconfort":', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
       const startTime = Date.now();
       
-      // Préparer les données de test pour votre Template "Myconfort"
+      // Préparer les données de test pour votre Template
       const testParams = {
         to_email: 'test@myconfort.com', // Email de test
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
-        subject: 'Test de connexion EmailJS MYCONFORT - Template Myconfort',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec le Template "Myconfort".',
+        subject: 'Test de connexion EmailJS MYCONFORT',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT.',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
@@ -448,13 +448,13 @@ export class EmailService {
         has_image: 'false'
       };
 
-      // Envoyer un test via EmailJS avec Template "Myconfort"
+      // Envoyer un test via EmailJS
       console.log('📧 Test avec Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Test avec Template "Myconfort":', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Test avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template "Myconfort"
+        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
         testParams,
         EMAILJS_CONFIG.USER_ID
       );
@@ -463,7 +463,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec Template "Myconfort" ! Service prêt pour l'envoi d'emails avec PDF en base64.`,
+        message: `✅ Connexion EmailJS réussie avec Template ID ${EMAILJS_CONFIG.TEMPLATE_ID} ! Service prêt pour l'envoi d'emails avec PDF en base64.`,
         responseTime
       };
     } catch (error: any) {
@@ -474,7 +474,7 @@ export class EmailService {
       if (error.status === 401 || error.status === 403) {
         errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
       } else if (error.status === 400) {
-        errorMessage += 'Paramètres invalides. Vérifiez votre template "Myconfort".';
+        errorMessage += 'Paramètres invalides. Vérifiez votre template ID.';
       } else if (error.status >= 500) {
         errorMessage += 'Erreur serveur EmailJS. Réessayez plus tard.';
       } else {
@@ -556,7 +556,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec Template "Myconfort" et PDF en base64',
+      status: '✅ EmailJS configuré avec Template ID et PDF en base64',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -592,7 +592,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec Template "Myconfort"');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec Template ID correct');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
@@ -608,7 +608,7 @@ export class EmailService {
   static getCurrentConfig(): { serviceId: string; templateId: string; userId: string; privateKey: string } {
     return {
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
-      templateId: EMAILJS_CONFIG.TEMPLATE_ID, // Maintenant "Myconfort"
+      templateId: EMAILJS_CONFIG.TEMPLATE_ID, // Maintenant template_yng4k8s
       userId: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY
     };
