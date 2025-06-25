@@ -20,8 +20,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // VOTRE SCRIPT GOOGLE APPS SCRIPT CONFIRMÉ
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
+  // NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA/exec";
 
   const handleTestConnection = async () => {
     setIsTesting(true);
@@ -296,7 +296,7 @@ Erreur technique: ${fetchError.message}`);
           </div>
           <div>
             <h2 className="text-2xl font-bold">Export PDF Simple</h2>
-            <p className="text-blue-100">🎯 html2pdf.js • 📧 Google Apps Script • 💾 Drive</p>
+            <p className="text-blue-100">🎯 html2pdf.js • 📧 Nouvelle URL • 💾 Drive</p>
           </div>
         </div>
         
@@ -347,7 +347,7 @@ Erreur technique: ${fetchError.message}`);
         
         <div className="text-sm text-blue-200">
           <div className="flex items-center space-x-2">
-            <span>Script ID: AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-</span>
+            <span>Script ID: AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA</span>
           </div>
           <div className="text-xs mt-1">
             URL: {GOOGLE_SCRIPT_URL}
@@ -456,7 +456,7 @@ Erreur technique: ${fetchError.message}`);
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
         <p className="mt-1 text-xs text-green-200">
-          🔗 Script: AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-
+          🔗 Script: AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA
         </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
           <p className="font-semibold">💡 Pour configurer votre Google Apps Script :</p>

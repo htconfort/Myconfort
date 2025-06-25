@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 VOTRE SCRIPT ID CONFIRMÉ ET FONCTIONNEL
-  private static readonly SCRIPT_ID = 'AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-';
+  // 🔑 NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE ET FONCTIONNELLE
+  private static readonly SCRIPT_ID = 'AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - SCRIPT CONFIRMÉ FONCTIONNEL');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVELLE URL CONFIRMÉE');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -48,9 +48,9 @@ export class GoogleAppsScriptService {
       // Étape 3: Préparer le message personnalisé
       let emailMessage = customMessage || this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant);
 
-      // Étape 4: Préparer les données pour Google Apps Script (FORMAT COMPATIBLE AVEC VOTRE SCRIPT)
+      // Étape 4: Préparer les données pour Google Apps Script (FORMAT COMPATIBLE)
       const requestData = {
-        // Format principal pour votre script de test
+        // Format principal pour votre nouveau script
         pdfBase64: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
         filename: `facture_${invoice.invoiceNumber}.pdf`,
         
@@ -131,7 +131,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
 
-        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT DE TEST
+        // Vérifier si l'envoi a réussi - MISE À JOUR POUR VOTRE NOUVEAU SCRIPT
         if (result.includes('Facture') && result.includes('succès') || 
             result.includes('traitée') || 
             result.includes('enregistrée') ||
@@ -501,7 +501,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Script confirmé et fonctionnel'
+      status: '✅ Nouvelle URL confirmée et fonctionnelle'
     };
   }
 

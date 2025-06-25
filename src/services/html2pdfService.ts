@@ -39,8 +39,8 @@ export class Html2PdfService {
     margin: 0
   };
 
-  // URL de votre Google Apps Script (mise à jour avec votre nouvelle URL finale)
-  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec';
+  // NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE
+  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA/exec';
 
   /**
    * 📄 Génère un PDF à partir de l'élément HTML et l'envoie via Google Apps Script
@@ -308,8 +308,8 @@ export class Html2PdfService {
       
       // Informations destinataire
       email: invoice.client.email,
-      name: invoice.client.name,
       clientName: invoice.client.name,
+      name: invoice.client.name,
       
       // Informations facture
       invoiceNumber: invoice.invoiceNumber,
@@ -424,7 +424,7 @@ export class Html2PdfService {
   static getConfigInfo(): { scriptUrl: string; status: string } {
     return {
       scriptUrl: Html2PdfService.GOOGLE_SCRIPT_URL,
-      status: '✅ Configuré avec html2pdf.js'
+      status: '✅ Nouvelle URL confirmée et fonctionnelle'
     };
   }
 

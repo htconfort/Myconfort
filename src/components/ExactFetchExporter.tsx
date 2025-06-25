@@ -20,15 +20,15 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // VOTRE SCRIPT GOOGLE APPS SCRIPT CONFIRMÉ
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
+  // NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA/exec";
 
   const handleTestConnection = async () => {
     setIsTesting(true);
     setTestResult(null);
 
     try {
-      console.log('🧪 TEST DE CONNEXION - FORMAT EXACT');
+      console.log('🧪 TEST DE CONNEXION - NOUVELLE URL CONFIRMÉE');
       
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
@@ -114,7 +114,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
 
       setExportStep('🚀 Envoi vers Google Apps Script...');
 
-      // UTILISATION DE VOTRE CODE EXACT
+      // UTILISATION DE VOTRE CODE EXACT AVEC NOUVELLE URL
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         body: JSON.stringify({
@@ -177,8 +177,8 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
             <Zap className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Export PDF - Format Exact</h2>
-            <p className="text-green-100">🎯 Votre code exact • 📧 Google Apps Script • 💾 Base64</p>
+            <h2 className="text-2xl font-bold">Export PDF - Nouvelle URL</h2>
+            <p className="text-green-100">🎯 Nouvelle URL confirmée • 📧 Google Apps Script • 💾 Base64</p>
           </div>
         </div>
         
@@ -204,7 +204,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-300" />
-            <h4 className="font-semibold text-green-100">Configuration - Format Exact</h4>
+            <h4 className="font-semibold text-green-100">Configuration - Nouvelle URL</h4>
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -236,7 +236,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
             {GOOGLE_SCRIPT_URL}
           </div>
           <div className="mt-2 text-xs">
-            📋 Format: JSON avec pdfBase64 et filename (votre code exact)
+            📋 Format: JSON avec pdfBase64 et filename (nouvelle URL confirmée)
           </div>
         </div>
         
@@ -281,7 +281,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
 
       {/* Code utilisé */}
       <div className="bg-black/20 rounded-lg p-3 mb-4">
-        <div className="text-xs text-green-100 mb-2 font-semibold">📋 Code utilisé (votre format exact) :</div>
+        <div className="text-xs text-green-100 mb-2 font-semibold">📋 Code utilisé (nouvelle URL confirmée) :</div>
         <div className="font-mono text-xs text-green-200 bg-black/30 p-2 rounded overflow-x-auto">
           {`fetch("${GOOGLE_SCRIPT_URL}", {
   method: "POST",
@@ -343,7 +343,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
               <Zap className="w-6 h-6" />
               <FileText className="w-5 h-5" />
               <Send className="w-5 h-5" />
-              <span>Envoyer PDF (Format Exact)</span>
+              <span>Envoyer PDF (Nouvelle URL)</span>
             </>
           )}
         </button>
@@ -353,15 +353,15 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
       <div className="mt-4 text-center text-sm text-green-100">
         <p>
           {canExport 
-            ? `✅ Prêt pour l'envoi avec votre format exact`
+            ? `✅ Prêt pour l'envoi avec la nouvelle URL confirmée`
             : '⚠️ Complétez les informations ci-dessus'
           }
         </p>
         <p className="mt-1 text-xs text-yellow-200 font-semibold">
-          🎯 Utilise exactement votre code fetch avec pdfBase64 et filename
+          🎯 Utilise la nouvelle URL Google Apps Script confirmée et fonctionnelle
         </p>
         <div className="mt-2 text-xs text-blue-200 bg-blue-500/20 rounded p-2">
-          <p className="font-semibold">💡 Ce composant reproduit exactement votre code :</p>
+          <p className="font-semibold">💡 Nouvelle URL mise à jour :</p>
           <ul className="list-disc list-inside mt-1 text-left">
             <li>Génération PDF avec html2pdf.js</li>
             <li>Conversion en base64 (format sans préfixe)</li>
