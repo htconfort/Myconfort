@@ -42,14 +42,26 @@ export const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, onUpdate 
               />
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-semibold text-[#14281D]">Date:</span>
+              <span className="font-semibold text-[#14281D]">
+                Date: <span className="text-red-600">*</span>
+              </span>
               <input
                 value={invoice.invoiceDate}
                 onChange={(e) => onUpdate({ invoiceDate: e.target.value })}
                 type="date"
-                className="border-2 border-[#477A0C] rounded-lg px-4 py-2 text-[#14281D] bg-white focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all"
+                required
+                className={`border-2 rounded-lg px-4 py-2 text-[#14281D] bg-white focus:ring-2 focus:ring-[#89BBFE] transition-all ${
+                  !invoice.invoiceDate || invoice.invoiceDate.trim() === '' 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : 'border-[#477A0C] focus:border-[#F55D3E]'
+                }`}
               />
             </div>
+            {(!invoice.invoiceDate || invoice.invoiceDate.trim() === '') && (
+              <p className="text-red-600 text-xs font-semibold">
+                ⚠️ La date de la facture est obligatoire
+              </p>
+            )}
             <div>
               <label className="block font-semibold mb-1 text-[#14281D]">
                 Lieu de l'événement: <span className="text-red-600">*</span>

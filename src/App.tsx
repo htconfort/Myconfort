@@ -117,9 +117,14 @@ function App() {
     }
   };
 
-  // 🔒 VALIDATION OBLIGATOIRE RENFORCÉE
+  // 🔒 VALIDATION OBLIGATOIRE RENFORCÉE AVEC DATE
   const validateMandatoryFields = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
+
+    // Validation date (OBLIGATOIRE)
+    if (!invoice.invoiceDate || invoice.invoiceDate.trim() === '') {
+      errors.push('Date de la facture obligatoire');
+    }
 
     // Validation lieu d'événement (OBLIGATOIRE)
     if (!invoice.eventLocation || invoice.eventLocation.trim() === '') {
