@@ -52,14 +52,25 @@ export const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, onUpdate 
             </div>
             <div>
               <label className="block font-semibold mb-1 text-[#14281D]">
-                Lieu de l'événement:
+                Lieu de l'événement: <span className="text-red-600">*</span>
               </label>
               <input
                 value={invoice.eventLocation}
                 onChange={(e) => onUpdate({ eventLocation: e.target.value })}
                 type="text"
-                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-2 text-[#14281D] bg-white focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all"
+                required
+                className={`w-full border-2 rounded-lg px-4 py-2 text-[#14281D] bg-white focus:ring-2 focus:ring-[#89BBFE] transition-all ${
+                  !invoice.eventLocation || invoice.eventLocation.trim() === '' 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : 'border-[#477A0C] focus:border-[#F55D3E]'
+                }`}
+                placeholder="Lieu obligatoire (ex: Salon de l'habitat Paris)"
               />
+              {(!invoice.eventLocation || invoice.eventLocation.trim() === '') && (
+                <p className="text-red-600 text-xs mt-1 font-semibold">
+                  ⚠️ Le lieu de l'événement est obligatoire
+                </p>
+              )}
             </div>
           </div>
         </div>

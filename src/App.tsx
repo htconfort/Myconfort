@@ -33,7 +33,9 @@ function App() {
       postalCode: '',
       city: '',
       phone: '',
-      email: ''
+      email: '',
+      housingType: '',
+      doorCode: ''
     },
     delivery: {
       method: '',
@@ -115,25 +117,90 @@ function App() {
     }
   };
 
-  const handleShowPDFPreview = () => {
-    if (invoice.products.length === 0) {
-      showToast('Veuillez ajouter au moins un produit', 'error');
-      return;
+  // 🔒 VALIDATION OBLIGATOIRE RENFORCÉE
+  const validateMandatoryFields = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Validation lieu d'événement (OBLIGATOIRE)
+    if (!invoice.eventLocation || invoice.eventLocation.trim() === '') {
+      errors.push('Lieu de l\'événement obligatoire');
     }
-    if (!invoice.client.name || !invoice.client.email) {
-      showToast('Veuillez remplir les informations client', 'error');
+
+    // Validation informations client (TOUS OBLIGATOIRES)
+    if (!invoice.client.name || invoice.client.name.trim() === '') {
+      errors.push('Nom complet du client obligatoire');
+    }
+
+    if (!invoice.client.address || invoice.client.address.trim() === '') {
+      errors.push('Adresse du client obligatoire');
+    }
+
+    if (!invoice.client.postalCode || invoice.client.postalCode.trim() === '') {
+      errors.push('Code postal du client obligatoire');
+    }
+
+    if (!invoice.client.city || invoice.client.city.trim() === '') {
+      errors.push('Ville du client obligatoire');
+    }
+
+    if (!invoice.client.housingType || invoice.client.housingType.trim() === '') {
+      errors.push('Type de logement du client obligatoire');
+    }
+
+    if (!invoice.client.doorCode || invoice.client.doorCode.trim() === '') {
+      errors.push('Code porte/étage du client obligatoire');
+    }
+
+    if (!invoice.client.phone || invoice.client.phone.trim() === '') {
+      errors.push('Téléphone du client obligatoire');
+    }
+
+    if (!invoice.client.email || invoice.client.email.trim() === '') {
+      errors.push('Email du client obligatoire');
+    }
+
+    // Validation email format
+    if (invoice.client.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invoice.client.email)) {
+      errors.push('Format d\'email invalide');
+    }
+
+    // Validation produits
+    if (invoice.products.length === 0) {
+      errors.push('Au moins un produit obligatoire');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
+  const handleShowPDFPreview = () => {
+    // 🔒 VALIDATION OBLIGATOIRE AVANT APERÇU
+    const validation = validateMandatoryFields();
+    
+    if (!validation.isValid) {
+      showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
       return;
     }
     
     handleSave();
-    handleSaveInvoice(); // Sauvegarder automatiquement la facture
+    handleSaveInvoice();
     setShowPDFPreview(true);
   };
 
   const handleGeneratePDF = async () => {
     try {
+      // 🔒 VALIDATION OBLIGATOIRE AVANT GÉNÉRATION PDF
+      const validation = validateMandatoryFields();
+      
+      if (!validation.isValid) {
+        showToast(`Impossible de générer le PDF. Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+        return;
+      }
+
       handleSave();
-      handleSaveInvoice(); // Sauvegarder automatiquement la facture
+      handleSaveInvoice();
       showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
       await AdvancedPDFService.downloadPDF(invoice);
@@ -163,7 +230,7 @@ function App() {
   };
 
   const handleEmailJSSuccess = (message: string) => {
-    handleSaveInvoice(); // Sauvegarder automatiquement après envoi réussi
+    handleSaveInvoice();
     showToast(message, 'success');
   };
 
@@ -219,7 +286,9 @@ function App() {
           postalCode: '',
           city: '',
           phone: '',
-          email: ''
+          email: '',
+          housingType: '',
+          doorCode: ''
         },
         delivery: {
           method: '',
@@ -243,28 +312,18 @@ function App() {
     }
   };
 
-  const validateInvoice = () => {
-    const errors = [];
-    
-    if (!invoice.client.name) errors.push('Nom du client requis');
-    if (!invoice.client.email) errors.push('Email du client requis');
-    if (!invoice.client.address) errors.push('Adresse du client requise');
-    if (!invoice.client.city) errors.push('Ville du client requise');
-    if (!invoice.client.postalCode) errors.push('Code postal du client requis');
-    if (!invoice.client.phone) errors.push('Téléphone du client requis');
-    if (invoice.products.length === 0) errors.push('Au moins un produit requis');
-    
-    return errors;
-  };
-
+  // 🔒 VALIDATION COMPLÈTE POUR BOUTON PDF
   const handleValidateAndPDF = () => {
-    const errors = validateInvoice();
-    if (errors.length > 0) {
-      showToast(`Erreurs: ${errors.join(', ')}`, 'error');
+    const validation = validateMandatoryFields();
+    if (!validation.isValid) {
+      showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
       return;
     }
     handleShowPDFPreview();
   };
+
+  // 🔒 VÉRIFICATION DES CHAMPS OBLIGATOIRES POUR L'AFFICHAGE
+  const validation = validateMandatoryFields();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter'] text-gray-900">
@@ -292,20 +351,52 @@ function App() {
             <div className="text-right">
               <div className="text-sm text-blue-100">Statut de la facture</div>
               <div className="flex items-center space-x-2 mt-1">
-                {invoice.signature ? (
+                {validation.isValid ? (
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>✅</span>
+                    <span>COMPLÈTE</span>
+                  </div>
+                ) : (
+                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>⚠️</span>
+                    <span>INCOMPLÈTE</span>
+                  </div>
+                )}
+                {invoice.signature && (
                   <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
                     <span>🔒</span>
                     <span>SIGNÉE</span>
-                  </div>
-                ) : (
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    EN ATTENTE DE SIGNATURE
                   </div>
                 )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* 🔒 ALERTE CHAMPS OBLIGATOIRES */}
+        {!validation.isValid && (
+          <div className="bg-red-100 border-2 border-red-400 rounded-xl p-4 mb-6">
+            <div className="flex items-start space-x-3">
+              <div className="bg-red-500 text-white p-2 rounded-full">
+                <span>⚠️</span>
+              </div>
+              <div>
+                <h3 className="text-red-800 font-bold text-lg">Champs obligatoires manquants</h3>
+                <p className="text-red-700 mb-2">
+                  Veuillez compléter tous les champs obligatoires avant de pouvoir éditer la facture :
+                </p>
+                <ul className="list-disc list-inside text-red-700 space-y-1">
+                  {validation.errors.map((error, index) => (
+                    <li key={index} className="font-semibold">{error}</li>
+                  ))}
+                </ul>
+                <p className="text-red-600 mt-3 text-sm font-semibold">
+                  ❌ L'édition de la facture (PDF, aperçu, envoi) est bloquée tant que ces champs ne sont pas remplis.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <InvoiceHeader
           invoice={invoice}
@@ -462,7 +553,13 @@ function App() {
               <div className="flex flex-wrap gap-3 justify-center">
                 <button
                   onClick={handleValidateAndPDF}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                  disabled={!validation.isValid}
+                  className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105 disabled:hover:scale-100 ${
+                    validation.isValid 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
+                  title={validation.isValid ? "Voir l'aperçu et générer le PDF" : "Complétez tous les champs obligatoires"}
                 >
                   <span>APERÇU & PDF</span>
                 </button>
