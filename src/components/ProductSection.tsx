@@ -198,6 +198,24 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
     setEditingIndex(null);
   };
 
+  // 🔒 FONCTION POUR VÉRIFIER SI LES CHAMPS OBLIGATOIRES SONT REMPLIS
+  const isPaymentMethodEmpty = () => {
+    return !paymentMethod || paymentMethod.trim() === '';
+  };
+
+  const areTermsAccepted = () => {
+    return termsAccepted === true;
+  };
+
+  // Style pour les champs obligatoires
+  const getPaymentMethodStyle = () => {
+    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold ${
+      isPaymentMethodEmpty() 
+        ? 'border-red-500 focus:border-red-500' 
+        : 'border-[#477A0C] focus:border-[#F55D3E]'
+    }`;
+  };
+
   return (
     <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
@@ -682,7 +700,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         </div>
 
-        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) */}
+        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) AVEC CHAMPS OBLIGATOIRES */}
         <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
@@ -692,17 +710,18 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
           
           <div className="space-y-4">
-            {/* Méthode de paiement */}
+            {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE */}
             <div>
               <label className="block text-[#14281D] font-semibold mb-1">
-                Méthode de paiement*
+                Méthode de paiement <span className="text-red-600">*</span>
               </label>
               <select
                 value={paymentMethod}
                 onChange={(e) => onPaymentMethodChange(e.target.value)}
-                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold"
+                required
+                className={getPaymentMethodStyle()}
               >
-                <option value="">Sélectionner</option>
+                <option value="">Sélectionner obligatoirement</option>
                 <option value="Virement">Virement bancaire</option>
                 <option value="Carte Bleue">Carte Bleue</option>
                 <option value="Alma">Alma (paiement en plusieurs fois)</option>
@@ -710,6 +729,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 <option value="Chèque">Chèque</option>
                 <option value="Acompte">Acompte</option>
               </select>
+              {isPaymentMethodEmpty() && (
+                <p className="text-red-600 text-xs mt-1 font-semibold">
+                  ⚠️ La méthode de paiement est obligatoire
+                </p>
+              )}
             </div>
             
             {/* Conseiller */}
@@ -726,23 +750,36 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
               />
             </div>
 
-            {/* Conditions générales */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
-              <label className="flex items-center">
+            {/* 🔒 CONDITIONS GÉNÉRALES OBLIGATOIRES */}
+            <div className={`bg-gradient-to-r from-green-50 to-emerald-50 border-2 rounded-lg p-4 ${
+              areTermsAccepted() ? 'border-green-300' : 'border-red-300'
+            }`}>
+              <label className="flex items-start">
                 <input
                   checked={termsAccepted}
                   onChange={(e) => onTermsAcceptedChange(e.target.checked)}
                   type="checkbox"
-                  className="form-checkbox h-5 w-5 text-[#477A0C] rounded focus:ring-[#477A0C] focus:ring-2 mr-3"
+                  required
+                  className={`form-checkbox h-5 w-5 rounded focus:ring-2 mr-3 mt-0.5 ${
+                    areTermsAccepted() 
+                      ? 'text-[#477A0C] focus:ring-[#477A0C]' 
+                      : 'text-red-500 focus:ring-red-500'
+                  }`}
                 />
-                <span className="text-[#14281D] font-semibold">
-                  J'ai lu et j'accepte les conditions générales de vente
+                <span className={`font-semibold ${
+                  areTermsAccepted() ? 'text-[#14281D]' : 'text-red-600'
+                }`}>
+                  J'ai lu et j'accepte les conditions générales de vente <span className="text-red-600">*</span>
                 </span>
               </label>
-              {termsAccepted && (
+              {areTermsAccepted() ? (
                 <div className="mt-2 flex items-center text-green-700">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-semibold">Conditions acceptées</span>
+                  <span className="text-sm font-semibold">✅ Conditions acceptées</span>
+                </div>
+              ) : (
+                <div className="mt-2 text-red-600 text-xs font-semibold">
+                  ⚠️ L'acceptation des conditions générales de vente est obligatoire
                 </div>
               )}
             </div>
@@ -776,6 +813,30 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                     <span>✍️</span>
                     <span>Cliquer pour signer électroniquement</span>
                   </button>
+                )}
+              </div>
+            </div>
+
+            {/* 🔒 RÉSUMÉ DES CHAMPS OBLIGATOIRES */}
+            <div className={`p-3 rounded-lg border-2 ${
+              !isPaymentMethodEmpty() && areTermsAccepted() 
+                ? 'bg-green-50 border-green-300' 
+                : 'bg-red-50 border-red-300'
+            }`}>
+              <div className="text-sm font-semibold">
+                {!isPaymentMethodEmpty() && areTermsAccepted() ? (
+                  <div className="text-green-800 flex items-center">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    ✅ Tous les champs obligatoires sont remplis
+                  </div>
+                ) : (
+                  <div className="text-red-800">
+                    ⚠️ Champs obligatoires manquants :
+                    <ul className="list-disc list-inside mt-1 text-xs">
+                      {isPaymentMethodEmpty() && <li>Méthode de paiement</li>}
+                      {!areTermsAccepted() && <li>Acceptation des conditions générales</li>}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>
