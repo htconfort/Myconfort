@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Mail, Key, Settings, CheckCircle, AlertCircle, Loader, TestTube } from 'lucide-react';
+import { X, Save, Mail, Key, Settings, CheckCircle, AlertCircle, Loader, TestTube, Star } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { EmailService } from '../services/emailService';
 
@@ -18,7 +18,6 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
 }) => {
   const [serviceId, setServiceId] = useState('');
   const [templateId, setTemplateId] = useState('');
-  const [userId, setUserId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
@@ -26,40 +25,25 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
   // Charger la configuration existante
   useEffect(() => {
     if (isOpen) {
-      const config = localStorage.getItem('emailjs_config');
-      if (config) {
-        try {
-          const parsedConfig = JSON.parse(config);
-          setServiceId(parsedConfig.serviceId || '');
-          setTemplateId(parsedConfig.templateId || '');
-          setUserId(parsedConfig.userId || '');
-        } catch (error) {
-          console.error('Erreur lors du chargement de la configuration EmailJS:', error);
-        }
-      }
+      const currentConfig = EmailService.getCurrentConfig();
+      setServiceId(currentConfig.serviceId === 'YOUR_SERVICE_ID' ? '' : currentConfig.serviceId);
+      setTemplateId(currentConfig.templateId === 'YOUR_TEMPLATE_ID' ? '' : currentConfig.templateId);
     }
   }, [isOpen]);
 
   const handleSaveConfig = () => {
-    if (!serviceId || !templateId || !userId) {
-      onError('Veuillez remplir tous les champs');
+    if (!serviceId || !templateId) {
+      onError('Veuillez remplir le Service ID et le Template ID');
       return;
     }
 
     setIsSaving(true);
 
     try {
-      // Mettre à jour la configuration dans le service
-      EmailService.updateConfig(serviceId, templateId, userId);
+      // Mettre à jour la configuration dans le service (sans changer l'API Key)
+      EmailService.updateConfig(serviceId, templateId);
       
-      // Sauvegarder dans localStorage
-      localStorage.setItem('emailjs_config', JSON.stringify({
-        serviceId,
-        templateId,
-        userId
-      }));
-
-      onSuccess('Configuration EmailJS enregistrée avec succès');
+      onSuccess('Configuration EmailJS enregistrée avec succès ! Votre API Key est déjà configurée.');
       setIsSaving(false);
     } catch (error: any) {
       onError(`Erreur lors de l'enregistrement: ${error.message}`);
@@ -68,8 +52,8 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
   };
 
   const handleTestConnection = async () => {
-    if (!serviceId || !templateId || !userId) {
-      onError('Veuillez remplir tous les champs avant de tester');
+    if (!serviceId || !templateId) {
+      onError('Veuillez remplir le Service ID et le Template ID avant de tester');
       return;
     }
 
@@ -78,7 +62,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
 
     try {
       // Mettre à jour la configuration temporairement pour le test
-      EmailService.updateConfig(serviceId, templateId, userId);
+      EmailService.updateConfig(serviceId, templateId);
       
       // Tester la connexion
       const result = await EmailService.testConnection();
@@ -98,6 +82,8 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
 
   if (!isOpen) return null;
 
+  const configInfo = EmailService.getConfigInfo();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Configuration EmailJS" maxWidth="max-w-2xl">
       <div className="space-y-6">
@@ -116,6 +102,23 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           <p className="mt-2 text-sm text-blue-100">
             EmailJS permet d'envoyer des emails directement depuis le navigateur, sans serveur backend.
             Vous devez créer un compte sur <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="underline">EmailJS</a> et configurer un service et un template.
+          </p>
+        </div>
+
+        {/* API Key déjà configurée */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <Star className="w-5 h-5 text-green-600" />
+            <h4 className="font-medium text-green-800">API Key déjà configurée !</h4>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Key className="w-4 h-4 text-green-600" />
+            <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
+              {configInfo.apiKey}
+            </span>
+          </div>
+          <p className="text-xs text-green-600 mt-1">
+            ✅ Votre API Key EmailJS est déjà configurée. Il vous reste seulement à ajouter votre Service ID et Template ID.
           </p>
         </div>
 
@@ -158,25 +161,6 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               Trouvez votre Template ID dans la section "Email Templates" de votre compte EmailJS
             </p>
           </div>
-          
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              User ID (Public Key) <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center">
-              <Key className="w-5 h-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                placeholder="xxxxxxxxxxxxxxxxxxxxxx"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Trouvez votre User ID (Public Key) dans la section "Account" &gt; "API Keys" de votre compte EmailJS
-            </p>
-          </div>
         </div>
 
         {/* Résultat du test */}
@@ -207,22 +191,18 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
 
         {/* Instructions pour créer un template */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="font-medium text-yellow-800 mb-2">Comment configurer votre template EmailJS</h4>
+          <h4 className="font-medium text-yellow-800 mb-2">🚀 Étapes rapides pour finaliser la configuration</h4>
           <ol className="list-decimal list-inside text-sm text-yellow-700 space-y-1">
-            <li>Créez un compte sur <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">EmailJS</a></li>
-            <li>Ajoutez un service email (Gmail, Outlook, etc.)</li>
-            <li>Créez un template avec les variables suivantes:
-              <ul className="list-disc list-inside ml-4 mt-1 text-xs">
-                <li>{'{{to_email}}'} - Email du destinataire</li>
-                <li>{'{{to_name}}'} - Nom du destinataire</li>
-                <li>{'{{from_name}}'} - Nom de l'expéditeur</li>
-                <li>{'{{invoice_number}}'} - Numéro de facture</li>
-                <li>{'{{message}}'} - Corps du message</li>
-                <li>{'{{pdf_data}}'} - Données PDF en base64 (pour les pièces jointes)</li>
-              </ul>
-            </li>
-            <li>Copiez les IDs et collez-les dans ce formulaire</li>
+            <li>Allez sur <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">EmailJS</a> et connectez-vous</li>
+            <li>Ajoutez un service email (Gmail, Outlook, etc.) et notez le <strong>Service ID</strong></li>
+            <li>Créez un template d'email et notez le <strong>Template ID</strong></li>
+            <li>Collez ces IDs dans les champs ci-dessus</li>
+            <li>Cliquez sur "Tester" puis "Enregistrer"</li>
           </ol>
+          <div className="mt-2 p-2 bg-yellow-100 rounded text-xs">
+            <p className="font-semibold">💡 Variables importantes pour votre template :</p>
+            <p><code>{'{{to_email}}'}</code>, <code>{'{{to_name}}'}</code>, <code>{'{{invoice_number}}'}</code>, <code>{'{{message}}'}</code>, <code>{'{{pdf_data}}'}</code></p>
+          </div>
         </div>
 
         {/* Actions */}
@@ -238,7 +218,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           <div className="flex space-x-3">
             <button
               onClick={handleTestConnection}
-              disabled={isSaving || isTesting || !serviceId || !templateId || !userId}
+              disabled={isSaving || isTesting || !serviceId || !templateId}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
             >
               {isTesting ? (
@@ -256,7 +236,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
             
             <button
               onClick={handleSaveConfig}
-              disabled={isSaving || !serviceId || !templateId || !userId}
+              disabled={isSaving || !serviceId || !templateId}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
             >
               {isSaving ? (

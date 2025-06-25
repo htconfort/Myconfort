@@ -3,12 +3,20 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS
+// Configuration EmailJS avec votre API Key
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'YOUR_SERVICE_ID', // À remplacer par votre Service ID EmailJS
-  TEMPLATE_ID: 'YOUR_TEMPLATE_ID', // À remplacer par votre Template ID EmailJS
-  USER_ID: 'YOUR_USER_ID', // À remplacer par votre User ID EmailJS
-  CONFIGURED: false // Mettre à true une fois configuré
+  SERVICE_ID: localStorage.getItem('emailjs_service_id') || 'YOUR_SERVICE_ID',
+  TEMPLATE_ID: localStorage.getItem('emailjs_template_id') || 'YOUR_TEMPLATE_ID', 
+  USER_ID: 'hvgYUCG9j2lURrt5k', // Votre API Key fournie
+  CONFIGURED: false
+};
+
+// Vérifier si la configuration est complète
+const updateConfigStatus = () => {
+  EMAILJS_CONFIG.CONFIGURED = 
+    EMAILJS_CONFIG.SERVICE_ID !== 'YOUR_SERVICE_ID' &&
+    EMAILJS_CONFIG.TEMPLATE_ID !== 'YOUR_TEMPLATE_ID' &&
+    EMAILJS_CONFIG.USER_ID === 'hvgYUCG9j2lURrt5k';
 };
 
 export class EmailService {
@@ -16,10 +24,8 @@ export class EmailService {
    * Vérifie si EmailJS est configuré
    */
   static isConfigured(): boolean {
-    return EMAILJS_CONFIG.CONFIGURED && 
-           EMAILJS_CONFIG.SERVICE_ID !== 'YOUR_SERVICE_ID' &&
-           EMAILJS_CONFIG.TEMPLATE_ID !== 'YOUR_TEMPLATE_ID' &&
-           EMAILJS_CONFIG.USER_ID !== 'YOUR_USER_ID';
+    updateConfigStatus();
+    return EMAILJS_CONFIG.CONFIGURED;
   }
 
   /**
@@ -31,7 +37,7 @@ export class EmailService {
       
       if (!this.isConfigured()) {
         console.error('❌ EmailJS non configuré');
-        throw new Error('EmailJS n\'est pas configuré. Veuillez configurer vos identifiants EmailJS.');
+        throw new Error('EmailJS n\'est pas entièrement configuré. Il vous manque le Service ID et/ou le Template ID.');
       }
       
       // Générer le PDF
@@ -70,8 +76,8 @@ export class EmailService {
         message: this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant)
       };
 
-      // Envoyer via EmailJS
-      console.log('📧 Envoi via EmailJS...');
+      // Envoyer via EmailJS avec votre API Key
+      console.log('📧 Envoi via EmailJS avec API Key:', EMAILJS_CONFIG.USER_ID);
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -99,7 +105,7 @@ export class EmailService {
       
       if (!this.isConfigured()) {
         console.error('❌ EmailJS non configuré');
-        throw new Error('EmailJS n\'est pas configuré. Veuillez configurer vos identifiants EmailJS.');
+        throw new Error('EmailJS n\'est pas entièrement configuré. Il vous manque le Service ID et/ou le Template ID.');
       }
 
       // Préparer le message pour l'aperçu
@@ -121,8 +127,8 @@ export class EmailService {
         advisor_name: invoice.advisorName || 'MYCONFORT'
       };
 
-      // Envoyer via EmailJS
-      console.log('📧 Envoi aperçu via EmailJS...');
+      // Envoyer via EmailJS avec votre API Key
+      console.log('📧 Envoi aperçu via EmailJS avec API Key:', EMAILJS_CONFIG.USER_ID);
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -144,11 +150,12 @@ export class EmailService {
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
       console.log('🧪 TEST DE CONNEXION EMAILJS');
+      console.log('🔑 API Key utilisée:', EMAILJS_CONFIG.USER_ID);
       
       if (!this.isConfigured()) {
         return {
           success: false,
-          message: '❌ EmailJS n\'est pas configuré. Veuillez configurer vos identifiants EmailJS.'
+          message: '❌ Configuration incomplète. Il vous manque le Service ID et/ou le Template ID. Votre API Key est déjà configurée !'
         };
       }
       
@@ -156,14 +163,19 @@ export class EmailService {
       
       // Préparer les données de test
       const testParams = {
-        to_email: 'test@example.com', // Ne sera pas réellement envoyé
+        to_email: 'test@myconfort.com', // Email de test
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         subject: 'Test de connexion EmailJS',
         message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT.',
+        invoice_number: 'TEST-001',
+        invoice_date: new Date().toLocaleDateString('fr-FR'),
+        total_amount: '100,00 €'
       };
 
-      // Envoyer un test via EmailJS
+      // Envoyer un test via EmailJS avec votre API Key
+      console.log('📧 Test avec Service ID:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('📧 Test avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -184,11 +196,11 @@ export class EmailService {
       let errorMessage = '❌ Erreur de connexion EmailJS: ';
       
       if (error.status === 401 || error.status === 403) {
-        errorMessage += 'Identifiants incorrects ou non autorisés';
+        errorMessage += 'Identifiants incorrects ou non autorisés. Vérifiez votre Service ID et Template ID.';
       } else if (error.status === 400) {
-        errorMessage += 'Paramètres invalides';
+        errorMessage += 'Paramètres invalides. Vérifiez votre configuration de template.';
       } else if (error.status >= 500) {
-        errorMessage += 'Erreur serveur EmailJS';
+        errorMessage += 'Erreur serveur EmailJS. Réessayez dans quelques minutes.';
       } else {
         errorMessage += error.text || error.message || 'Erreur inconnue';
       }
@@ -265,12 +277,14 @@ export class EmailService {
   /**
    * Obtient les informations de configuration
    */
-  static getConfigInfo(): { configured: boolean; status: string } {
+  static getConfigInfo(): { configured: boolean; status: string; apiKey: string } {
+    updateConfigStatus();
     return {
       configured: this.isConfigured(),
       status: this.isConfigured() 
         ? '✅ EmailJS configuré et prêt à l\'emploi' 
-        : '⚠️ EmailJS non configuré - Veuillez configurer vos identifiants'
+        : '⚠️ Il vous manque le Service ID et/ou le Template ID',
+      apiKey: EMAILJS_CONFIG.USER_ID
     };
   }
 
@@ -281,7 +295,7 @@ export class EmailService {
     const errors: string[] = [];
 
     if (!this.isConfigured()) {
-      errors.push('EmailJS n\'est pas configuré');
+      errors.push('Configuration EmailJS incomplète (Service ID et/ou Template ID manquants)');
     }
 
     if (!invoice.client.email) {
@@ -305,10 +319,30 @@ export class EmailService {
   /**
    * Met à jour la configuration EmailJS
    */
-  static updateConfig(serviceId: string, templateId: string, userId: string): void {
+  static updateConfig(serviceId: string, templateId: string, userId?: string): void {
     EMAILJS_CONFIG.SERVICE_ID = serviceId;
     EMAILJS_CONFIG.TEMPLATE_ID = templateId;
-    EMAILJS_CONFIG.USER_ID = userId;
-    EMAILJS_CONFIG.CONFIGURED = true;
+    
+    // Garder votre API Key si userId n'est pas fourni
+    if (userId) {
+      EMAILJS_CONFIG.USER_ID = userId;
+    }
+    
+    // Sauvegarder dans localStorage
+    localStorage.setItem('emailjs_service_id', serviceId);
+    localStorage.setItem('emailjs_template_id', templateId);
+    
+    updateConfigStatus();
+  }
+
+  /**
+   * Obtient la configuration actuelle
+   */
+  static getCurrentConfig(): { serviceId: string; templateId: string; userId: string } {
+    return {
+      serviceId: EMAILJS_CONFIG.SERVICE_ID,
+      templateId: EMAILJS_CONFIG.TEMPLATE_ID,
+      userId: EMAILJS_CONFIG.USER_ID
+    };
   }
 }
