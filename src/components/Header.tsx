@@ -1,20 +1,20 @@
 import React from 'react';
-import { Save, FileText, User, Send, Users, Package, Building2 } from 'lucide-react';
+import { FileText, User, Send, Users, Package, Building2, Archive } from 'lucide-react';
 
 interface HeaderProps {
-  onSave: () => void;
   onGeneratePDF: () => void;
   onShowClients: () => void;
   onSendEmail: () => void;
+  onShowInvoices: () => void;
   onScrollToClient?: () => void;
   onScrollToProducts?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onSave,
   onGeneratePDF,
   onShowClients,
   onSendEmail,
+  onShowInvoices,
   onScrollToClient,
   onScrollToProducts
 }) => {
@@ -57,12 +57,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Actions principales */}
           <button
-            onClick={onSave}
+            onClick={onShowInvoices}
             className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
-            title="Enregistrer le brouillon"
+            title="Voir toutes les factures"
           >
-            <Save size={18} />
-            <span className="hidden md:inline">Enregistrer</span>
+            <Archive size={18} />
+            <span className="hidden md:inline">Factures</span>
           </button>
           
           <button

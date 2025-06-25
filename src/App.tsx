@@ -4,6 +4,7 @@ import { InvoiceHeader } from './components/InvoiceHeader';
 import { ClientSection } from './components/ClientSection';
 import { ProductSection } from './components/ProductSection';
 import { ClientListModal } from './components/ClientListModal';
+import { InvoicesListModal } from './components/InvoicesListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { SignaturePad } from './components/SignaturePad';
@@ -12,7 +13,7 @@ import { InvoicePreview } from './components/InvoicePreview';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
-import { saveClients, loadClients, saveDraft, loadDraft, saveClient } from './utils/storage';
+import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
 import { PDFService } from './services/pdfService';
 import { AdvancedPDFService } from './services/advancedPdfService';
 
@@ -46,7 +47,9 @@ function App() {
   });
 
   const [clients, setClients] = useState<Client[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [showClientsList, setShowClientsList] = useState(false);
+  const [showInvoicesList, setShowInvoicesList] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
@@ -59,6 +62,7 @@ function App() {
 
   useEffect(() => {
     setClients(loadClients());
+    setInvoices(loadInvoices());
     const draft = loadDraft();
     if (draft) {
       setInvoice(draft);
@@ -94,6 +98,21 @@ function App() {
     }
   };
 
+  const handleSaveInvoice = () => {
+    try {
+      if (!invoice.client.name || !invoice.client.email || invoice.products.length === 0) {
+        showToast('Veuillez compléter les informations client et ajouter au moins un produit', 'error');
+        return;
+      }
+
+      saveInvoice(invoice);
+      setInvoices(loadInvoices());
+      showToast(`Facture ${invoice.invoiceNumber} enregistrée avec succès`, 'success');
+    } catch (error) {
+      showToast('Erreur lors de l\'enregistrement de la facture', 'error');
+    }
+  };
+
   const handleShowPDFPreview = () => {
     if (invoice.products.length === 0) {
       showToast('Veuillez ajouter au moins un produit', 'error');
@@ -105,12 +124,14 @@ function App() {
     }
     
     handleSave();
+    handleSaveInvoice(); // Sauvegarder automatiquement la facture
     setShowPDFPreview(true);
   };
 
   const handleGeneratePDF = async () => {
     try {
       handleSave();
+      handleSaveInvoice(); // Sauvegarder automatiquement la facture
       showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
       await AdvancedPDFService.downloadPDF(invoice);
@@ -140,6 +161,7 @@ function App() {
   };
 
   const handleEmailJSSuccess = (message: string) => {
+    handleSaveInvoice(); // Sauvegarder automatiquement après envoi réussi
     showToast(message, 'success');
   };
 
@@ -158,6 +180,20 @@ function App() {
     setClients(updatedClients);
     saveClients(updatedClients);
     showToast('Client supprimé', 'success');
+  };
+
+  const handleLoadInvoice = (loadedInvoice: Invoice) => {
+    setInvoice(loadedInvoice);
+    showToast(`Facture ${loadedInvoice.invoiceNumber} chargée avec succès`, 'success');
+  };
+
+  const handleDeleteInvoice = (index: number) => {
+    const invoiceToDelete = invoices[index];
+    if (invoiceToDelete) {
+      deleteInvoice(invoiceToDelete.invoiceNumber);
+      setInvoices(loadInvoices());
+      showToast(`Facture ${invoiceToDelete.invoiceNumber} supprimée`, 'success');
+    }
   };
 
   const handleSaveSignature = (signature: string) => {
@@ -231,9 +267,9 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-['Inter'] text-gray-900">
       <Header
-        onSave={handleSave}
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}
+        onShowInvoices={() => setShowInvoicesList(true)}
         onSendEmail={() => setShowEmailJSConfig(true)}
         onScrollToClient={() => scrollToSection('client-section')}
         onScrollToProducts={() => scrollToSection('products-section')}
@@ -430,6 +466,12 @@ function App() {
                   <span>APERÇU & PDF</span>
                 </button>
                 <button
+                  onClick={handleSaveInvoice}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>ENREGISTRER</span>
+                </button>
+                <button
                   onClick={handleReset}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
                 >
@@ -454,6 +496,14 @@ function App() {
         clients={clients}
         onLoadClient={handleLoadClient}
         onDeleteClient={handleDeleteClient}
+      />
+
+      <InvoicesListModal
+        isOpen={showInvoicesList}
+        onClose={() => setShowInvoicesList(false)}
+        invoices={invoices}
+        onLoadInvoice={handleLoadInvoice}
+        onDeleteInvoice={handleDeleteInvoice}
       />
 
       <PDFPreviewModal

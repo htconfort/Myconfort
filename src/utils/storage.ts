@@ -36,3 +36,64 @@ export const saveClient = (client: Client): void => {
   
   saveClients(clients);
 };
+
+// 📋 NOUVELLES FONCTIONS POUR LA GESTION DES FACTURES
+export const saveInvoices = (invoices: Invoice[]): void => {
+  localStorage.setItem('myconfortInvoices', JSON.stringify(invoices));
+};
+
+export const loadInvoices = (): Invoice[] => {
+  const stored = localStorage.getItem('myconfortInvoices');
+  return stored ? JSON.parse(stored) : [];
+};
+
+export const saveInvoice = (invoice: Invoice): void => {
+  const invoices = loadInvoices();
+  const existingIndex = invoices.findIndex(inv => 
+    inv.invoiceNumber === invoice.invoiceNumber
+  );
+  
+  if (existingIndex >= 0) {
+    // Mettre à jour la facture existante
+    invoices[existingIndex] = { 
+      ...invoice, 
+      updatedAt: new Date().toISOString() 
+    };
+  } else {
+    // Ajouter une nouvelle facture
+    invoices.push({
+      ...invoice,
+      createdAt: new Date().toISOString()
+    });
+  }
+  
+  saveInvoices(invoices);
+};
+
+export const deleteInvoice = (invoiceNumber: string): void => {
+  const invoices = loadInvoices();
+  const filteredInvoices = invoices.filter(inv => inv.invoiceNumber !== invoiceNumber);
+  saveInvoices(filteredInvoices);
+};
+
+export const getInvoiceByNumber = (invoiceNumber: string): Invoice | null => {
+  const invoices = loadInvoices();
+  return invoices.find(inv => inv.invoiceNumber === invoiceNumber) || null;
+};
+
+// Fonction pour nettoyer les anciennes données (optionnel)
+export const cleanupOldInvoices = (daysToKeep: number = 365): void => {
+  const invoices = loadInvoices();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  
+  const filteredInvoices = invoices.filter(invoice => {
+    const invoiceDate = new Date(invoice.invoiceDate);
+    return invoiceDate >= cutoffDate;
+  });
+  
+  if (filteredInvoices.length !== invoices.length) {
+    saveInvoices(filteredInvoices);
+    console.log(`Nettoyage: ${invoices.length - filteredInvoices.length} factures anciennes supprimées`);
+  }
+};
