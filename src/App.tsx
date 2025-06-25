@@ -8,7 +8,6 @@ import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { SignaturePad } from './components/SignaturePad';
 import { EmailSender } from './components/EmailSender';
-import { SimpleHtml2PdfExporter } from './components/SimpleHtml2PdfExporter';
 import { InvoicePreview } from './components/InvoicePreview';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
@@ -455,19 +454,12 @@ function App() {
           </div>
         </div>
 
-        {/* EmailJS Sender */}
+        {/* EmailJS Sender - BLOC UNIQUE */}
         <EmailSender
           invoice={invoice}
           onSuccess={handleEmailJSSuccess}
           onError={handleEmailJSError}
           onShowConfig={() => setShowEmailJSConfig(true)}
-        />
-
-        {/* Export PDF Simple avec html2pdf */}
-        <SimpleHtml2PdfExporter
-          invoice={invoice}
-          onSuccess={handleEmailJSSuccess}
-          onError={handleEmailJSError}
         />
 
         {/* Aperçu de la facture */}
@@ -488,8 +480,8 @@ function App() {
             </div>
             
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-              <p className="font-semibold">🎯 Aperçu html2pdf.js</p>
-              <p>Cet aperçu sera converti en PDF avec html2pdf.js. Le PDF généré sera identique à ce que vous voyez ici.</p>
+              <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
+              <p>Cet aperçu sera converti en PDF et envoyé par email via EmailJS avec votre Template "Myconfort".</p>
             </div>
           </div>
         )}
