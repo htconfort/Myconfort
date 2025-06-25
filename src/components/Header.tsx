@@ -6,6 +6,7 @@ interface HeaderProps {
   onShowClients: () => void;
   onSendEmail: () => void;
   onShowInvoices: () => void;
+  onShowProducts: () => void;
   onScrollToClient?: () => void;
   onScrollToProducts?: () => void;
 }
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onShowClients,
   onSendEmail,
   onShowInvoices,
+  onShowProducts,
   onScrollToClient,
   onScrollToProducts
 }) => {
@@ -57,12 +59,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Actions principales */}
           <button
-            onClick={onShowInvoices}
-            className="bg-[#14281D] hover:bg-[#0F1F15] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
-            title="Voir toutes les factures"
+            onClick={onShowProducts}
+            className="bg-[#F2EFE2] hover:bg-white px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-black"
+            title="Gérer les produits"
           >
-            <Archive size={18} />
-            <span className="hidden md:inline">Factures</span>
+            <Package size={18} />
+            <span className="hidden md:inline">Produits</span>
           </button>
           
           <button
@@ -72,6 +74,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <FileText size={18} />
             <span className="hidden md:inline">PDF</span>
+          </button>
+
+          <button
+            onClick={onShowInvoices}
+            className="bg-[#14281D] hover:bg-[#0F1F15] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
+            title="Voir toutes les factures"
+          >
+            <Archive size={18} />
+            <span className="hidden md:inline">Factures</span>
           </button>
           
           <button

@@ -5,6 +5,7 @@ import { ClientSection } from './components/ClientSection';
 import { ProductSection } from './components/ProductSection';
 import { ClientListModal } from './components/ClientListModal';
 import { InvoicesListModal } from './components/InvoicesListModal';
+import { ProductsListModal } from './components/ProductsListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { SignaturePad } from './components/SignaturePad';
@@ -50,6 +51,7 @@ function App() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [showClientsList, setShowClientsList] = useState(false);
   const [showInvoicesList, setShowInvoicesList] = useState(false);
+  const [showProductsList, setShowProductsList] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
@@ -270,6 +272,7 @@ function App() {
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}
         onShowInvoices={() => setShowInvoicesList(true)}
+        onShowProducts={() => setShowProductsList(true)}
         onSendEmail={() => setShowEmailJSConfig(true)}
         onScrollToClient={() => scrollToSection('client-section')}
         onScrollToProducts={() => scrollToSection('products-section')}
@@ -504,6 +507,11 @@ function App() {
         invoices={invoices}
         onLoadInvoice={handleLoadInvoice}
         onDeleteInvoice={handleDeleteInvoice}
+      />
+
+      <ProductsListModal
+        isOpen={showProductsList}
+        onClose={() => setShowProductsList(false)}
       />
 
       <PDFPreviewModal
