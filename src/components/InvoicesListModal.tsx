@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileText, Eye, Download, Trash2, Search, Calendar, Euro, User, Mail, Filter } from 'lucide-react';
+import { X, FileText, Eye, Download, Trash2, Search, Calendar, Euro, User, Mail, Filter, MapPin } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
@@ -22,7 +22,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
   onLoadInvoice
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'date' | 'number' | 'client' | 'amount'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'number' | 'client' | 'amount' | 'eventLocation'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filterStatus, setFilterStatus] = useState<'all' | 'signed' | 'unsigned'>('all');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -34,7 +34,8 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
       const matchesSearch = 
         invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.client.email.toLowerCase().includes(searchTerm.toLowerCase());
+        invoice.client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (invoice.eventLocation && invoice.eventLocation.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesFilter = 
         filterStatus === 'all' ||
@@ -63,6 +64,12 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
           const totalB = b.products.reduce((sum, product) => 
             sum + calculateProductTotal(product.quantity, product.priceTTC, product.discount, product.discountType), 0);
           comparison = totalA - totalB;
+          break;
+        case 'eventLocation':
+          // Tri par lieu d'événement (les factures sans lieu en dernier)
+          const locationA = a.eventLocation || '';
+          const locationB = b.eventLocation || '';
+          comparison = locationA.localeCompare(locationB);
           break;
       }
       
@@ -157,7 +164,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Rechercher facture, client..."
+                  placeholder="Rechercher facture, client, lieu..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -174,6 +181,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                 <option value="number">Trier par numéro</option>
                 <option value="client">Trier par client</option>
                 <option value="amount">Trier par montant</option>
+                <option value="eventLocation">Trier par lieu d'événement</option>
               </select>
 
               {/* Ordre */}
@@ -208,6 +216,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                   <th className="border border-gray-300 px-4 py-3 text-left font-bold">Date</th>
                   <th className="border border-gray-300 px-4 py-3 text-left font-bold">Client</th>
                   <th className="border border-gray-300 px-4 py-3 text-left font-bold">Email</th>
+                  <th className="border border-gray-300 px-4 py-3 text-left font-bold">Lieu d'événement</th>
                   <th className="border border-gray-300 px-4 py-3 text-right font-bold">Montant TTC</th>
                   <th className="border border-gray-300 px-4 py-3 text-center font-bold">Statut</th>
                   <th className="border border-gray-300 px-4 py-3 text-center font-bold">Actions</th>
@@ -250,6 +259,16 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                         <div className="flex items-center space-x-1">
                           <Mail className="w-4 h-4 text-gray-400" />
                           <span className="text-sm">{invoice.client.email}</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 px-4 py-3">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm">
+                            {invoice.eventLocation || (
+                              <span className="text-gray-400 italic">Non spécifié</span>
+                            )}
+                          </span>
                         </div>
                       </td>
                       <td className="border border-gray-300 px-4 py-3 text-right">
@@ -311,7 +330,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                 })}
                 {filteredAndSortedInvoices.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
                       {searchTerm || filterStatus !== 'all' ? (
                         <div>
                           <Filter className="w-8 h-8 mx-auto mb-2 text-gray-400" />
