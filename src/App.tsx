@@ -5,12 +5,10 @@ import { ClientSection } from './components/ClientSection';
 import { ProductSection } from './components/ProductSection';
 import { ClientListModal } from './components/ClientListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
-import { GoogleAppsScriptModal } from './components/GoogleAppsScriptModal';
+import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { SignaturePad } from './components/SignaturePad';
-import { GoogleAppsScriptSender } from './components/GoogleAppsScriptSender';
-import { Html2PdfSender } from './components/Html2PdfSender';
+import { EmailSender } from './components/EmailSender';
 import { SimpleHtml2PdfExporter } from './components/SimpleHtml2PdfExporter';
-import { ExactFetchExporter } from './components/ExactFetchExporter';
 import { InvoicePreview } from './components/InvoicePreview';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
@@ -51,7 +49,7 @@ function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [showClientsList, setShowClientsList] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [showGoogleScriptModal, setShowGoogleScriptModal] = useState(false);
+  const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [showInvoicePreview, setShowInvoicePreview] = useState(true); // Afficher l'aperçu par défaut
   const [toast, setToast] = useState({
@@ -143,31 +141,15 @@ function App() {
     }
   };
 
-  const handleShowGoogleScriptModal = () => {
-    if (!invoice.client.email) {
-      showToast('Veuillez renseigner l\'email du client', 'error');
-      return;
-    }
-    
-    if (invoice.products.length === 0) {
-      showToast('Veuillez ajouter au moins un produit', 'error');
-      return;
-    }
-
-    if (!invoice.client.name) {
-      showToast('Veuillez renseigner le nom du client', 'error');
-      return;
-    }
-
-    handleSave();
-    setShowGoogleScriptModal(true);
+  const handleShowEmailJSConfig = () => {
+    setShowEmailJSConfig(true);
   };
 
-  const handleGoogleScriptSuccess = (message: string) => {
+  const handleEmailJSSuccess = (message: string) => {
     showToast(message, 'success');
   };
 
-  const handleGoogleScriptError = (message: string) => {
+  const handleEmailJSError = (message: string) => {
     showToast(message, 'error');
   };
 
@@ -259,7 +241,7 @@ function App() {
         onSave={handleSave}
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}
-        onSendEmail={handleShowGoogleScriptModal}
+        onSendEmail={() => setShowEmailJSConfig(true)}
         onScrollToClient={() => scrollToSection('client-section')}
         onScrollToProducts={() => scrollToSection('products-section')}
       />
@@ -479,32 +461,19 @@ function App() {
           </div>
         </div>
 
-        {/* NOUVEAU: Export PDF avec votre format exact */}
-        <ExactFetchExporter
+        {/* EmailJS Sender */}
+        <EmailSender
           invoice={invoice}
-          onSuccess={handleGoogleScriptSuccess}
-          onError={handleGoogleScriptError}
+          onSuccess={handleEmailJSSuccess}
+          onError={handleEmailJSError}
+          onShowConfig={handleShowEmailJSConfig}
         />
 
         {/* NOUVEAU: Export PDF Simple avec votre code */}
         <SimpleHtml2PdfExporter
           invoice={invoice}
-          onSuccess={handleGoogleScriptSuccess}
-          onError={handleGoogleScriptError}
-        />
-
-        {/* Google Apps Script Sender */}
-        <GoogleAppsScriptSender
-          invoice={invoice}
-          onSuccess={handleGoogleScriptSuccess}
-          onError={handleGoogleScriptError}
-        />
-
-        {/* Html2Pdf Sender */}
-        <Html2PdfSender
-          invoice={invoice}
-          onSuccess={handleGoogleScriptSuccess}
-          onError={handleGoogleScriptError}
+          onSuccess={handleEmailJSSuccess}
+          onError={handleEmailJSError}
         />
 
         {/* Aperçu de la facture (pour html2pdf) */}
@@ -561,11 +530,11 @@ function App() {
                 <span>NOUVELLE FACTURE</span>
               </button>
               <button
-                onClick={handleShowGoogleScriptModal}
+                onClick={handleShowEmailJSConfig}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
               >
-                <span>🚀</span>
-                <span>GOOGLE SCRIPT</span>
+                <span>📧</span>
+                <span>CONFIGURER EMAIL</span>
               </button>
             </div>
           </div>
@@ -587,12 +556,11 @@ function App() {
         onDownload={handleGeneratePDF}
       />
 
-      <GoogleAppsScriptModal
-        isOpen={showGoogleScriptModal}
-        onClose={() => setShowGoogleScriptModal(false)}
-        invoice={invoice}
-        onSuccess={handleGoogleScriptSuccess}
-        onError={handleGoogleScriptError}
+      <EmailJSConfigModal
+        isOpen={showEmailJSConfig}
+        onClose={() => setShowEmailJSConfig(false)}
+        onSuccess={handleEmailJSSuccess}
+        onError={handleEmailJSError}
       />
 
       <SignaturePad

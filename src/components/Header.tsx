@@ -86,10 +86,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onSendEmail}
             className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
-            title="Envoyer via Google Script"
+            title="Configurer EmailJS"
           >
             <Send size={18} />
-            <span className="hidden md:inline">Google Script</span>
+            <span className="hidden md:inline">EmailJS</span>
           </button>
         </div>
       </div>

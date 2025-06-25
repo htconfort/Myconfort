@@ -3,7 +3,7 @@ import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, Chec
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
-import { GoogleAppsScriptService } from '../services/googleAppsScriptService';
+import { EmailService } from '../services/emailService';
 import html2canvas from 'html2canvas';
 
 interface PDFPreviewModalProps {
@@ -24,8 +24,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   
-  const scriptInfo = GoogleAppsScriptService.getScriptInfo();
-  const scriptConfigured = scriptInfo.scriptId !== 'VOTRE_NOUVEAU_SCRIPT_ID';
+  const emailConfig = EmailService.getConfigInfo();
+  const emailConfigured = emailConfig.configured;
 
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
@@ -58,10 +58,10 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT
-  const handleTestGoogleScript = async () => {
-    if (!scriptConfigured) {
-      alert('Veuillez configurer un nouveau script Google Apps Script');
+  // 🧪 TEST DE CONNEXION EMAILJS
+  const handleTestEmailJS = async () => {
+    if (!emailConfigured) {
+      alert('Veuillez configurer EmailJS avant de tester la connexion');
       return;
     }
 
@@ -69,9 +69,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     setTestResult(null);
 
     try {
-      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT DEPUIS L\'APERÇU');
+      console.log('🧪 TEST DE CONNEXION EMAILJS DEPUIS L\'APERÇU');
       
-      const result = await GoogleAppsScriptService.testConnection();
+      const result = await EmailService.testConnection();
       setTestResult(result);
       
       console.log('📊 Résultat du test:', result);
@@ -88,15 +88,15 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT
-  const handleSharePreviewViaGoogleScript = async () => {
+  // 🚀 PARTAGE APERÇU AVEC EMAILJS
+  const handleSharePreviewViaEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
       return;
     }
 
-    if (!scriptConfigured) {
-      alert('Veuillez configurer un nouveau script Google Apps Script');
+    if (!emailConfigured) {
+      alert('Veuillez configurer EmailJS avant de partager l\'aperçu');
       return;
     }
 
@@ -130,14 +130,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       const imageSizeKB = Math.round(imageBlob.size / 1024);
 
-      setShareStep('🚀 Envoi via Google Apps Script...');
+      setShareStep('🚀 Envoi via EmailJS...');
       
-      // Envoyer via Google Apps Script
-      const success = await GoogleAppsScriptService.sharePreviewViaScript(
+      // Envoyer via EmailJS
+      const success = await EmailService.sharePreviewViaEmail(
         invoice,
-        imageDataUrl,
-        imageSizeKB,
-        'png'
+        imageDataUrl
       );
 
       if (success) {
@@ -145,23 +143,23 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         
         const successMessage = `✅ Aperçu exact partagé avec succès !\n\n` +
           `📸 Image haute qualité envoyée à ${invoice.client.email}\n` +
-          `🎯 Le client recevra exactement ce que vous voyez dans Bolt !\n\n` +
-          `🚀 Envoyé via votre Google Apps Script personnalisé\n` +
+          `🎯 Le client recevra exactement ce que vous voyez dans l'application !\n\n` +
+          `🚀 Envoyé via EmailJS\n` +
           `📊 Taille: ${imageSizeKB} KB • Format: PNG haute qualité`;
         
         alert(successMessage);
       } else {
-        throw new Error('Échec de l\'envoi via Google Apps Script');
+        throw new Error('Échec de l\'envoi via EmailJS');
       }
 
     } catch (error) {
       console.error('❌ Erreur partage aperçu:', error);
       
       const errorMessage = `❌ Erreur lors du partage de l'aperçu\n\n` +
-        `🔧 Vérifiez votre Google Apps Script :\n` +
-        `• Script ID: ${GoogleAppsScriptService.getScriptInfo().scriptId}\n` +
-        `• Le script doit être déployé comme application web\n` +
-        `• Les autorisations doivent être accordées\n\n` +
+        `🔧 Vérifiez votre configuration EmailJS :\n` +
+        `• Assurez-vous que vos identifiants sont corrects\n` +
+        `• Vérifiez que votre template est configuré correctement\n` +
+        `• Vérifiez votre quota d'emails\n\n` +
         `💡 Consultez la console pour plus de détails`;
       
       alert(errorMessage);
@@ -189,12 +187,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* 🧪 BOUTON TEST GOOGLE APPS SCRIPT */}
+            {/* 🧪 BOUTON TEST EMAILJS */}
             <button
-              onClick={handleTestGoogleScript}
-              disabled={isTesting || !scriptConfigured}
+              onClick={handleTestEmailJS}
+              disabled={isTesting || !emailConfigured}
               className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
-              title={scriptConfigured ? "Tester la connexion avec votre Google Apps Script" : "Veuillez configurer un nouveau script"}
+              title={emailConfigured ? "Tester la connexion avec EmailJS" : "Veuillez configurer EmailJS"}
             >
               {isTesting ? (
                 <>
@@ -204,18 +202,18 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               ) : (
                 <>
                   <CheckCircle size={18} />
-                  <Zap size={16} />
-                  <span>Tester Script</span>
+                  <Mail size={16} />
+                  <span>Tester Email</span>
                 </>
               )}
             </button>
 
-            {/* 🚀 BOUTON PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT */}
+            {/* 🚀 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
             <button
-              onClick={handleSharePreviewViaGoogleScript}
-              disabled={isSharing || !invoice.client.email || !scriptConfigured}
+              onClick={handleSharePreviewViaEmail}
+              disabled={isSharing || !invoice.client.email || !emailConfigured}
               className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
-              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : !scriptConfigured ? "Veuillez configurer un nouveau script" : "Partager cet aperçu exact via Google Apps Script"}
+              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : !emailConfigured ? "Veuillez configurer EmailJS" : "Partager cet aperçu exact via EmailJS"}
             >
               {isSharing ? (
                 <>
@@ -225,7 +223,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               ) : (
                 <>
                   <Share2 size={18} />
-                  <Zap size={16} />
+                  <Mail size={16} />
                   <span>Partager Aperçu</span>
                 </>
               )}
@@ -282,22 +280,22 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             <div className="flex items-center space-x-3">
               <Loader className="w-5 h-5 animate-spin text-purple-600" />
               <div>
-                <div className="font-semibold text-purple-900">Partage de l'aperçu exact avec Google Apps Script...</div>
+                <div className="font-semibold text-purple-900">Partage de l'aperçu exact avec EmailJS...</div>
                 <div className="text-sm text-purple-700">{shareStep}</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Instructions pour Google Apps Script */}
+        {/* Instructions pour EmailJS */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
-            <Zap className="w-4 h-4 text-purple-600" />
-            <span className="font-semibold text-purple-900">Google Apps Script :</span>
+            <Mail className="w-4 h-4 text-purple-600" />
+            <span className="font-semibold text-purple-900">EmailJS :</span>
             <span className="text-purple-800">
-              {scriptConfigured 
-                ? "Votre script personnalisé est prêt pour l'envoi automatique !"
-                : "⚠️ Veuillez configurer un nouveau script Google Apps Script"
+              {emailConfigured 
+                ? "Votre service d'emails est configuré pour l'envoi automatique !"
+                : "⚠️ Veuillez configurer EmailJS pour activer l'envoi d'emails"
               }
             </span>
             {!invoice.client.email && (
@@ -307,12 +305,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            🚀 Script: {scriptConfigured ? `${scriptInfo.scriptId.substring(0, 20)}...` : "Non configuré"} • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+            📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 {scriptConfigured 
-              ? "Cliquez sur \"Tester Script\" pour vérifier la connexion avec votre Google Apps Script"
-              : "Veuillez créer un nouveau script Google Apps Script et mettre à jour l'ID dans le code"
+            💡 {emailConfigured 
+              ? "Cliquez sur \"Tester Email\" pour vérifier la connexion avec EmailJS"
+              : "Configurez EmailJS pour activer l'envoi d'emails"
             }
           </div>
         </div>
@@ -326,4 +324,4 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       </div>
     </div>
   );
-}
+};

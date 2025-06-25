@@ -3,6 +3,7 @@ import html2pdf from 'html2pdf.js';
 import { Loader, FileText, Send, CheckCircle, AlertCircle, TestTube, ExternalLink } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
+import { EmailService } from '../services/emailService';
 
 interface SimpleHtml2PdfExporterProps {
   invoice: Invoice;
@@ -20,82 +21,29 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // NOUVELLE URL À CONFIGURER
-  const GOOGLE_SCRIPT_URL = "VOTRE_NOUVELLE_URL_SCRIPT";
+  const emailConfig = EmailService.getConfigInfo();
+  const emailConfigured = emailConfig.configured;
 
   const handleTestConnection = async () => {
+    if (!emailConfigured) {
+      onError('Veuillez configurer EmailJS avant de tester la connexion');
+      return;
+    }
+
     setIsTesting(true);
     setTestResult(null);
 
     try {
-      console.log('🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT');
+      console.log('🧪 TEST DE CONNEXION EMAILJS');
       
-      const testData = {
-        requestType: 'test',
-        message: 'Test de connexion depuis MYCONFORT Simple Exporter',
-        timestamp: new Date().toISOString()
-      };
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(testData),
-          mode: 'cors',
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          setTestResult({
-            success: false,
-            message: `❌ Erreur HTTP: ${response.status} ${response.statusText}`
-          });
-          return;
-        }
-
-        const result = await response.text();
-        console.log('📨 Réponse du script:', result);
-
-        const isSuccess = result.includes('Test réussi') || 
-                         result.includes('success') || 
-                         result.includes('OK') ||
-                         result.includes('MYCONFORT Script actif') ||
-                         result.includes('Script actif') ||
-                         response.status === 200;
-
-        setTestResult({
-          success: isSuccess,
-          message: isSuccess 
-            ? `✅ Connexion réussie ! Réponse: "${result}"`
-            : `⚠️ Réponse inattendue: "${result}"`
-        });
-
-      } catch (fetchError: any) {
-        clearTimeout(timeoutId);
-        
-        let errorMessage = '❌ Erreur de connexion: ';
-        
-        if (fetchError.name === 'AbortError') {
-          errorMessage += 'Timeout - Le script met trop de temps à répondre';
-        } else if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
-          errorMessage += 'Impossible de joindre le script. Vérifiez le déploiement.';
-        } else {
-          errorMessage += fetchError.message;
-        }
-
-        setTestResult({
-          success: false,
-          message: errorMessage
-        });
+      const result = await EmailService.testConnection();
+      setTestResult(result);
+      
+      if (result.success) {
+        onSuccess(`✅ Test réussi ! ${result.message}`);
+      } else {
+        onError(`❌ Test échoué: ${result.message}`);
       }
-
     } catch (error: any) {
       console.error('❌ Erreur test connexion:', error);
       setTestResult({
@@ -115,6 +63,11 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
 
     if (invoice.products.length === 0) {
       onError('Veuillez ajouter au moins un produit');
+      return;
+    }
+
+    if (!emailConfigured) {
+      onError('Veuillez configurer EmailJS avant d\'envoyer la facture');
       return;
     }
 
@@ -141,14 +94,13 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
 
       setExportStep('🔄 Conversion en base64...');
 
-      // Conversion en base64 exactement comme votre code
+      // Conversion en base64
       const reader = new FileReader();
       
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onloadend = () => {
           if (typeof reader.result === 'string') {
-            const base64 = reader.result.split(",")[1];
-            resolve(base64);
+            resolve(reader.result);
           } else {
             reject(new Error('Erreur de conversion'));
           }
@@ -159,9 +111,9 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
 
       const base64 = await base64Promise;
 
-      setExportStep('🚀 Envoi vers Google Apps Script...');
+      setExportStep('🚀 Envoi via EmailJS...');
 
-      // Calcul des montants pour informations supplémentaires
+      // Calculer les montants pour informations supplémentaires
       const totalAmount = invoice.products.reduce((sum, product) => {
         return sum + calculateProductTotal(
           product.quantity,
@@ -174,110 +126,61 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Envoi vers Google Apps Script avec données enrichies
-      const requestData = {
-        // Données PDF (votre format original)
-        pdfBase64: base64,
-        filename: `Facture_MyConfort_${invoice.invoiceNumber}.pdf`,
-        
-        // Données supplémentaires pour votre script
-        email: invoice.client.email,
-        clientName: invoice.client.name,
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
-        totalAmount: formatCurrency(totalAmount),
-        
-        // Informations acompte si applicable
-        ...(acompteAmount > 0 && {
-          depositAmount: formatCurrency(acompteAmount),
-          remainingAmount: formatCurrency(montantRestant),
-          paymentType: 'Acompte'
-        }),
-        
-        // Informations signature
-        hasSigned: !!invoice.signature,
-        signatureStatus: invoice.signature ? 'Signé électroniquement' : 'Non signé',
-        
-        // Informations conseiller
-        advisorName: invoice.advisorName || 'MYCONFORT',
-        
-        // Métadonnées
-        appName: 'MYCONFORT',
-        generatedAt: new Date().toISOString()
-      };
+      // Envoi via EmailJS
+      const success = await EmailService.sendInvoiceWithPDF(invoice);
 
-      // Envoi avec configuration CORS améliorée et gestion d'erreurs détaillée
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-      try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Accept": "application/json, text/plain, */*"
-          },
-          body: JSON.stringify(requestData),
-          signal: controller.signal,
-          mode: 'cors',
-          credentials: 'omit'
-        });
-
-        clearTimeout(timeoutId);
-
-        // Check if response is ok before trying to read it
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (success) {
+        setExportStep('✅ Facture envoyée !');
+        
+        let successMessage = `✅ Facture envoyée avec succès via EmailJS !`;
+        successMessage += `\n📧 Envoyée à ${invoice.client.email}`;
+        
+        if (acompteAmount > 0) {
+          successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
+        }
+        
+        if (invoice.signature) {
+          successMessage += `\n🔒 Signature électronique incluse`;
         }
 
-        const result = await response.text();
-        console.log('📨 Réponse Google Apps Script:', result);
-
-        setExportStep('✅ Facture enregistrée et envoyée !');
-        
-        let successMessage = `✅ Facture enregistrée dans Drive !`;
-        
-        // Votre script répond donc on considère que c'est un succès si pas d'erreur
-        if (response.ok) {
-          successMessage += `\n📧 Envoyée à ${invoice.client.email}`;
-          
-          if (acompteAmount > 0) {
-            successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
-          }
-          
-          if (invoice.signature) {
-            successMessage += `\n🔒 Signature électronique incluse`;
-          }
-
-          onSuccess(successMessage);
-        } else {
-          throw new Error(`Réponse inattendue: ${result}`);
-        }
-
-      } catch (fetchError: any) {
-        clearTimeout(timeoutId);
-        
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Timeout - Le script met trop de temps à répondre (30s)');
-        } else if (fetchError.message.includes('Failed to fetch')) {
-          // More specific error message for CORS/network issues
-          throw new Error(`Impossible de contacter Google Apps Script. Vérifiez que:
-• Le script est déployé comme "Web app"
-• L'accès est configuré sur "Anyone" ou "Anyone, even anonymous"
-• L'URL du script est correcte
-• Votre connexion internet fonctionne
-
-Erreur technique: ${fetchError.message}`);
-        } else if (fetchError.message.includes('CORS')) {
-          throw new Error(`Erreur CORS: Le script Google Apps Script doit être configuré pour accepter les requêtes cross-origin. Vérifiez les paramètres de déploiement.`);
-        } else {
-          throw new Error(`Erreur de connexion: ${fetchError.message}`);
-        }
+        onSuccess(successMessage);
+      } else {
+        throw new Error('Échec de l\'envoi via EmailJS');
       }
 
     } catch (error: any) {
       console.error('❌ Erreur export et envoi:', error);
       onError(`❌ Une erreur est survenue: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setExportStep('');
+    }
+  };
+
+  // Téléchargement PDF uniquement
+  const handleDownloadOnly = async () => {
+    setIsExporting(true);
+    setExportStep('💾 Téléchargement PDF...');
+    
+    try {
+      const element = document.getElementById("facture-apercu");
+      
+      if (!element) {
+        throw new Error('Élément facture-apercu non trouvé');
+      }
+
+      await html2pdf()
+        .from(element)
+        .set({
+          filename: `Facture_MyConfort_${invoice.invoiceNumber}.pdf`,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .save();
+      
+      onSuccess('✅ PDF téléchargé avec succès !');
+    } catch (error: any) {
+      onError(`Erreur téléchargement: ${error.message}`);
     } finally {
       setIsExporting(false);
       setExportStep('');
@@ -296,7 +199,7 @@ Erreur technique: ${fetchError.message}`);
           </div>
           <div>
             <h2 className="text-2xl font-bold">Export PDF Simple</h2>
-            <p className="text-blue-100">🎯 html2pdf.js • 📧 Nouvelle URL • 💾 Drive</p>
+            <p className="text-blue-100">🎯 html2pdf.js • 📧 EmailJS • 💾 Téléchargement</p>
           </div>
         </div>
         
@@ -317,40 +220,37 @@ Erreur technique: ${fetchError.message}`);
         </div>
       </div>
 
-      {/* Configuration Google Apps Script */}
+      {/* Configuration EmailJS */}
       <div className="bg-white/10 rounded-lg p-4 mb-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-300" />
-            <h4 className="font-semibold text-blue-100">Google Apps Script Configuré</h4>
+            <h4 className="font-semibold text-blue-100">EmailJS Configuré</h4>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={handleTestConnection}
-              disabled={isTesting || GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"}
+              disabled={isTesting || !emailConfigured}
               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center space-x-1 disabled:opacity-50"
             >
               <TestTube className="w-3 h-3" />
               <span>Tester</span>
             </button>
             <a 
-              href="https://script.google.com/home" 
+              href="https://www.emailjs.com/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="underline text-sm flex items-center space-x-1 text-blue-200 hover:text-white"
             >
               <ExternalLink className="w-3 h-3" />
-              <span>Google Apps Script</span>
+              <span>EmailJS</span>
             </a>
           </div>
         </div>
         
         <div className="text-sm text-blue-200">
           <div className="flex items-center space-x-2">
-            <span>Script ID: {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" ? "Non configuré" : GOOGLE_SCRIPT_URL.split('/s/')[1].split('/exec')[0]}</span>
-          </div>
-          <div className="text-xs mt-1">
-            URL: {GOOGLE_SCRIPT_URL}
+            <span>{emailConfig.status}</span>
           </div>
         </div>
         
@@ -406,6 +306,21 @@ Erreur technique: ${fetchError.message}`);
         </div>
       )}
 
+      {/* Message EmailJS non configuré */}
+      {!emailConfigured && (
+        <div className="bg-yellow-500/20 border border-yellow-400 rounded-lg p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-yellow-300" />
+            <div className="text-sm">
+              <div className="font-semibold">EmailJS non configuré</div>
+              <p className="mt-1 text-xs">
+                Veuillez configurer EmailJS pour activer l'envoi d'emails.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Validation et erreurs */}
       {!canExport && (
         <div className="bg-red-500/20 border border-red-400 rounded-lg p-3 mb-4">
@@ -422,38 +337,41 @@ Erreur technique: ${fetchError.message}`);
         </div>
       )}
 
-      {/* Message URL non configurée */}
-      {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" && (
-        <div className="bg-yellow-500/20 border border-yellow-400 rounded-lg p-3 mb-4">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-yellow-300" />
-            <div className="text-sm">
-              <div className="font-semibold">URL Google Apps Script non configurée</div>
-              <p className="mt-1 text-xs">
-                Veuillez créer un nouveau script Google Apps Script et mettre à jour l'URL dans le code.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Boutons d'action */}
+      <div className="flex justify-center space-x-3">
+        <button
+          onClick={handleDownloadOnly}
+          disabled={isExporting}
+          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+        >
+          {isExporting && exportStep.includes('Téléchargement') ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span>Téléchargement...</span>
+            </>
+          ) : (
+            <>
+              <FileText className="w-5 h-5" />
+              <span>Télécharger PDF</span>
+            </>
+          )}
+        </button>
 
-      {/* Bouton d'export */}
-      <div className="flex justify-center">
         <button
           onClick={handleExportAndSend}
-          disabled={isExporting || !canExport || GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"}
-          className="bg-white text-blue-600 hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 px-8 py-4 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          disabled={isExporting || !canExport || !emailConfigured}
+          className="bg-white text-blue-600 hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 px-8 py-3 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
         >
-          {isExporting ? (
+          {isExporting && !exportStep.includes('Téléchargement') ? (
             <>
               <Loader className="w-6 h-6 animate-spin" />
-              <span>Export en cours...</span>
+              <span>Envoi en cours...</span>
             </>
           ) : (
             <>
               <FileText className="w-6 h-6" />
               <Send className="w-5 h-5" />
-              <span>📤 Enregistrer et envoyer</span>
+              <span>Envoyer avec EmailJS</span>
             </>
           )}
         </button>
@@ -462,29 +380,26 @@ Erreur technique: ${fetchError.message}`);
       {/* Instructions */}
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
-          {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"
-            ? '⚠️ Veuillez configurer une nouvelle URL Google Apps Script'
+          {!emailConfigured
+            ? '⚠️ Veuillez configurer EmailJS pour activer l\'envoi d\'emails'
             : canExport 
-              ? `✅ Prêt pour l'export vers Google Drive`
+              ? `✅ Prêt pour l'envoi via EmailJS à ${invoice.client.email}`
               : '⚠️ Complétez les informations ci-dessus pour activer l\'export'
           }
         </p>
         <p className="mt-1 text-xs text-yellow-200 font-semibold">
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
-        <p className="mt-1 text-xs text-green-200">
-          🔗 Script: {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" ? "Non configuré" : GOOGLE_SCRIPT_URL.split('/s/')[1].split('/exec')[0]}
-        </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
-          <p className="font-semibold">💡 Pour configurer votre Google Apps Script :</p>
+          <p className="font-semibold">💡 Pour configurer EmailJS :</p>
           <ul className="list-disc list-inside mt-1 text-left">
-            <li>Déployez comme "Web app"</li>
-            <li>Configurez l'accès sur "Anyone" ou "Anyone, even anonymous"</li>
-            <li>Exécutez en tant que "Me" (votre compte)</li>
-            <li>Utilisez l'URL /exec (pas /dev) pour la production</li>
+            <li>Créez un compte sur <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="underline">EmailJS</a></li>
+            <li>Configurez un service d'email (Gmail, Outlook, etc.)</li>
+            <li>Créez un template d'email avec les variables nécessaires</li>
+            <li>Copiez les identifiants dans la configuration</li>
           </ul>
         </div>
       </div>
     </div>
   );
-}
+};
