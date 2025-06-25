@@ -50,9 +50,9 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
-  // États pour les chèques à venir
+  // États pour les chèques à venir avec calcul automatique
   const [chequesQuantity, setChequesQuantity] = useState<number>(0);
-  const [chequesMontant, setChequesMontant] = useState<number>(0);
+  const [totalARecevoir, setTotalARecevoir] = useState<number>(0);
 
   const filteredProducts = useMemo(() => {
     return productCatalog.filter(p => p.category === newProduct.category);
@@ -90,9 +90,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100))),
       totalPercu: acompteAmount,
       totalARecevoir: Math.max(0, totalWithTax - acompteAmount),
-      totalCheques: chequesQuantity * chequesMontant
+      // Calcul automatique du montant par chèque
+      montantParCheque: (totalARecevoir && chequesQuantity) ? (totalARecevoir / chequesQuantity) : 0,
+      totalCheques: (totalARecevoir && chequesQuantity) ? totalARecevoir : 0
     };
-  }, [products, taxRate, acompteAmount, chequesQuantity, chequesMontant]);
+  }, [products, taxRate, acompteAmount, chequesQuantity, totalARecevoir]);
 
   const handleCategoryChange = (category: string) => {
     setNewProduct({
@@ -197,254 +199,258 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   };
 
   return (
-    <div className="bg-[#477A0C] rounded-lg shadow-xl p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
-      <h2 className="text-lg font-bold text-[#F2EFE2] mb-4 flex items-center">
-        <ShoppingCart className="mr-2" />
-        Produits & Tarification
+    <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+      <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+        <ShoppingCart className="mr-3 text-xl" />
+        <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+          PRODUITS & TARIFICATION
+        </span>
       </h2>
       
-      {/* Add Product Form */}
-      <div className="mb-6 bg-[#F2EFE2] rounded-lg p-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
-          <div className="md:col-span-3">
-            <label className="block text-[#14281D] font-bold mb-1">Catégorie</label>
-            <select
-              value={newProduct.category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 bg-white font-bold focus:border-[#477A0C] focus:ring-2 focus:ring-[#477A0C] focus:ring-opacity-20"
-            >
-              <option value="">Sélectionner</option>
-              {productCategories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="md:col-span-4">
-            <label className="block text-[#14281D] font-bold mb-1">Produit</label>
-            <select
-              value={newProduct.name}
-              onChange={(e) => handleProductChange(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 bg-white font-bold focus:border-[#477A0C] focus:ring-2 focus:ring-[#477A0C] focus:ring-opacity-20"
-              disabled={!newProduct.category}
-            >
-              <option value="">
-                {newProduct.category ? 'Sélectionner un produit' : 'Sélectionner une catégorie d\'abord'}
-              </option>
-              {filteredProducts.map(product => (
-                <option key={product.name} value={product.name}>
-                  {product.name}
+      <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
+        {/* Add Product Form */}
+        <div className="mb-6 bg-white rounded-lg p-4 border-2 border-[#477A0C]">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
+            <div className="md:col-span-3">
+              <label className="block text-[#14281D] font-bold mb-1">Catégorie</label>
+              <select
+                value={newProduct.category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+              >
+                <option value="">Sélectionner</option>
+                {productCategories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="md:col-span-4">
+              <label className="block text-[#14281D] font-bold mb-1">Produit</label>
+              <select
+                value={newProduct.name}
+                onChange={(e) => handleProductChange(e.target.value)}
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+                disabled={!newProduct.category}
+              >
+                <option value="">
+                  {newProduct.category ? 'Sélectionner un produit' : 'Sélectionner une catégorie d\'abord'}
                 </option>
-              ))}
-            </select>
+                {filteredProducts.map(product => (
+                  <option key={product.name} value={product.name}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-[#14281D] font-bold mb-1">Quantité</label>
+              <input
+                value={newProduct.quantity}
+                onChange={(e) => setNewProduct({
+                  ...newProduct,
+                  quantity: parseInt(e.target.value) || 1
+                })}
+                type="number"
+                min="1"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-[#14281D] font-bold mb-1">Prix TTC</label>
+              <input
+                value={newProduct.priceTTC}
+                onChange={(e) => handlePriceTTCChange(parseFloat(e.target.value) || 0)}
+                type="number"
+                step="0.01"
+                min="0"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+              />
+            </div>
+            
+            <div className="md:col-span-1 flex items-end">
+              <button
+                onClick={addProduct}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
+                title="Ajouter le produit"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           
-          <div className="md:col-span-2">
-            <label className="block text-[#14281D] font-bold mb-1">Quantité</label>
-            <input
-              value={newProduct.quantity}
-              onChange={(e) => setNewProduct({
-                ...newProduct,
-                quantity: parseInt(e.target.value) || 1
-              })}
-              type="number"
-              min="1"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:border-[#477A0C] focus:ring-2 focus:ring-[#477A0C] focus:ring-opacity-20"
-            />
-          </div>
-          
-          <div className="md:col-span-2">
-            <label className="block text-[#14281D] font-bold mb-1">Prix TTC</label>
-            <input
-              value={newProduct.priceTTC}
-              onChange={(e) => handlePriceTTCChange(parseFloat(e.target.value) || 0)}
-              type="number"
-              step="0.01"
-              min="0"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:border-[#477A0C] focus:ring-2 focus:ring-[#477A0C] focus:ring-opacity-20"
-            />
-          </div>
-          
-          <div className="md:col-span-1 flex items-end">
-            <button
-              onClick={addProduct}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center"
-              title="Ajouter le produit"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+          {newProduct.priceTTC > 0 && (
+            <div className="mt-2 text-sm text-[#14281D]">
+              <span className="font-semibold">Prix HT calculé: {formatCurrency(newProduct.unitPrice)}</span>
+            </div>
+          )}
         </div>
         
-        {newProduct.priceTTC > 0 && (
-          <div className="mt-2 text-sm text-[#14281D]">
-            <span className="font-semibold">Prix HT calculé: {formatCurrency(newProduct.unitPrice)}</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Products Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-[#477A0C] text-[#F2EFE2]">
-              <th className="border border-[#477A0C] px-4 py-3 text-left font-extrabold">
-                PRODUIT
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-center font-bold">
-                Quantité
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
-                PU HT
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
-                PU TTC
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
-                Remise
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
-                Total TTC
-              </th>
-              <th className="border border-[#477A0C] px-3 py-2 text-center font-bold">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, index) => (
-              <tr key={product.id || index} className="bg-white">
-                <td className="border border-gray-300 px-3 py-2 font-bold">
-                  <div>{product.name}</div>
-                  {product.category && (
-                    <div className="text-xs text-gray-500">{product.category}</div>
-                  )}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 text-center">
-                  {editingIndex === index ? (
-                    <input
-                      type="number"
-                      min="1"
-                      value={product.quantity}
-                      onChange={(e) => updateProduct(index, { quantity: parseInt(e.target.value) || 1 })}
-                      className="w-16 text-center border border-gray-300 rounded px-1 py-1"
-                      onBlur={stopEditing}
-                      onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
-                      autoFocus
-                    />
-                  ) : (
-                    <span 
-                      className="font-bold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
-                      onClick={() => startEditing(index)}
-                    >
-                      {product.quantity}
+        {/* Products Table */}
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-[#477A0C] text-[#F2EFE2]">
+                <th className="border border-[#477A0C] px-4 py-3 text-left font-extrabold">
+                  PRODUIT
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-center font-bold">
+                  Quantité
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
+                  PU HT
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
+                  PU TTC
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
+                  Remise
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-right font-bold">
+                  Total TTC
+                </th>
+                <th className="border border-[#477A0C] px-3 py-2 text-center font-bold">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product, index) => (
+                <tr key={product.id || index} className="bg-white">
+                  <td className="border border-gray-300 px-3 py-2 font-bold">
+                    <div>{product.name}</div>
+                    {product.category && (
+                      <div className="text-xs text-gray-500">{product.category}</div>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-center">
+                    {editingIndex === index ? (
+                      <input
+                        type="number"
+                        min="1"
+                        value={product.quantity}
+                        onChange={(e) => updateProduct(index, { quantity: parseInt(e.target.value) || 1 })}
+                        className="w-16 text-center border border-gray-300 rounded px-1 py-1"
+                        onBlur={stopEditing}
+                        onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
+                        autoFocus
+                      />
+                    ) : (
+                      <span 
+                        className="font-bold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                        onClick={() => startEditing(index)}
+                      >
+                        {product.quantity}
+                      </span>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-right">
+                    <div className="font-bold">
+                      {formatCurrency(calculateHT(product.priceTTC, taxRate))}
+                    </div>
+                    <div className="text-xs text-gray-500">HT</div>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-right">
+                    {editingIndex === index ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={product.priceTTC}
+                        onChange={(e) => updateProduct(index, { priceTTC: parseFloat(e.target.value) || 0 })}
+                        className="w-20 text-right border border-gray-300 rounded px-1 py-1"
+                        onBlur={stopEditing}
+                        onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
+                      />
+                    ) : (
+                      <div 
+                        className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                        onClick={() => startEditing(index)}
+                      >
+                        <div className="font-bold">{formatCurrency(product.priceTTC)}</div>
+                        <div className="text-xs text-gray-500">TTC</div>
+                      </div>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 bg-[#F55D3E] bg-opacity-20">
+                    <div className="flex items-center justify-end space-x-1">
+                      <select
+                        value={product.discountType}
+                        onChange={(e) => updateProduct(index, {
+                          discountType: e.target.value as 'percent' | 'fixed'
+                        })}
+                        className="border border-gray-300 rounded px-1 py-1 text-xs w-12"
+                      >
+                        <option value="percent">%</option>
+                        <option value="fixed">€</option>
+                      </select>
+                      <input
+                        value={product.discount}
+                        onChange={(e) => updateProduct(index, {
+                          discount: parseFloat(e.target.value) || 0
+                        })}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="w-16 border border-gray-300 rounded px-1 py-1 text-right"
+                      />
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-right font-bold">
+                    <span>
+                      {formatCurrency(calculateProductTotal(
+                        product.quantity,
+                        product.priceTTC,
+                        product.discount,
+                        product.discountType
+                      ))}
                     </span>
-                  )}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 text-right">
-                  <div className="font-bold">
-                    {formatCurrency(calculateHT(product.priceTTC, taxRate))}
-                  </div>
-                  <div className="text-xs text-gray-500">HT</div>
-                </td>
-                <td className="border border-gray-300 px-3 py-2 text-right">
-                  {editingIndex === index ? (
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={product.priceTTC}
-                      onChange={(e) => updateProduct(index, { priceTTC: parseFloat(e.target.value) || 0 })}
-                      className="w-20 text-right border border-gray-300 rounded px-1 py-1"
-                      onBlur={stopEditing}
-                      onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
-                    />
-                  ) : (
-                    <div 
-                      className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
-                      onClick={() => startEditing(index)}
-                    >
-                      <div className="font-bold">{formatCurrency(product.priceTTC)}</div>
-                      <div className="text-xs text-gray-500">TTC</div>
+                    {product.discount > 0 && (
+                      <div className="text-xs text-gray-500">
+                        (-{product.discountType === 'percent' 
+                          ? `${product.discount}%` 
+                          : formatCurrency(product.discount)
+                        })
+                      </div>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-center">
+                    <div className="flex justify-center space-x-1">
+                      <button
+                        onClick={() => startEditing(index)}
+                        className="text-white bg-blue-500 hover:bg-blue-600 p-1 rounded transition-all"
+                        title="Modifier"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => removeProduct(index)}
+                        className="text-white bg-red-500 hover:bg-red-600 p-1 rounded transition-all"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </div>
-                  )}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 bg-[#F55D3E] bg-opacity-20">
-                  <div className="flex items-center justify-end space-x-1">
-                    <select
-                      value={product.discountType}
-                      onChange={(e) => updateProduct(index, {
-                        discountType: e.target.value as 'percent' | 'fixed'
-                      })}
-                      className="border border-gray-300 rounded px-1 py-1 text-xs w-12"
-                    >
-                      <option value="percent">%</option>
-                      <option value="fixed">€</option>
-                    </select>
-                    <input
-                      value={product.discount}
-                      onChange={(e) => updateProduct(index, {
-                        discount: parseFloat(e.target.value) || 0
-                      })}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="w-16 border border-gray-300 rounded px-1 py-1 text-right"
-                    />
-                  </div>
-                </td>
-                <td className="border border-gray-300 px-3 py-2 text-right font-bold">
-                  <span>
-                    {formatCurrency(calculateProductTotal(
-                      product.quantity,
-                      product.priceTTC,
-                      product.discount,
-                      product.discountType
-                    ))}
-                  </span>
-                  {product.discount > 0 && (
-                    <div className="text-xs text-gray-500">
-                      (-{product.discountType === 'percent' 
-                        ? `${product.discount}%` 
-                        : formatCurrency(product.discount)
-                      })
-                    </div>
-                  )}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 text-center">
-                  <div className="flex justify-center space-x-1">
-                    <button
-                      onClick={() => startEditing(index)}
-                      className="text-white bg-blue-500 hover:bg-blue-600 p-1 rounded transition-all"
-                      title="Modifier"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => removeProduct(index)}
-                      className="text-white bg-red-500 hover:bg-red-600 p-1 rounded transition-all"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={7} className="border border-gray-300 px-3 py-4 text-center text-gray-500">
-                  <span className="text-[#14281D] font-bold">Aucun produit ajouté</span>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="border border-gray-300 px-3 py-4 text-center text-gray-500">
+                    <span className="text-[#14281D] font-bold">Aucun produit ajouté</span>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-      
+
       {/* NOUVEAU: Patio avec trois bandes de lancement pour les totaux, acompte et mode de règlement */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Bande 1: Remarques avec chèques à venir */}
+        {/* Bande 1: Remarques avec chèques à venir AMÉLIORÉS */}
         <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
@@ -464,7 +470,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             />
           </div>
 
-          {/* Section Chèques à venir */}
+          {/* Section Chèques à venir AMÉLIORÉE avec calcul automatique */}
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-4">
             <div className="flex items-center mb-3">
               <CreditCard className="w-5 h-5 text-purple-600 mr-2" />
@@ -472,11 +478,28 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
             
             <div className="grid grid-cols-1 gap-3">
+              {/* Total à recevoir */}
+              <div>
+                <label className="block text-purple-700 font-semibold mb-1 flex items-center">
+                  <Euro className="w-4 h-4 mr-1" />
+                  Total à recevoir (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={totalARecevoir}
+                  onChange={(e) => setTotalARecevoir(parseFloat(e.target.value) || 0)}
+                  className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
+                  placeholder="Montant total à recevoir"
+                />
+              </div>
+
               {/* Quantité de chèques */}
               <div>
                 <label className="block text-purple-700 font-semibold mb-1 flex items-center">
                   <Hash className="w-4 h-4 mr-1" />
-                  Quantité de chèques
+                  Nombre de chèques
                 </label>
                 <input
                   type="number"
@@ -484,42 +507,50 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   value={chequesQuantity}
                   onChange={(e) => setChequesQuantity(parseInt(e.target.value) || 0)}
                   className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
-                  placeholder="0"
+                  placeholder="Nombre de chèques"
                 />
               </div>
 
-              {/* Montant par chèque */}
+              {/* Montant par chèque - CALCULÉ AUTOMATIQUEMENT */}
               <div>
                 <label className="block text-purple-700 font-semibold mb-1 flex items-center">
-                  <Euro className="w-4 h-4 mr-1" />
-                  Montant par chèque (€)
+                  <Calculator className="w-4 h-4 mr-1" />
+                  Montant par chèque (calculé)
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={chequesMontant}
-                  onChange={(e) => setChequesMontant(parseFloat(e.target.value) || 0)}
-                  className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
-                  placeholder="0.00"
+                  type="text"
+                  value={totals.montantParCheque > 0 ? formatCurrency(totals.montantParCheque) : ''}
+                  readOnly
+                  className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 bg-purple-100 text-purple-800 font-bold cursor-not-allowed"
+                  placeholder="Calculé automatiquement"
                 />
               </div>
             </div>
 
-            {/* Calcul automatique du total des chèques */}
-            {chequesQuantity > 0 && chequesMontant > 0 && (
+            {/* Affichage du calcul automatique */}
+            {totalARecevoir > 0 && chequesQuantity > 0 && (
               <div className="mt-3 p-3 bg-purple-100 border border-purple-300 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-purple-700 font-semibold">Total des chèques à venir :</span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-purple-700 font-semibold">Calcul automatique :</span>
                   <span className="text-purple-800 font-bold text-lg">
-                    {formatCurrency(totals.totalCheques)}
+                    {formatCurrency(totals.montantParCheque)}
                   </span>
                 </div>
-                <div className="text-xs text-purple-600 mt-1">
-                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} × {formatCurrency(chequesMontant)}
+                <div className="text-xs text-purple-600">
+                  {formatCurrency(totalARecevoir)} ÷ {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} = {formatCurrency(totals.montantParCheque)} par chèque
+                </div>
+                <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded">
+                  <div className="text-sm text-green-800 font-semibold">
+                    ✅ Total des chèques : {formatCurrency(totals.totalCheques)}
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* Message d'aide */}
+            <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+              💡 <strong>Calcul automatique :</strong> Saisissez le total à recevoir et le nombre de chèques. Le montant par chèque sera calculé automatiquement.
+            </div>
           </div>
         </div>
 
@@ -644,7 +675,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   </span>
                 </div>
                 <div className="text-xs text-purple-600 mt-1">
-                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} de {formatCurrency(chequesMontant)} chacun
+                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} de {formatCurrency(totals.montantParCheque)} chacun
                 </div>
               </div>
             )}
