@@ -350,8 +350,13 @@ function App() {
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
-        {/* En-tête MYCONFORT avec fond #477A0C */}
-        <div className="text-white rounded-xl shadow-xl p-6 mb-6" style={{ backgroundColor: '#477A0C' }}>
+        {/* En-tête MYCONFORT avec dégradé basé sur #477A0C */}
+        <div 
+          className="text-white rounded-xl shadow-xl p-6 mb-6"
+          style={{
+            background: 'linear-gradient(135deg, #477A0C 0%, #5A8F0F 25%, #3A6A0A 50%, #6BA015 75%, #477A0C 100%)'
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="bg-white/20 p-3 rounded-full">
