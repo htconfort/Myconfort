@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, User, Send, Users, Package, Building2, Archive } from 'lucide-react';
+import { FileText, Send, Users, Package, Building2, Archive } from 'lucide-react';
 
 interface HeaderProps {
   onGeneratePDF: () => void;
@@ -16,9 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onShowClients,
   onSendEmail,
   onShowInvoices,
-  onShowProducts,
-  onScrollToClient,
-  onScrollToProducts
+  onShowProducts
 }) => {
   return (
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
@@ -36,27 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4">
-          {/* Navigation rapide */}
-          <div className="hidden md:flex items-center space-x-2">
-            <button
-              onClick={onScrollToClient}
-              className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
-              title="Aller à la section client"
-            >
-              <User size={16} />
-              <span className="hidden lg:inline text-sm">Client</span>
-            </button>
-            
-            <button
-              onClick={onScrollToProducts}
-              className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center space-x-1 font-semibold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
-              title="Aller à la section produits"
-            >
-              <Package size={16} />
-              <span className="hidden lg:inline text-sm">Produits</span>
-            </button>
-          </div>
-
           {/* Actions principales */}
           <button
             onClick={onShowProducts}

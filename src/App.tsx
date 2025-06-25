@@ -274,8 +274,6 @@ function App() {
         onShowInvoices={() => setShowInvoicesList(true)}
         onShowProducts={() => setShowProductsList(true)}
         onSendEmail={() => setShowEmailJSConfig(true)}
-        onScrollToClient={() => scrollToSection('client-section')}
-        onScrollToProducts={() => scrollToSection('products-section')}
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
