@@ -167,7 +167,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                   placeholder="Rechercher facture, client, lieu..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white font-semibold"
                 />
               </div>
 
@@ -175,7 +175,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white font-semibold"
               >
                 <option value="date">Trier par date</option>
                 <option value="number">Trier par numéro</option>
@@ -188,7 +188,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white font-semibold"
               >
                 <option value="desc">Décroissant</option>
                 <option value="asc">Croissant</option>
@@ -198,7 +198,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white font-semibold"
               >
                 <option value="all">Toutes les factures</option>
                 <option value="signed">Factures signées</option>
@@ -235,7 +235,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                       <td className="border border-gray-300 px-4 py-3">
                         <div className="font-bold text-[#477A0C]">{invoice.invoiceNumber}</div>
                         {invoice.products.length > 0 && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-600 font-semibold">
                             {invoice.products.length} produit{invoice.products.length > 1 ? 's' : ''}
                           </div>
                         )}
@@ -243,28 +243,28 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                       <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
+                          <span className="text-black font-semibold">{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
                         </div>
                       </td>
                       <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4 text-gray-400" />
-                          <span className="font-semibold">{invoice.client.name}</span>
+                          <span className="font-bold text-black">{invoice.client.name}</span>
                         </div>
                         {invoice.client.city && (
-                          <div className="text-xs text-gray-500">{invoice.client.city}</div>
+                          <div className="text-xs text-gray-600 font-semibold">{invoice.client.city}</div>
                         )}
                       </td>
                       <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <Mail className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm">{invoice.client.email}</span>
+                          <span className="text-sm text-black font-semibold">{invoice.client.email}</span>
                         </div>
                       </td>
                       <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <MapPin className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm">
+                          <span className="text-sm text-black font-semibold">
                             {invoice.eventLocation || (
                               <span className="text-gray-400 italic">Non spécifié</span>
                             )}
@@ -276,7 +276,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                           {formatCurrency(total)}
                         </div>
                         {invoice.payment.depositAmount > 0 && (
-                          <div className="text-xs text-orange-600">
+                          <div className="text-xs text-orange-600 font-bold">
                             Acompte: {formatCurrency(invoice.payment.depositAmount)}
                           </div>
                         )}
@@ -330,17 +330,17 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                 })}
                 {filteredAndSortedInvoices.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center">
                       {searchTerm || filterStatus !== 'all' ? (
                         <div>
                           <Filter className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                          <p>Aucune facture ne correspond aux critères de recherche</p>
+                          <p className="text-black font-bold">Aucune facture ne correspond aux critères de recherche</p>
                         </div>
                       ) : (
                         <div>
                           <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                          <p>Aucune facture enregistrée</p>
-                          <p className="text-sm mt-1">Les factures seront automatiquement sauvegardées</p>
+                          <p className="text-black font-bold">Aucune facture enregistrée</p>
+                          <p className="text-sm mt-1 text-gray-600 font-semibold">Les factures seront automatiquement sauvegardées</p>
                         </div>
                       )}
                     </td>
@@ -353,7 +353,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
           {/* Résumé en bas */}
           {filteredAndSortedInvoices.length > 0 && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-black font-bold">
                 <strong>{filteredAndSortedInvoices.length}</strong> facture{filteredAndSortedInvoices.length > 1 ? 's' : ''} affichée{filteredAndSortedInvoices.length > 1 ? 's' : ''} 
                 {searchTerm && ` pour "${searchTerm}"`}
                 {filterStatus !== 'all' && ` (${filterStatus === 'signed' ? 'signées' : 'en attente'})`}
