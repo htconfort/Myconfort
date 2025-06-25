@@ -380,7 +380,7 @@ export class Html2PdfService {
         console.log('📨 Réponse Google Apps Script:', result);
 
         // Vérifier si l'envoi a réussi
-        const isSuccess = result.includes('Script actif') || 
+        const isSuccess = result.includes('Facture enregistrée') || 
                          result.includes('success') || 
                          result.includes('OK');
 
