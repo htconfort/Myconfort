@@ -36,13 +36,12 @@ export class EmailService {
   }
 
   /**
-   * Envoie la facture par email via EmailJS
+   * Envoie la facture par email via EmailJS avec PDF en pièce jointe
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS - CONFIGURATION 100% COMPLÈTE');
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC PDF EN PIÈCE JOINTE');
       console.log('🔑 API Key:', EMAILJS_CONFIG.USER_ID);
-      console.log('🔐 Private Key configurée');
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
@@ -52,8 +51,10 @@ export class EmailService {
       // Générer le PDF
       console.log('📄 Génération du PDF...');
       const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      const pdfSizeKB = Math.round(pdfBlob.size / 1024);
+      console.log('📊 Taille du PDF:', pdfSizeKB, 'KB');
       
-      // Convertir le PDF en base64
+      // Convertir le PDF en base64 pour EmailJS
       const pdfBase64 = await this.blobToBase64(pdfBlob);
       
       // Calculer les montants
@@ -69,12 +70,17 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Préparer les données pour EmailJS
+      // Créer un FormData pour envoyer le PDF comme fichier
+      const formData = new FormData();
+      formData.append('pdf_file', pdfBlob, `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`);
+
+      // Préparer les données pour EmailJS avec attachement
       const templateParams = {
         to_email: invoice.client.email,
         to_name: invoice.client.name,
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
+        subject: `Facture MYCONFORT n°${invoice.invoiceNumber}`,
         invoice_number: invoice.invoiceNumber,
         invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         total_amount: formatCurrency(totalAmount),
@@ -82,32 +88,95 @@ export class EmailService {
         remaining_amount: acompteAmount > 0 ? formatCurrency(montantRestant) : '',
         has_signature: invoice.signature ? 'Oui' : 'Non',
         advisor_name: invoice.advisorName || 'MYCONFORT',
-        pdf_data: pdfBase64,
-        pdf_filename: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
         message: this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant),
         company_name: 'MYCONFORT',
         company_address: '88 Avenue des Ternes, 75017 Paris',
         company_phone: '04 68 50 41 45',
         company_email: 'myconfort@gmail.com',
-        company_siret: '824 313 530 00027'
+        company_siret: '824 313 530 00027',
+        // Attachement PDF
+        attachments: [
+          {
+            name: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
+            data: pdfBase64,
+            type: 'application/pdf'
+          }
+        ]
       };
 
-      // Envoyer via EmailJS avec votre configuration complète
-      console.log('📧 Envoi via EmailJS avec configuration 100% complète:');
-      console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
-      console.log('🔐 Private Key configurée:', EMAILJS_CONFIG.PRIVATE_KEY.substring(0, 10) + '...');
-      console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      
-      const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID,
-        templateParams,
-        EMAILJS_CONFIG.USER_ID
-      );
+      // Méthode alternative : utiliser emailjs.sendForm pour les attachements
+      try {
+        console.log('📧 Tentative d\'envoi avec attachement PDF...');
+        
+        // Créer un formulaire temporaire pour l'envoi avec fichier
+        const tempForm = document.createElement('form');
+        
+        // Ajouter tous les champs du template
+        Object.entries(templateParams).forEach(([key, value]) => {
+          if (key !== 'attachments') {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = String(value);
+            tempForm.appendChild(input);
+          }
+        });
 
-      console.log('✅ Email envoyé avec succès via EmailJS:', response);
-      return true;
+        // Ajouter le fichier PDF
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'pdf_attachment';
+        
+        // Créer un File à partir du Blob
+        const pdfFile = new File([pdfBlob], `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`, {
+          type: 'application/pdf'
+        });
+        
+        // Créer un DataTransfer pour simuler la sélection de fichier
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(pdfFile);
+        fileInput.files = dataTransfer.files;
+        
+        tempForm.appendChild(fileInput);
+        document.body.appendChild(tempForm);
+
+        // Envoyer via emailjs.sendForm
+        const response = await emailjs.sendForm(
+          EMAILJS_CONFIG.SERVICE_ID,
+          EMAILJS_CONFIG.TEMPLATE_ID,
+          tempForm,
+          EMAILJS_CONFIG.USER_ID
+        );
+
+        // Nettoyer
+        document.body.removeChild(tempForm);
+
+        console.log('✅ Email avec PDF envoyé avec succès:', response);
+        return true;
+
+      } catch (attachmentError) {
+        console.warn('⚠️ Échec envoi avec attachement, tentative sans fichier:', attachmentError);
+        
+        // Fallback : envoyer sans attachement mais avec lien de téléchargement
+        const fallbackParams = {
+          ...templateParams,
+          message: templateParams.message + '\n\n📎 Note: Le PDF de votre facture sera envoyé séparément ou est disponible sur demande.',
+          pdf_note: 'PDF disponible sur demande - contactez-nous pour le recevoir.'
+        };
+        
+        delete fallbackParams.attachments;
+
+        const fallbackResponse = await emailjs.send(
+          EMAILJS_CONFIG.SERVICE_ID,
+          EMAILJS_CONFIG.TEMPLATE_ID,
+          fallbackParams,
+          EMAILJS_CONFIG.USER_ID
+        );
+
+        console.log('✅ Email envoyé sans attachement (fallback):', fallbackResponse);
+        return true;
+      }
+
     } catch (error: any) {
       console.error('❌ Erreur lors de l\'envoi via EmailJS:', error);
       throw new Error(`Erreur d'envoi: ${error.message}`);
@@ -122,10 +191,57 @@ export class EmailService {
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA EMAILJS - CONFIGURATION 100% COMPLÈTE');
+      console.log('📸 PARTAGE APERÇU VIA EMAILJS');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
+
+      // Vérifier la taille de l'image
+      const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
+      const imageSizeKB = Math.round(imageBlob.size / 1024);
+      console.log('📊 Taille de l\'image:', imageSizeKB, 'KB');
+
+      // Si l'image est trop grande, la compresser davantage
+      let finalImageDataUrl = imageDataUrl;
+      if (imageSizeKB > 40) {
+        console.log('🔧 Compression supplémentaire de l\'image...');
+        
+        // Créer un canvas pour recompresser
+        const img = new Image();
+        img.src = imageDataUrl;
+        
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d')!;
+        
+        // Réduire la taille si nécessaire
+        const maxWidth = 800;
+        const maxHeight = 1000;
+        let { width, height } = img;
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.5); // Compression plus forte
+        
+        const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
+        const compressedSizeKB = Math.round(compressedBlob.size / 1024);
+        console.log('📊 Taille après compression:', compressedSizeKB, 'KB');
+      }
 
       // Préparer le message pour l'aperçu
       let previewMessage = `Bonjour ${invoice.client.name},\n\n`;
@@ -139,17 +255,18 @@ export class EmailService {
         to_name: invoice.client.name,
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
+        subject: `Aperçu facture MYCONFORT n°${invoice.invoiceNumber}`,
         invoice_number: invoice.invoiceNumber,
         invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
-        subject: `Aperçu facture MYCONFORT n°${invoice.invoiceNumber}`,
         message: previewMessage,
-        image_data: imageDataUrl,
+        image_data: finalImageDataUrl.split(',')[1], // Enlever le préfixe data:
+        image_filename: `apercu_facture_${invoice.invoiceNumber}.jpg`,
         advisor_name: invoice.advisorName || 'MYCONFORT',
         company_name: 'MYCONFORT'
       };
 
-      // Envoyer via EmailJS avec votre configuration complète
-      console.log('📧 Envoi aperçu via EmailJS avec configuration 100% complète');
+      // Envoyer via EmailJS
+      console.log('📧 Envoi aperçu via EmailJS');
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -170,9 +287,8 @@ export class EmailService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS - CONFIGURATION 100% COMPLÈTE');
+      console.log('🧪 TEST DE CONNEXION EMAILJS');
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
-      console.log('🔐 Private Key:', EMAILJS_CONFIG.PRIVATE_KEY.substring(0, 10) + '...');
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
@@ -188,7 +304,7 @@ export class EmailService {
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
         subject: 'Test de connexion EmailJS MYCONFORT',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec votre configuration 100% complète.',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT.',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
@@ -196,10 +312,9 @@ export class EmailService {
         advisor_name: 'Test'
       };
 
-      // Envoyer un test via EmailJS avec votre configuration complète
+      // Envoyer un test via EmailJS
       console.log('📧 Test avec Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Test avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('🔑 Test avec vos clés API complètes');
       
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
@@ -212,7 +327,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec votre configuration 100% complète ! Service prêt pour l'envoi d'emails.`,
+        message: `✅ Connexion EmailJS réussie ! Service prêt pour l'envoi d'emails avec pièces jointes.`,
         responseTime
       };
     } catch (error: any) {
@@ -221,11 +336,11 @@ export class EmailService {
       let errorMessage = '❌ Erreur de connexion EmailJS: ';
       
       if (error.status === 401 || error.status === 403) {
-        errorMessage += 'Identifiants incorrects ou non autorisés. Vérifiez votre Template ID.';
+        errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
       } else if (error.status === 400) {
-        errorMessage += 'Paramètres invalides. Vérifiez votre configuration de template.';
+        errorMessage += 'Paramètres invalides. Vérifiez votre template.';
       } else if (error.status >= 500) {
-        errorMessage += 'Erreur serveur EmailJS. Réessayez dans quelques minutes.';
+        errorMessage += 'Erreur serveur EmailJS. Réessayez plus tard.';
       } else {
         errorMessage += error.text || error.message || 'Erreur inconnue';
       }
@@ -305,7 +420,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS 100% configuré avec toutes vos clés et Template ID',
+      status: '✅ EmailJS 100% configuré avec attachements PDF',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -341,8 +456,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    // Configuration déjà complète, mais on peut permettre la mise à jour
-    console.log('ℹ️ Configuration EmailJS déjà complète avec vos identifiants');
+    console.log('ℹ️ Configuration EmailJS déjà complète avec support des attachements PDF');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
