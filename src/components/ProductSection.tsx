@@ -96,6 +96,24 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
     };
   }, [products, taxRate, acompteAmount, chequesQuantity, totalARecevoir]);
 
+  // 🔒 FONCTION POUR VÉRIFIER SI LES CHAMPS OBLIGATOIRES SONT REMPLIS
+  const isPaymentMethodEmpty = () => {
+    return !paymentMethod || paymentMethod.trim() === '';
+  };
+
+  const areTermsAccepted = () => {
+    return termsAccepted === true;
+  };
+
+  // Style pour les champs obligatoires
+  const getPaymentMethodStyle = () => {
+    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold ${
+      isPaymentMethodEmpty() 
+        ? 'border-red-500 focus:border-red-500' 
+        : 'border-[#477A0C] focus:border-[#F55D3E]'
+    }`;
+  };
+
   const handleCategoryChange = (category: string) => {
     setNewProduct({
       ...newProduct,
@@ -198,24 +216,6 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
     setEditingIndex(null);
   };
 
-  // 🔒 FONCTION POUR VÉRIFIER SI LES CHAMPS OBLIGATOIRES SONT REMPLIS
-  const isPaymentMethodEmpty = () => {
-    return !paymentMethod || paymentMethod.trim() === '';
-  };
-
-  const areTermsAccepted = () => {
-    return termsAccepted === true;
-  };
-
-  // Style pour les champs obligatoires
-  const getPaymentMethodStyle = () => {
-    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold ${
-      isPaymentMethodEmpty() 
-        ? 'border-red-500 focus:border-red-500' 
-        : 'border-[#477A0C] focus:border-[#F55D3E]'
-    }`;
-  };
-
   return (
     <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
@@ -306,7 +306,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           )}
         </div>
         
-        {/* Products Table */}
+        {/* Products Table avec police noire pour contraste */}
         <div className="overflow-x-auto mb-6">
           <table className="w-full border-collapse">
             <thead>
@@ -337,10 +337,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             <tbody>
               {products.map((product, index) => (
                 <tr key={product.id || index} className="bg-white">
-                  <td className="border border-gray-300 px-3 py-2 font-bold">
-                    <div>{product.name}</div>
+                  <td className="border border-gray-300 px-3 py-2">
+                    <div className="font-bold text-black">{product.name}</div>
                     {product.category && (
-                      <div className="text-xs text-gray-500">{product.category}</div>
+                      <div className="text-xs text-gray-600">{product.category}</div>
                     )}
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-center">
@@ -350,14 +350,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                         min="1"
                         value={product.quantity}
                         onChange={(e) => updateProduct(index, { quantity: parseInt(e.target.value) || 1 })}
-                        className="w-16 text-center border border-gray-300 rounded px-1 py-1"
+                        className="w-16 text-center border border-gray-300 rounded px-1 py-1 text-black"
                         onBlur={stopEditing}
                         onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
                         autoFocus
                       />
                     ) : (
                       <span 
-                        className="font-bold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                        className="font-bold cursor-pointer hover:bg-gray-100 px-2 py-1 rounded text-black"
                         onClick={() => startEditing(index)}
                       >
                         {product.quantity}
@@ -365,10 +365,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                     )}
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-right">
-                    <div className="font-bold">
+                    <div className="font-bold text-black">
                       {formatCurrency(calculateHT(product.priceTTC, taxRate))}
                     </div>
-                    <div className="text-xs text-gray-500">HT</div>
+                    <div className="text-xs text-gray-600">HT</div>
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-right">
                     {editingIndex === index ? (
@@ -378,7 +378,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                         min="0"
                         value={product.priceTTC}
                         onChange={(e) => updateProduct(index, { priceTTC: parseFloat(e.target.value) || 0 })}
-                        className="w-20 text-right border border-gray-300 rounded px-1 py-1"
+                        className="w-20 text-right border border-gray-300 rounded px-1 py-1 text-black"
                         onBlur={stopEditing}
                         onKeyPress={(e) => e.key === 'Enter' && stopEditing()}
                       />
@@ -387,8 +387,8 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                         className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
                         onClick={() => startEditing(index)}
                       >
-                        <div className="font-bold">{formatCurrency(product.priceTTC)}</div>
-                        <div className="text-xs text-gray-500">TTC</div>
+                        <div className="font-bold text-black">{formatCurrency(product.priceTTC)}</div>
+                        <div className="text-xs text-gray-600">TTC</div>
                       </div>
                     )}
                   </td>
@@ -399,7 +399,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                         onChange={(e) => updateProduct(index, {
                           discountType: e.target.value as 'percent' | 'fixed'
                         })}
-                        className="border border-gray-300 rounded px-1 py-1 text-xs w-12"
+                        className="border border-gray-300 rounded px-1 py-1 text-xs w-12 text-black"
                       >
                         <option value="percent">%</option>
                         <option value="fixed">€</option>
@@ -412,12 +412,12 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                         type="number"
                         step="0.01"
                         min="0"
-                        className="w-16 border border-gray-300 rounded px-1 py-1 text-right"
+                        className="w-16 border border-gray-300 rounded px-1 py-1 text-right text-black"
                       />
                     </div>
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-right font-bold">
-                    <span>
+                    <span className="text-black">
                       {formatCurrency(calculateProductTotal(
                         product.quantity,
                         product.priceTTC,
@@ -426,7 +426,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                       ))}
                     </span>
                     {product.discount > 0 && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-600">
                         (-{product.discountType === 'percent' 
                           ? `${product.discount}%` 
                           : formatCurrency(product.discount)
@@ -457,7 +457,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
               {products.length === 0 && (
                 <tr>
                   <td colSpan={7} className="border border-gray-300 px-3 py-4 text-center text-gray-500">
-                    <span className="text-[#14281D] font-bold">Aucun produit ajouté</span>
+                    <span className="text-black font-bold">Aucun produit ajouté</span>
                   </td>
                 </tr>
               )}
