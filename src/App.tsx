@@ -373,30 +373,7 @@ function App() {
           </div>
         </div>
 
-        {/* 🔒 ALERTE CHAMPS OBLIGATOIRES */}
-        {!validation.isValid && (
-          <div className="bg-red-100 border-2 border-red-400 rounded-xl p-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <div className="bg-red-500 text-white p-2 rounded-full">
-                <span>⚠️</span>
-              </div>
-              <div>
-                <h3 className="text-red-800 font-bold text-lg">Champs obligatoires manquants</h3>
-                <p className="text-red-700 mb-2">
-                  Veuillez compléter tous les champs obligatoires avant de pouvoir éditer la facture :
-                </p>
-                <ul className="list-disc list-inside text-red-700 space-y-1">
-                  {validation.errors.map((error, index) => (
-                    <li key={index} className="font-semibold">{error}</li>
-                  ))}
-                </ul>
-                <p className="text-red-600 mt-3 text-sm font-semibold">
-                  ❌ L'édition de la facture (PDF, aperçu, envoi) est bloquée tant que ces champs ne sont pas remplis.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 🔒 BLOC D'ALERTE MASQUÉ - Le bloc des champs obligatoires manquants a été supprimé */}
 
         <InvoiceHeader
           invoice={invoice}
