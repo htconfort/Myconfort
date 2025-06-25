@@ -20,7 +20,7 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // VOTRE NOUVELLE URL GOOGLE APPS SCRIPT
+  // VOTRE SCRIPT GOOGLE APPS SCRIPT CONFIRMÉ
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
 
   const handleTestConnection = async () => {
@@ -66,6 +66,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
         const isSuccess = result.includes('Test réussi') || 
                          result.includes('success') || 
                          result.includes('OK') ||
+                         result.includes('MYCONFORT Script actif') ||
+                         result.includes('Script actif') ||
                          response.status === 200;
 
         setTestResult({

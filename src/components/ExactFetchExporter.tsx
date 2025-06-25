@@ -20,7 +20,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // VOTRE NOUVELLE URL GOOGLE APPS SCRIPT EXACTE
+  // VOTRE SCRIPT GOOGLE APPS SCRIPT CONFIRMÉ
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-/exec";
 
   const handleTestConnection = async () => {
@@ -33,7 +33,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         body: JSON.stringify({
-          test: true,
+          requestType: 'test',
           message: "Test de connexion depuis MYCONFORT"
         }),
         headers: {
@@ -118,10 +118,10 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         body: JSON.stringify({
-          pdfBase64: pdfBase64,  // base64 du fichier généré (format complet)
+          pdfBase64: pdfBase64.split(',')[1],  // base64 du fichier généré (sans le préfixe)
           filename: `Facture_${invoice.invoiceNumber}.pdf`,
           // Données supplémentaires pour votre script
-          clientEmail: invoice.client.email,
+          email: invoice.client.email,
           clientName: invoice.client.name,
           invoiceNumber: invoice.invoiceNumber,
           invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
@@ -287,7 +287,8 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
   method: "POST",
   body: JSON.stringify({
     pdfBase64: pdfBase64,  // base64 du fichier généré
-    filename: "Facture_${invoice.invoiceNumber}.pdf"
+    filename: "Facture_${invoice.invoiceNumber}.pdf",
+    email: "${invoice.client.email}"
   }),
   headers: {
     "Content-Type": "application/json"
@@ -363,7 +364,7 @@ export const ExactFetchExporter: React.FC<ExactFetchExporterProps> = ({
           <p className="font-semibold">💡 Ce composant reproduit exactement votre code :</p>
           <ul className="list-disc list-inside mt-1 text-left">
             <li>Génération PDF avec html2pdf.js</li>
-            <li>Conversion en base64 (format complet)</li>
+            <li>Conversion en base64 (format sans préfixe)</li>
             <li>Envoi avec votre structure JSON exacte</li>
             <li>Headers Content-Type: application/json</li>
           </ul>

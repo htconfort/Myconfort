@@ -10,7 +10,7 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 UPDATED WITH YOUR LATEST GOOGLE APPS SCRIPT DEPLOYMENT ID
+  // 🔑 VOTRE SCRIPT ID CONFIRMÉ
   private static readonly SCRIPT_ID = 'AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - URL FINALE MISE À JOUR');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - SCRIPT CONFIRMÉ');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -48,21 +48,21 @@ export class GoogleAppsScriptService {
       // Étape 3: Préparer le message personnalisé
       let emailMessage = customMessage || this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant);
 
-      // Étape 4: Préparer les données pour Google Apps Script
+      // Étape 4: Préparer les données pour Google Apps Script (FORMAT COMPATIBLE)
       const requestData = {
+        // Format principal pour votre script
+        pdfBase64: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
+        filename: `facture_${invoice.invoiceNumber}.pdf`,
+        
         // Informations destinataire
         email: invoice.client.email,
-        name: invoice.client.name,
+        clientName: invoice.client.name,
+        name: invoice.client.name, // Alias pour compatibilité
         
         // Informations facture
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         totalAmount: formatCurrency(totalAmount),
-        
-        // PDF en base64
-        pdfData: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
-        pdfFilename: `facture_${invoice.invoiceNumber}.pdf`,
-        pdfSize: pdfSizeKB,
         
         // Message personnalisé
         message: emailMessage,
@@ -85,6 +85,7 @@ export class GoogleAppsScriptService {
         remainingAmount: acompteAmount > 0 ? formatCurrency(montantRestant) : '',
         
         // Informations conseiller
+        advisor: invoice.advisorName || 'MYCONFORT',
         advisorName: invoice.advisorName || 'MYCONFORT',
         
         // Métadonnées
@@ -130,7 +131,7 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
 
-        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE NOUVEAU SCRIPT
+        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT
         if (result.includes('Facture enregistrée') || result.includes('success') || result.includes('OK') || response.ok) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
@@ -217,8 +218,8 @@ export class GoogleAppsScriptService {
         totalAmount: formatCurrency(totalAmount),
         
         // Image de l'aperçu
-        imageData: imageDataUrl.split(',')[1], // Enlever le préfixe
-        imageFilename: `apercu_facture_${invoice.invoiceNumber}.${format}`,
+        pdfBase64: imageDataUrl.split(',')[1], // Utiliser le même format que pour les PDF
+        filename: `apercu_facture_${invoice.invoiceNumber}.${format}`,
         imageSize: imageSizeKB,
         imageFormat: format.toUpperCase(),
         
@@ -334,7 +335,8 @@ export class GoogleAppsScriptService {
         const isSuccess = result.includes('Test réussi') || 
                          result.includes('success') || 
                          result.includes('OK') ||
-                         result.includes('test') ||
+                         result.includes('MYCONFORT Script actif') ||
+                         result.includes('Script actif') ||
                          response.status === 200;
 
         return {

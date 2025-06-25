@@ -218,9 +218,11 @@ export class Html2PdfService {
         const result = await response.text();
         console.log('📨 Réponse du script:', result);
 
-        const isSuccess = result.includes('Script actif') || 
+        const isSuccess = result.includes('Test réussi') || 
                          result.includes('success') || 
                          result.includes('OK') ||
+                         result.includes('MYCONFORT Script actif') ||
+                         result.includes('Script actif') ||
                          response.status === 200;
 
         return {
@@ -300,13 +302,14 @@ export class Html2PdfService {
     }
 
     return {
-      // Données PDF
+      // Données PDF - FORMAT COMPATIBLE AVEC VOTRE SCRIPT
       pdfBase64: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
       filename: filename,
       
       // Informations destinataire
       email: invoice.client.email,
       name: invoice.client.name,
+      clientName: invoice.client.name,
       
       // Informations facture
       invoiceNumber: invoice.invoiceNumber,
