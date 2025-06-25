@@ -23,6 +23,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [shareStep, setShareStep] = useState('');
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  
+  const scriptInfo = GoogleAppsScriptService.getScriptInfo();
+  const scriptConfigured = scriptInfo.scriptId !== 'VOTRE_NOUVEAU_SCRIPT_ID';
 
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
@@ -55,8 +58,13 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT (CORRIGÉ)
+  // 🧪 TEST DE CONNEXION GOOGLE APPS SCRIPT
   const handleTestGoogleScript = async () => {
+    if (!scriptConfigured) {
+      alert('Veuillez configurer un nouveau script Google Apps Script');
+      return;
+    }
+
     setIsTesting(true);
     setTestResult(null);
 
@@ -80,10 +88,15 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT (CORRIGÉ)
+  // 🚀 PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT
   const handleSharePreviewViaGoogleScript = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
+      return;
+    }
+
+    if (!scriptConfigured) {
+      alert('Veuillez configurer un nouveau script Google Apps Script');
       return;
     }
 
@@ -160,8 +173,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
   if (!isOpen) return null;
 
-  const scriptInfo = GoogleAppsScriptService.getScriptInfo();
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
@@ -181,9 +192,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             {/* 🧪 BOUTON TEST GOOGLE APPS SCRIPT */}
             <button
               onClick={handleTestGoogleScript}
-              disabled={isTesting}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
-              title="Tester la connexion avec votre Google Apps Script"
+              disabled={isTesting || !scriptConfigured}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
+              title={scriptConfigured ? "Tester la connexion avec votre Google Apps Script" : "Veuillez configurer un nouveau script"}
             >
               {isTesting ? (
                 <>
@@ -202,9 +213,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             {/* 🚀 BOUTON PARTAGE APERÇU AVEC GOOGLE APPS SCRIPT */}
             <button
               onClick={handleSharePreviewViaGoogleScript}
-              disabled={isSharing || !invoice.client.email}
-              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
-              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Partager cet aperçu exact via Google Apps Script"}
+              disabled={isSharing || !invoice.client.email || !scriptConfigured}
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
+              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : !scriptConfigured ? "Veuillez configurer un nouveau script" : "Partager cet aperçu exact via Google Apps Script"}
             >
               {isSharing ? (
                 <>
@@ -282,9 +293,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
             <Zap className="w-4 h-4 text-purple-600" />
-            <span className="font-semibold text-purple-900">Google Apps Script configuré :</span>
+            <span className="font-semibold text-purple-900">Google Apps Script :</span>
             <span className="text-purple-800">
-              Votre script personnalisé est prêt pour l'envoi automatique !
+              {scriptConfigured 
+                ? "Votre script personnalisé est prêt pour l'envoi automatique !"
+                : "⚠️ Veuillez configurer un nouveau script Google Apps Script"
+              }
             </span>
             {!invoice.client.email && (
               <span className="text-red-600 font-semibold">
@@ -293,10 +307,13 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            🚀 Script: {scriptInfo.scriptId.substring(0, 20)}... • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
+            🚀 Script: {scriptConfigured ? `${scriptInfo.scriptId.substring(0, 20)}...` : "Non configuré"} • 📎 Format: PNG haute qualité • 🎯 Identique à l'aperçu Bolt
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 Cliquez sur "Tester Script" pour vérifier la connexion avec votre Google Apps Script
+            💡 {scriptConfigured 
+              ? "Cliquez sur \"Tester Script\" pour vérifier la connexion avec votre Google Apps Script"
+              : "Veuillez créer un nouveau script Google Apps Script et mettre à jour l'ID dans le code"
+            }
           </div>
         </div>
 
@@ -309,4 +326,4 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       </div>
     </div>
   );
-};
+}

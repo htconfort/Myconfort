@@ -20,8 +20,8 @@ export const SimpleHtml2PdfExporter: React.FC<SimpleHtml2PdfExporterProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  // NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA/exec";
+  // NOUVELLE URL À CONFIGURER
+  const GOOGLE_SCRIPT_URL = "VOTRE_NOUVELLE_URL_SCRIPT";
 
   const handleTestConnection = async () => {
     setIsTesting(true);
@@ -327,8 +327,8 @@ Erreur technique: ${fetchError.message}`);
           <div className="flex items-center space-x-2">
             <button
               onClick={handleTestConnection}
-              disabled={isTesting}
-              className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center space-x-1"
+              disabled={isTesting || GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"}
+              className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center space-x-1 disabled:opacity-50"
             >
               <TestTube className="w-3 h-3" />
               <span>Tester</span>
@@ -347,7 +347,7 @@ Erreur technique: ${fetchError.message}`);
         
         <div className="text-sm text-blue-200">
           <div className="flex items-center space-x-2">
-            <span>Script ID: AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA</span>
+            <span>Script ID: {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" ? "Non configuré" : GOOGLE_SCRIPT_URL.split('/s/')[1].split('/exec')[0]}</span>
           </div>
           <div className="text-xs mt-1">
             URL: {GOOGLE_SCRIPT_URL}
@@ -422,11 +422,26 @@ Erreur technique: ${fetchError.message}`);
         </div>
       )}
 
+      {/* Message URL non configurée */}
+      {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" && (
+        <div className="bg-yellow-500/20 border border-yellow-400 rounded-lg p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-yellow-300" />
+            <div className="text-sm">
+              <div className="font-semibold">URL Google Apps Script non configurée</div>
+              <p className="mt-1 text-xs">
+                Veuillez créer un nouveau script Google Apps Script et mettre à jour l'URL dans le code.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bouton d'export */}
       <div className="flex justify-center">
         <button
           onClick={handleExportAndSend}
-          disabled={isExporting || !canExport}
+          disabled={isExporting || !canExport || GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"}
           className="bg-white text-blue-600 hover:bg-blue-50 disabled:bg-gray-300 disabled:text-gray-500 px-8 py-4 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
         >
           {isExporting ? (
@@ -447,16 +462,18 @@ Erreur technique: ${fetchError.message}`);
       {/* Instructions */}
       <div className="mt-4 text-center text-sm text-blue-100">
         <p>
-          {canExport 
-            ? `✅ Prêt pour l'export vers Google Drive`
-            : '⚠️ Complétez les informations ci-dessus pour activer l\'export'
+          {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT"
+            ? '⚠️ Veuillez configurer une nouvelle URL Google Apps Script'
+            : canExport 
+              ? `✅ Prêt pour l'export vers Google Drive`
+              : '⚠️ Complétez les informations ci-dessus pour activer l\'export'
           }
         </p>
         <p className="mt-1 text-xs text-yellow-200 font-semibold">
           🎯 Utilise html2pdf.js pour convertir l'aperçu exact en PDF
         </p>
         <p className="mt-1 text-xs text-green-200">
-          🔗 Script: AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA
+          🔗 Script: {GOOGLE_SCRIPT_URL === "VOTRE_NOUVELLE_URL_SCRIPT" ? "Non configuré" : GOOGLE_SCRIPT_URL.split('/s/')[1].split('/exec')[0]}
         </p>
         <div className="mt-2 text-xs text-orange-200 bg-orange-500/20 rounded p-2">
           <p className="font-semibold">💡 Pour configurer votre Google Apps Script :</p>
@@ -470,4 +487,4 @@ Erreur technique: ${fetchError.message}`);
       </div>
     </div>
   );
-};
+}

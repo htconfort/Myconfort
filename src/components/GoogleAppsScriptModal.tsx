@@ -39,10 +39,16 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
 
   const scriptInfo = GoogleAppsScriptService.getScriptInfo();
   const validation = GoogleAppsScriptService.validateEmailData(invoice);
+  const scriptConfigured = scriptInfo.scriptId !== 'VOTRE_NOUVEAU_SCRIPT_ID';
 
   const handleSendViaGoogleScript = async () => {
     if (!validation.isValid) {
       onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
+      return;
+    }
+
+    if (!scriptConfigured) {
+      onError('Veuillez configurer un nouveau script Google Apps Script');
       return;
     }
 
@@ -82,6 +88,11 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
   };
 
   const handleTestConfiguration = async () => {
+    if (!scriptConfigured) {
+      onError('Veuillez configurer un nouveau script Google Apps Script');
+      return;
+    }
+
     setIsLoading(true);
     setSendingStep('🧪 Test de connexion...');
     
@@ -188,8 +199,14 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-purple-600" />
-              <h4 className="font-semibold text-purple-900">Google Apps Script Configuré</h4>
+              {scriptConfigured ? (
+                <CheckCircle className="w-5 h-5 text-purple-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              )}
+              <h4 className="font-semibold text-purple-900">
+                {scriptConfigured ? "Google Apps Script Configuré" : "Google Apps Script Non Configuré"}
+              </h4>
             </div>
             <button
               onClick={() => setShowConfiguration(!showConfiguration)}
@@ -200,7 +217,11 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
           </div>
           
           <p className="text-sm text-purple-700 mb-2">
-            ✅ Script ID: <code className="bg-purple-100 px-2 py-1 rounded">{scriptInfo.scriptId.substring(0, 20)}...</code>
+            {scriptConfigured ? (
+              <>✅ Script ID: <code className="bg-purple-100 px-2 py-1 rounded">{scriptInfo.scriptId.substring(0, 20)}...</code></>
+            ) : (
+              <>⚠️ <code className="bg-red-100 px-2 py-1 rounded">Veuillez configurer un nouveau script</code></>
+            )}
           </p>
           
           {showConfiguration && (
@@ -217,8 +238,8 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
               <div className="mt-3 flex items-center space-x-2">
                 <button
                   onClick={handleTestConfiguration}
-                  disabled={isLoading}
-                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm flex items-center space-x-1"
+                  disabled={isLoading || !scriptConfigured}
+                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm flex items-center space-x-1 disabled:opacity-50"
                 >
                   <TestTube className="w-3 h-3" />
                   <span>Tester</span>
@@ -242,6 +263,26 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Message script non configuré */}
+        {!scriptConfigured && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              <h4 className="font-semibold text-yellow-900">Script Google Apps Script non configuré</h4>
+            </div>
+            <p className="text-sm text-yellow-700 mb-2">
+              Vous devez créer un nouveau script Google Apps Script et mettre à jour l'ID dans le code.
+            </p>
+            <ol className="list-decimal list-inside text-sm text-yellow-700 space-y-1 ml-2">
+              <li>Allez sur <a href="https://script.google.com/home" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">script.google.com/home</a></li>
+              <li>Créez un nouveau projet</li>
+              <li>Copiez le code du script de test fourni</li>
+              <li>Déployez comme "Web app" avec "Execute as: Me" et "Who has access: Anyone"</li>
+              <li>Copiez le nouvel ID de script et mettez à jour le code</li>
+            </ol>
+          </div>
+        )}
 
         {/* Erreurs de validation */}
         {!validation.isValid && (
@@ -283,7 +324,7 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
           
           <button
             onClick={handleSendViaGoogleScript}
-            disabled={isLoading || !validation.isValid}
+            disabled={isLoading || !validation.isValid || !scriptConfigured}
             className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg font-bold flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all hover:scale-105 shadow-lg"
           >
             {isLoading ? (
@@ -316,10 +357,13 @@ export const GoogleAppsScriptModal: React.FC<GoogleAppsScriptModalProps> = ({
             </ul>
           </div>
           <p className="mt-2 text-blue-600 font-medium">
-            ✅ Script configuré et prêt pour l'envoi automatique
+            {scriptConfigured 
+              ? "✅ Script configuré et prêt pour l'envoi automatique"
+              : "⚠️ Veuillez configurer un nouveau script Google Apps Script"
+            }
           </p>
         </div>
       </div>
     </Modal>
   );
-};
+}

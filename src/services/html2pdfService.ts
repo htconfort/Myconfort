@@ -39,8 +39,8 @@ export class Html2PdfService {
     margin: 0
   };
 
-  // NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE
-  private static readonly GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA/exec';
+  // NOUVELLE URL À CONFIGURER
+  private static readonly GOOGLE_SCRIPT_URL = 'VOTRE_NOUVELLE_URL_SCRIPT';
 
   /**
    * 📄 Génère un PDF à partir de l'élément HTML et l'envoie via Google Apps Script
@@ -424,7 +424,9 @@ export class Html2PdfService {
   static getConfigInfo(): { scriptUrl: string; status: string } {
     return {
       scriptUrl: Html2PdfService.GOOGLE_SCRIPT_URL,
-      status: '✅ Nouvelle URL confirmée et fonctionnelle'
+      status: Html2PdfService.GOOGLE_SCRIPT_URL === 'VOTRE_NOUVELLE_URL_SCRIPT' 
+        ? '⚠️ URL non configurée' 
+        : '✅ Nouvelle URL configurée'
     };
   }
 

@@ -10,8 +10,8 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 NOUVELLE URL GOOGLE APPS SCRIPT CONFIRMÉE ET FONCTIONNELLE
-  private static readonly SCRIPT_ID = 'AKfycbxHriNqmeMTwOY5LQROM1BbiIhtysSn6L9mKA_NPnvIepT-2xZ5hFiN1NpX00_UHdVRtA';
+  // 🔑 NOUVELLE URL À METTRE À JOUR AVEC VOTRE SCRIPT
+  private static readonly SCRIPT_ID = 'VOTRE_NOUVEAU_SCRIPT_ID';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
   /**
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVELLE URL CONFIRMÉE');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - NOUVELLE URL À CONFIGURER');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -501,7 +501,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Nouvelle URL confirmée et fonctionnelle'
+      status: '⚠️ Veuillez configurer un nouveau script'
     };
   }
 
