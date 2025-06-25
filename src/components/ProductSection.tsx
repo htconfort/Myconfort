@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp, CreditCard, Hash } from 'lucide-react';
 import { Product } from '../types';
 import { productCatalog, productCategories } from '../data/products';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
@@ -32,6 +32,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   });
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  
+  // États pour les chèques à venir
+  const [chequesQuantity, setChequesQuantity] = useState<number>(0);
+  const [chequesMontant, setChequesMontant] = useState<number>(0);
 
   const filteredProducts = useMemo(() => {
     return productCatalog.filter(p => p.category === newProduct.category);
@@ -68,9 +72,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       totalDiscount,
       taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100))),
       totalPercu: acompteAmount,
-      totalARecevoir: Math.max(0, totalWithTax - acompteAmount)
+      totalARecevoir: Math.max(0, totalWithTax - acompteAmount),
+      totalCheques: chequesQuantity * chequesMontant
     };
-  }, [products, taxRate, acompteAmount]);
+  }, [products, taxRate, acompteAmount, chequesQuantity, chequesMontant]);
 
   const handleCategoryChange = (category: string) => {
     setNewProduct({
@@ -422,7 +427,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       
       {/* NOUVEAU: Patio avec deux bandes de lancement pour les totaux et acompte */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bande 1: Remarques */}
+        {/* Bande 1: Remarques avec chèques à venir */}
         <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
@@ -430,12 +435,82 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
             <h3 className="text-[#14281D] font-bold text-lg">REMARQUES</h3>
           </div>
-          <textarea
-            value={invoiceNotes}
-            onChange={(e) => onNotesChange(e.target.value)}
-            className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 h-32 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
-            placeholder="Notes ou remarques sur la facture..."
-          />
+          
+          {/* Zone de texte pour remarques */}
+          <div className="mb-4">
+            <label className="block text-[#14281D] font-semibold mb-2">Notes de facture</label>
+            <textarea
+              value={invoiceNotes}
+              onChange={(e) => onNotesChange(e.target.value)}
+              className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 h-24 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+              placeholder="Notes ou remarques sur la facture..."
+            />
+          </div>
+
+          {/* NOUVEAU: Section Chèques à venir */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-4">
+            <div className="flex items-center mb-3">
+              <CreditCard className="w-5 h-5 text-purple-600 mr-2" />
+              <h4 className="font-bold text-purple-800">CHÈQUES À VENIR</h4>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Quantité de chèques */}
+              <div>
+                <label className="block text-purple-700 font-semibold mb-1 flex items-center">
+                  <Hash className="w-4 h-4 mr-1" />
+                  Quantité de chèques
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={chequesQuantity}
+                  onChange={(e) => setChequesQuantity(parseInt(e.target.value) || 0)}
+                  className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
+                  placeholder="0"
+                />
+              </div>
+
+              {/* Montant par chèque */}
+              <div>
+                <label className="block text-purple-700 font-semibold mb-1 flex items-center">
+                  <Euro className="w-4 h-4 mr-1" />
+                  Montant par chèque (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={chequesMontant}
+                  onChange={(e) => setChequesMontant(parseFloat(e.target.value) || 0)}
+                  className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            {/* Calcul automatique du total des chèques */}
+            {chequesQuantity > 0 && chequesMontant > 0 && (
+              <div className="mt-3 p-3 bg-purple-100 border border-purple-300 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-purple-700 font-semibold">Total des chèques à venir :</span>
+                  <span className="text-purple-800 font-bold text-lg">
+                    {formatCurrency(totals.totalCheques)}
+                  </span>
+                </div>
+                <div className="text-xs text-purple-600 mt-1">
+                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} × {formatCurrency(chequesMontant)}
+                </div>
+              </div>
+            )}
+
+            {/* Message informatif */}
+            {chequesQuantity > 0 && chequesMontant > 0 && (
+              <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
+                💡 Ces chèques seront mentionnés dans la facture comme paiements à venir.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Bande 2: Totaux et Gestion Acompte */}
@@ -555,6 +630,24 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Affichage des chèques à venir dans les totaux */}
+            {totals.totalCheques > 0 && (
+              <div className="bg-purple-100 border border-purple-300 rounded-lg p-3 mt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <CreditCard className="w-4 h-4 text-purple-600 mr-2" />
+                    <span className="text-purple-700 font-semibold">Chèques à venir:</span>
+                  </div>
+                  <span className="text-purple-800 font-bold">
+                    {formatCurrency(totals.totalCheques)}
+                  </span>
+                </div>
+                <div className="text-xs text-purple-600 mt-1">
+                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} de {formatCurrency(chequesMontant)} chacun
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
