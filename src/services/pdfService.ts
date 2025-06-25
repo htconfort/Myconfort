@@ -3,10 +3,10 @@ import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
 export class PDFService {
-  // Méthode principale - UTILISE MAINTENANT LE SERVICE IDENTIQUE À L'APERÇU
+  // Méthode principale - UTILISE LE SERVICE IDENTIQUE À L'APERÇU
   static async generateInvoicePDF(invoice: Invoice, elementId?: string): Promise<Blob> {
     try {
-      console.log('🎨 GÉNÉRATION PDF AVEC DESIGN IDENTIQUE À L\'APERÇU BOLT');
+      console.log('🎨 GÉNÉRATION PDF AVEC DESIGN IDENTIQUE À L\'APERÇU');
       
       // UTILISER EXCLUSIVEMENT LE SERVICE QUI REPRODUIT L'APERÇU
       return await AdvancedPDFService.getPDFBlob(invoice);
@@ -24,7 +24,7 @@ export class PDFService {
   // Méthode de téléchargement - UTILISE LE SERVICE IDENTIQUE
   static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
     try {
-      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU BOLT');
+      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU');
       
       // UTILISER EXCLUSIVEMENT LE SERVICE QUI REPRODUIT L'APERÇU
       await AdvancedPDFService.downloadPDF(invoice);

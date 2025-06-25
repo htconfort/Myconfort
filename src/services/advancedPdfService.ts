@@ -43,7 +43,7 @@ export interface InvoiceData {
 
 export class AdvancedPDFService {
   private static readonly COLORS = {
-    // Couleurs exactes de l'aperçu Bolt
+    // Couleurs exactes de l'aperçu
     primary: [71, 122, 12],      // #477A0C - Vert MYCONFORT
     cream: [242, 239, 226],      // #F2EFE2 - Beige clair
     dark: [20, 40, 29],          // #14281D - Texte foncé
@@ -57,19 +57,19 @@ export class AdvancedPDFService {
   };
 
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
-    console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU BOLT AVEC SUPPORT ACOMPTE');
+    console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU AVEC SUPPORT ACOMPTE');
     
     const doc = new jsPDF();
     const invoiceData = this.convertInvoiceData(invoice);
     
-    // ===== REPRODUCTION EXACTE DE L'APERÇU BOLT =====
+    // ===== REPRODUCTION EXACTE DE L'APERÇU =====
     
     // 1. BORDURE SUPÉRIEURE VERTE (comme dans l'aperçu)
     doc.setFillColor(...this.COLORS.primary);
     doc.rect(0, 0, 210, 4, 'F');
     
     // 2. EN-TÊTE AVEC LOGO ET GRADIENT (reproduction exacte)
-    this.addHeaderIdenticalToBolt(doc, invoiceData);
+    this.addHeaderIdenticalToPreview(doc, invoiceData);
     
     // 3. SECTION CLIENT AVEC FOND VERT (exactement comme l'aperçu)
     this.addClientSectionIdentical(doc, invoiceData);
@@ -94,11 +94,11 @@ export class AdvancedPDFService {
     // 9. PIED DE PAGE AVEC FOND VERT
     this.addFooterIdentical(doc);
     
-    console.log('✅ PDF GÉNÉRÉ - IDENTIQUE À L\'APERÇU BOLT AVEC ACOMPTE');
+    console.log('✅ PDF GÉNÉRÉ - IDENTIQUE À L\'APERÇU AVEC ACOMPTE');
     return doc;
   }
 
-  private static addHeaderIdenticalToBolt(doc: jsPDF, data: InvoiceData): void {
+  private static addHeaderIdenticalToPreview(doc: jsPDF, data: InvoiceData): void {
     // En-tête avec gradient vert-bleu (simulation du gradient de l'aperçu)
     doc.setFillColor(...this.COLORS.primary);
     doc.rect(15, 10, 180, 25, 'F');

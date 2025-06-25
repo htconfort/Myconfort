@@ -51,7 +51,7 @@ function App() {
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
-  const [showInvoicePreview, setShowInvoicePreview] = useState(true); // Afficher l'aperçu par défaut
+  const [showInvoicePreview, setShowInvoicePreview] = useState(true);
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -114,7 +114,6 @@ function App() {
       handleSave();
       showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
-      // Utiliser le service PDF avancé avec signature
       await AdvancedPDFService.downloadPDF(invoice);
       showToast(`PDF MYCONFORT téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
     } catch (error) {
@@ -139,10 +138,6 @@ function App() {
     } catch (error) {
       showToast('Erreur lors de l\'impression', 'error');
     }
-  };
-
-  const handleShowEmailJSConfig = () => {
-    setShowEmailJSConfig(true);
   };
 
   const handleEmailJSSuccess = (message: string) => {
@@ -211,7 +206,6 @@ function App() {
     }
   };
 
-  // Validation functions
   const validateInvoice = () => {
     const errors = [];
     
@@ -466,17 +460,17 @@ function App() {
           invoice={invoice}
           onSuccess={handleEmailJSSuccess}
           onError={handleEmailJSError}
-          onShowConfig={handleShowEmailJSConfig}
+          onShowConfig={() => setShowEmailJSConfig(true)}
         />
 
-        {/* NOUVEAU: Export PDF Simple avec votre code */}
+        {/* Export PDF Simple avec html2pdf */}
         <SimpleHtml2PdfExporter
           invoice={invoice}
           onSuccess={handleEmailJSSuccess}
           onError={handleEmailJSError}
         />
 
-        {/* Aperçu de la facture (pour html2pdf) */}
+        {/* Aperçu de la facture */}
         {showInvoicePreview && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
@@ -530,8 +524,8 @@ function App() {
                 <span>NOUVELLE FACTURE</span>
               </button>
               <button
-                onClick={handleShowEmailJSConfig}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                onClick={() => setShowEmailJSConfig(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
               >
                 <span>📧</span>
                 <span>CONFIGURER EMAIL</span>
