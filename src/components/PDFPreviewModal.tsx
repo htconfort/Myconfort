@@ -137,7 +137,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       if (imageSizeKB > 45) {
         setShareStep('🔧 Optimisation supplémentaire...');
         // Further reduce quality if still too large
-        const optimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        const optimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.4); // Changed from 0.6 to 0.4 for more aggressive compression
         const optimizedBlob = await fetch(optimizedImageDataUrl).then(res => res.blob());
         const optimizedSizeKB = Math.round(optimizedBlob.size / 1024);
         
@@ -166,7 +166,38 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             throw new Error('Échec de l\'envoi via EmailJS');
           }
         } else {
-          throw new Error(`Image trop volumineuse (${optimizedSizeKB} KB). Limite EmailJS: 50 KB`);
+          // If still too large, try even more aggressive compression
+          setShareStep('🔧 Compression maximale...');
+          const maxOptimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.2); // Even more aggressive compression
+          const maxOptimizedBlob = await fetch(maxOptimizedImageDataUrl).then(res => res.blob());
+          const maxOptimizedSizeKB = Math.round(maxOptimizedBlob.size / 1024);
+          
+          console.log(`📊 Taille compression maximale: ${maxOptimizedSizeKB} KB`);
+          
+          if (maxOptimizedSizeKB <= 45) {
+            setShareStep('🚀 Envoi via EmailJS...');
+            
+            const success = await EmailService.sharePreviewViaEmail(
+              invoice,
+              maxOptimizedImageDataUrl
+            );
+
+            if (success) {
+              setShareStep('✅ Aperçu partagé !');
+              
+              const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
+                `📸 Image fortement compressée envoyée à ${invoice.client.email}\n` +
+                `🎯 Format JPEG compression maximale pour EmailJS\n\n` +
+                `🚀 Envoyé via EmailJS\n` +
+                `📊 Taille: ${maxOptimizedSizeKB} KB • Format: JPEG compression maximale`;
+              
+              alert(successMessage);
+            } else {
+              throw new Error('Échec de l\'envoi via EmailJS');
+            }
+          } else {
+            throw new Error(`Image trop volumineuse même avec compression maximale (${maxOptimizedSizeKB} KB). Limite EmailJS: 50 KB`);
+          }
         }
       } else {
         setShareStep('🚀 Envoi via EmailJS...');
