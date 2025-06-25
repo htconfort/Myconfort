@@ -30,9 +30,8 @@ function doPost(e) {
       fileName
     );
     
-    // 👉 REMPLACEZ PAR VOTRE ID DE DOSSIER DRIVE
-    // Pour trouver l'ID : allez sur drive.google.com, ouvrez votre dossier, copiez l'ID depuis l'URL
-    const folderId = "1AbcD3eFgHi..."; // REMPLACEZ PAR VOTRE VRAI ID
+    // 🎯 VOTRE DOSSIER GOOGLE DRIVE CONFIGURÉ
+    const folderId = "1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw";
     const folder = DriveApp.getFolderById(folderId);
     const file = folder.createFile(blob);
     
@@ -81,4 +80,17 @@ function doGet(e) {
 function testScript() {
   console.log('🧪 Test du script MYCONFORT');
   return 'Script fonctionnel !';
+}
+
+// Fonction pour vérifier les permissions Drive
+function checkDrivePermissions() {
+  try {
+    const folderId = "1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw";
+    const folder = DriveApp.getFolderById(folderId);
+    console.log('✅ Accès au dossier:', folder.getName());
+    return `Accès OK au dossier: ${folder.getName()}`;
+  } catch (error) {
+    console.error('❌ Erreur accès Drive:', error);
+    return `Erreur accès Drive: ${error.message}`;
+  }
 }
