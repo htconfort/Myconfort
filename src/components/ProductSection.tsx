@@ -107,7 +107,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
   // Style pour les champs obligatoires
   const getPaymentMethodStyle = () => {
-    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold ${
+    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold ${
       isPaymentMethodEmpty() 
         ? 'border-red-500 focus:border-red-500' 
         : 'border-[#477A0C] focus:border-[#F55D3E]'
@@ -230,11 +230,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         <div className="mb-6 bg-white rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
             <div className="md:col-span-3">
-              <label className="block text-[#14281D] font-bold mb-1">Catégorie</label>
+              <label className="block text-black font-bold mb-1">Catégorie</label>
               <select
                 value={newProduct.category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-black"
               >
                 <option value="">Sélectionner</option>
                 {productCategories.map(category => (
@@ -244,11 +244,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
             
             <div className="md:col-span-4">
-              <label className="block text-[#14281D] font-bold mb-1">Produit</label>
+              <label className="block text-black font-bold mb-1">Produit</label>
               <select
                 value={newProduct.name}
                 onChange={(e) => handleProductChange(e.target.value)}
-                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 bg-white font-bold focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-black"
                 disabled={!newProduct.category}
               >
                 <option value="">
@@ -263,7 +263,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-[#14281D] font-bold mb-1">Quantité</label>
+              <label className="block text-black font-bold mb-1">Quantité</label>
               <input
                 value={newProduct.quantity}
                 onChange={(e) => setNewProduct({
@@ -272,19 +272,19 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 })}
                 type="number"
                 min="1"
-                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-black"
               />
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-[#14281D] font-bold mb-1">Prix TTC</label>
+              <label className="block text-black font-bold mb-1">Prix TTC</label>
               <input
                 value={newProduct.priceTTC}
                 onChange={(e) => handlePriceTTCChange(parseFloat(e.target.value) || 0)}
                 type="number"
                 step="0.01"
                 min="0"
-                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-[#14281D]"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-3 py-2 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all text-black"
               />
             </div>
             
@@ -300,7 +300,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
           
           {newProduct.priceTTC > 0 && (
-            <div className="mt-2 text-sm text-[#14281D]">
+            <div className="mt-2 text-sm text-black">
               <span className="font-semibold">Prix HT calculé: {formatCurrency(newProduct.unitPrice)}</span>
             </div>
           )}
@@ -474,16 +474,16 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <Edit3 className="w-5 h-5" />
             </div>
-            <h3 className="text-[#14281D] font-bold text-lg">REMARQUES</h3>
+            <h3 className="text-black font-bold text-lg">REMARQUES</h3>
           </div>
           
           {/* Zone de texte pour remarques */}
           <div className="mb-4">
-            <label className="block text-[#14281D] font-semibold mb-2">Notes de facture</label>
+            <label className="block text-black font-semibold mb-2">Notes de facture</label>
             <textarea
               value={invoiceNotes}
               onChange={(e) => onNotesChange(e.target.value)}
-              className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 h-24 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+              className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 h-24 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black"
               placeholder="Notes ou remarques sur la facture..."
             />
           </div>
@@ -578,20 +578,20 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <Calculator className="w-5 h-5" />
             </div>
-            <h3 className="text-[#14281D] font-bold text-lg">TOTAUX & ACOMPTE</h3>
+            <h3 className="text-black font-bold text-lg">TOTAUX & ACOMPTE</h3>
           </div>
           
           <div className="space-y-3">
             {/* Totaux classiques */}
             <div className="flex justify-between border-b border-gray-300 pb-2">
-              <span className="font-semibold text-[#14281D]">Total HT:</span>
-              <span className="font-semibold text-[#14281D]">
+              <span className="font-semibold text-black">Total HT:</span>
+              <span className="font-semibold text-black">
                 {formatCurrency(totals.subtotal)}
               </span>
             </div>
             <div className="flex justify-between border-b border-gray-300 pb-2">
-              <span className="font-semibold text-[#14281D]">TVA ({taxRate}%):</span>
-              <span className="font-semibold text-[#14281D]">
+              <span className="font-semibold text-black">TVA ({taxRate}%):</span>
+              <span className="font-semibold text-black">
                 {formatCurrency(totals.taxAmount)}
               </span>
             </div>
@@ -706,13 +706,13 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <CreditCard className="w-5 h-5" />
             </div>
-            <h3 className="text-[#14281D] font-bold text-lg">MODE DE RÈGLEMENT</h3>
+            <h3 className="text-black font-bold text-lg">MODE DE RÈGLEMENT</h3>
           </div>
           
           <div className="space-y-4">
             {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE */}
             <div>
-              <label className="block text-[#14281D] font-semibold mb-1">
+              <label className="block text-black font-semibold mb-1">
                 Méthode de paiement <span className="text-red-600">*</span>
               </label>
               <select
@@ -738,14 +738,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             
             {/* Conseiller */}
             <div>
-              <label className="block text-[#14281D] font-semibold mb-1">
+              <label className="block text-black font-semibold mb-1">
                 Conseiller(e)
               </label>
               <input
                 value={advisorName}
                 onChange={(e) => onAdvisorNameChange(e.target.value)}
                 type="text"
-                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
                 placeholder="Nom du conseiller"
               />
             </div>
@@ -767,7 +767,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   }`}
                 />
                 <span className={`font-semibold ${
-                  areTermsAccepted() ? 'text-[#14281D]' : 'text-red-600'
+                  areTermsAccepted() ? 'text-black' : 'text-red-600'
                 }`}>
                   J'ai lu et j'accepte les conditions générales de vente <span className="text-red-600">*</span>
                 </span>
@@ -786,7 +786,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
             {/* Signature client */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-4">
-              <label className="block text-[#14281D] font-semibold mb-2 flex items-center">
+              <label className="block text-black font-semibold mb-2 flex items-center">
                 <User className="w-4 h-4 mr-2" />
                 Signature client MYCONFORT
               </label>
@@ -808,7 +808,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 ) : (
                   <button
                     onClick={onShowSignaturePad}
-                    className="text-[#14281D] hover:text-[#477A0C] font-semibold flex items-center space-x-2"
+                    className="text-black hover:text-[#477A0C] font-semibold flex items-center space-x-2"
                   >
                     <span>✍️</span>
                     <span>Cliquer pour signer électroniquement</span>
