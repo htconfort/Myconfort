@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, Plus, Trash2, Edit3 } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp } from 'lucide-react';
 import { Product } from '../types';
 import { productCatalog, productCategories } from '../data/products';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
@@ -10,6 +10,8 @@ interface ProductSectionProps {
   taxRate: number;
   invoiceNotes: string;
   onNotesChange: (notes: string) => void;
+  acompteAmount: number;
+  onAcompteChange: (amount: number) => void;
 }
 
 export const ProductSection: React.FC<ProductSectionProps> = ({
@@ -17,7 +19,9 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   onUpdate,
   taxRate,
   invoiceNotes,
-  onNotesChange
+  onNotesChange,
+  acompteAmount,
+  onAcompteChange
 }) => {
   const [newProduct, setNewProduct] = useState({
     category: '',
@@ -62,9 +66,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       subtotal,
       totalWithTax,
       totalDiscount,
-      taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100)))
+      taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100))),
+      totalPercu: acompteAmount,
+      totalARecevoir: Math.max(0, totalWithTax - acompteAmount)
     };
-  }, [products, taxRate]);
+  }, [products, taxRate, acompteAmount]);
 
   const handleCategoryChange = (category: string) => {
     setNewProduct({
@@ -414,43 +420,141 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         </table>
       </div>
       
-      {/* Invoice Summary */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-[#F2EFE2] font-bold mb-1">Remarques</label>
+      {/* NOUVEAU: Patio avec deux bandes de lancement pour les totaux et acompte */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Bande 1: Remarques */}
+        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+          <div className="flex items-center mb-3">
+            <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
+              <Edit3 className="w-5 h-5" />
+            </div>
+            <h3 className="text-[#14281D] font-bold text-lg">REMARQUES</h3>
+          </div>
           <textarea
             value={invoiceNotes}
             onChange={(e) => onNotesChange(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 h-24 focus:border-[#477A0C] focus:ring-2 focus:ring-[#477A0C] focus:ring-opacity-20"
+            className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 h-32 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
             placeholder="Notes ou remarques sur la facture..."
           />
         </div>
-        <div className="space-y-3 bg-[#F2EFE2] p-4 rounded-lg">
-          <div className="flex justify-between">
-            <span className="font-semibold">Total HT:</span>
-            <span className="font-semibold">
-              {formatCurrency(totals.subtotal)}
-            </span>
+
+        {/* Bande 2: Totaux et Gestion Acompte */}
+        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+          <div className="flex items-center mb-3">
+            <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
+              <Calculator className="w-5 h-5" />
+            </div>
+            <h3 className="text-[#14281D] font-bold text-lg">TOTAUX & ACOMPTE</h3>
           </div>
-          <div className="flex justify-between">
-            <span className="font-semibold">TVA ({taxRate}%):</span>
-            <span className="font-semibold">
-              {formatCurrency(totals.taxAmount)}
-            </span>
-          </div>
-          {totals.totalDiscount > 0 && (
-            <div className="flex justify-between text-red-600">
-              <span className="font-semibold">Remise totale:</span>
-              <span className="font-semibold">
-                -{formatCurrency(totals.totalDiscount)}
+          
+          <div className="space-y-3">
+            {/* Totaux classiques */}
+            <div className="flex justify-between border-b border-gray-300 pb-2">
+              <span className="font-semibold text-[#14281D]">Total HT:</span>
+              <span className="font-semibold text-[#14281D]">
+                {formatCurrency(totals.subtotal)}
               </span>
             </div>
-          )}
-          <div className="flex justify-between border-t border-gray-300 pt-2 bg-white p-2 rounded-lg shadow-sm">
-            <span className="font-bold">Total TTC:</span>
-            <span className="font-bold text-lg">
-              {formatCurrency(totals.totalWithTax)}
-            </span>
+            <div className="flex justify-between border-b border-gray-300 pb-2">
+              <span className="font-semibold text-[#14281D]">TVA ({taxRate}%):</span>
+              <span className="font-semibold text-[#14281D]">
+                {formatCurrency(totals.taxAmount)}
+              </span>
+            </div>
+            {totals.totalDiscount > 0 && (
+              <div className="flex justify-between text-red-600 border-b border-gray-300 pb-2">
+                <span className="font-semibold">Remise totale:</span>
+                <span className="font-semibold">
+                  -{formatCurrency(totals.totalDiscount)}
+                </span>
+              </div>
+            )}
+            
+            {/* Total TTC */}
+            <div className="flex justify-between bg-[#477A0C] text-[#F2EFE2] p-3 rounded-lg shadow-md">
+              <span className="font-bold text-lg">Total TTC:</span>
+              <span className="font-bold text-xl">
+                {formatCurrency(totals.totalWithTax)}
+              </span>
+            </div>
+
+            {/* NOUVEAU: Section Acompte */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-4 mt-4">
+              <div className="flex items-center mb-3">
+                <Euro className="w-5 h-5 text-blue-600 mr-2" />
+                <h4 className="font-bold text-blue-800">GESTION ACOMPTE</h4>
+              </div>
+              
+              <div className="space-y-3">
+                {/* Champ acompte versé */}
+                <div>
+                  <label className="block text-blue-700 font-semibold mb-1">
+                    Acompte versé (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={totals.totalWithTax}
+                    value={acompteAmount}
+                    onChange={(e) => onAcompteChange(parseFloat(e.target.value) || 0)}
+                    className="w-full border-2 border-blue-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-blue-800 font-bold"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Affichage des calculs */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Total perçu */}
+                  <div className="bg-green-100 border border-green-300 rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                      <span className="text-green-700 font-semibold text-sm">Total perçu</span>
+                    </div>
+                    <div className="text-green-800 font-bold text-lg">
+                      {formatCurrency(totals.totalPercu)}
+                    </div>
+                  </div>
+
+                  {/* Total à recevoir */}
+                  <div className="bg-orange-100 border border-orange-300 rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <Calculator className="w-4 h-4 text-orange-600 mr-1" />
+                      <span className="text-orange-700 font-semibold text-sm">Total à recevoir</span>
+                    </div>
+                    <div className="text-orange-800 font-bold text-lg">
+                      {formatCurrency(totals.totalARecevoir)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Barre de progression visuelle */}
+                {totals.totalWithTax > 0 && (
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-gray-600 mb-1">
+                      <span>Progression du paiement</span>
+                      <span>{Math.round((acompteAmount / totals.totalWithTax) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min((acompteAmount / totals.totalWithTax) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Message informatif */}
+                {acompteAmount > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded p-2 mt-2">
+                    <p className="text-blue-700 text-xs font-medium">
+                      💡 Un acompte de {formatCurrency(acompteAmount)} a été versé. 
+                      Il reste {formatCurrency(totals.totalARecevoir)} à percevoir.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

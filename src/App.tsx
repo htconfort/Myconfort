@@ -289,6 +289,11 @@ function App() {
             taxRate={invoice.taxRate}
             invoiceNotes={invoice.invoiceNotes}
             onNotesChange={(invoiceNotes) => setInvoice(prev => ({ ...prev, invoiceNotes }))}
+            acompteAmount={invoice.payment.depositAmount}
+            onAcompteChange={(amount) => setInvoice(prev => ({ 
+              ...prev, 
+              payment: { ...prev.payment, depositAmount: amount }
+            }))}
           />
         </div>
 
@@ -373,27 +378,6 @@ function App() {
                   <option value="Chèque">Chèque</option>
                   <option value="Acompte">Acompte</option>
                 </select>
-                
-                {invoice.payment.method === 'Acompte' && (
-                  <div className="mt-4 space-y-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div>
-                      <label className="block text-gray-900 mb-1 font-semibold">
-                        Montant de l'acompte (€)
-                      </label>
-                      <input
-                        value={invoice.payment.depositAmount}
-                        onChange={(e) => setInvoice(prev => ({
-                          ...prev,
-                          payment: { ...prev.payment, depositAmount: parseFloat(e.target.value) || 0 }
-                        }))}
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-gray-900"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
               
               <div>
