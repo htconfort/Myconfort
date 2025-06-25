@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Actions principales */}
           <button
             onClick={onShowInvoices}
-            className="bg-[#F2EFE2]/10 hover:bg-[#F2EFE2]/20 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
+            className="bg-[#14281D] hover:bg-[#0F1F15] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
             title="Voir toutes les factures"
           >
             <Archive size={18} />
