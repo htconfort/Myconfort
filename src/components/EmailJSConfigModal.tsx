@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Mail, Key, Settings, CheckCircle, AlertCircle, Loader, TestTube, Star } from 'lucide-react';
+import { X, Save, Mail, Key, Settings, CheckCircle, AlertCircle, Loader, TestTube, Star, Shield } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { EmailService } from '../services/emailService';
 
@@ -40,10 +40,10 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
     setIsSaving(true);
 
     try {
-      // Mettre à jour la configuration dans le service (sans changer l'API Key)
+      // Mettre à jour la configuration dans le service (sans changer les clés API)
       EmailService.updateConfig(serviceId, templateId);
       
-      onSuccess('Configuration EmailJS enregistrée avec succès ! Votre API Key est déjà configurée.');
+      onSuccess('Configuration EmailJS enregistrée avec succès ! Vos clés API sont déjà configurées.');
       setIsSaving(false);
     } catch (error: any) {
       onError(`Erreur lors de l'enregistrement: ${error.message}`);
@@ -105,20 +105,33 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           </p>
         </div>
 
-        {/* API Key déjà configurée */}
+        {/* Clés API déjà configurées */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-2 mb-3">
             <Star className="w-5 h-5 text-green-600" />
-            <h4 className="font-medium text-green-800">API Key déjà configurée !</h4>
+            <h4 className="font-medium text-green-800">Clés API déjà configurées !</h4>
           </div>
-          <div className="flex items-center space-x-2">
-            <Key className="w-4 h-4 text-green-600" />
-            <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
-              {configInfo.apiKey}
-            </span>
+          
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Key className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700 font-semibold">API Key (Public) :</span>
+              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
+                {configInfo.apiKey}
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700 font-semibold">Private Key :</span>
+              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
+                {configInfo.privateKey}
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-green-600 mt-1">
-            ✅ Votre API Key EmailJS est déjà configurée. Il vous reste seulement à ajouter votre Service ID et Template ID.
+          
+          <p className="text-xs text-green-600 mt-2">
+            ✅ Vos clés API EmailJS sont déjà configurées. Il vous reste seulement à ajouter votre Service ID et Template ID.
           </p>
         </div>
 

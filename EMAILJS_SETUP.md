@@ -1,10 +1,11 @@
 # 📧 CONFIGURATION EMAILJS POUR MYCONFORT
 
-## 🎉 VOTRE API KEY EST DÉJÀ CONFIGURÉE !
+## 🎉 VOS CLÉS API SONT DÉJÀ CONFIGURÉES !
 
-✅ **API Key EmailJS** : `hvgYUCG9j2lURrt5k`
+✅ **API Key EmailJS (Public)** : `hvgYUCG9j2lURrt5k`
+✅ **Private Key EmailJS** : `mh3upHQbKrIViyw4T9-S6`
 
-Votre API Key EmailJS est déjà intégrée dans l'application MYCONFORT. Il vous reste seulement **2 étapes simples** pour finaliser la configuration !
+Vos clés API EmailJS sont déjà intégrées dans l'application MYCONFORT. Il vous reste seulement **2 étapes simples** pour finaliser la configuration !
 
 ## 🚀 ÉTAPES RAPIDES (2 minutes)
 
@@ -33,7 +34,7 @@ Facture MYCONFORT n°{{invoice_number}}
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
   <div style="background: linear-gradient(135deg, #477A0C, #5A8F0F); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
     <h1 style="margin: 0; font-size: 24px;">🌸 MYCONFORT</h1>
-    <p style="margin: 5px 0 0 0; opacity: 0.9;">Facturation professionnelle</p>
+    <p style="margin: 5px 0 0 0; opacity: 0.9;">Facturation professionnelle avec signature électronique</p>
   </div>
   
   <div style="background: #f8f9fa; padding: 20px; border-radius: 0 0 10px 10px;">
@@ -45,24 +46,39 @@ Facture MYCONFORT n°{{invoice_number}}
       <h3 style="margin: 0 0 10px 0; color: #477A0C;">📋 Détails de la facture</h3>
       <p style="margin: 5px 0;"><strong>Numéro :</strong> {{invoice_number}}</p>
       <p style="margin: 5px 0;"><strong>Date :</strong> {{invoice_date}}</p>
-      <p style="margin: 5px 0;"><strong>Montant :</strong> {{total_amount}}</p>
+      <p style="margin: 5px 0;"><strong>Montant total :</strong> {{total_amount}}</p>
       {{#if deposit_amount}}
-      <p style="margin: 5px 0;"><strong>Acompte versé :</strong> {{deposit_amount}}</p>
-      <p style="margin: 5px 0; color: #ff6b35;"><strong>Reste à payer :</strong> {{remaining_amount}}</p>
+      <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 10px; margin: 10px 0;">
+        <p style="margin: 5px 0; color: #856404;"><strong>💰 Acompte versé :</strong> {{deposit_amount}}</p>
+        <p style="margin: 5px 0; color: #d63031; font-weight: bold;"><strong>💳 Reste à payer :</strong> {{remaining_amount}}</p>
+      </div>
       {{/if}}
     </div>
     
     {{#if has_signature}}
-    <p style="color: #28a745;">✅ Cette facture a été signée électroniquement.</p>
+    <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 10px; margin: 15px 0;">
+      <p style="color: #155724; margin: 0;">✅ Cette facture a été signée électroniquement et est juridiquement valide.</p>
+    </div>
     {{/if}}
     
-    <p>{{message}}</p>
+    <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #dee2e6;">
+      <p style="margin: 0;">{{message}}</p>
+    </div>
+    
+    <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h4 style="margin: 0 0 10px 0; color: #477A0C;">📎 Pièce jointe</h4>
+      <p style="margin: 0; font-size: 14px;">Le PDF de votre facture est joint à cet email avec le design professionnel MYCONFORT.</p>
+    </div>
     
     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #6c757d; font-size: 14px;">
-      <p><strong>MYCONFORT</strong><br>
+      <p><strong>{{company_name}}</strong><br>
       88 Avenue des Ternes, 75017 Paris<br>
       Tél: 04 68 50 41 45 | Email: myconfort@gmail.com<br>
       SIRET: 824 313 530 00027</p>
+      
+      <p style="margin-top: 15px; font-size: 12px; color: #868e96;">
+        Conseiller : {{advisor_name}}
+      </p>
     </div>
   </div>
 </div>
@@ -75,7 +91,7 @@ Facture MYCONFORT n°{{invoice_number}}
 2. **Remplissez les 2 champs** :
    - **Service ID** : `service_xxxxxxx` (de l'étape 1)
    - **Template ID** : `template_xxxxxxx` (de l'étape 2)
-   - ✅ **API Key** : Déjà configurée automatiquement !
+   - ✅ **API Key & Private Key** : Déjà configurées automatiquement !
 3. **Cliquez "Tester la connexion"** ✅
 4. **Cliquez "Enregistrer"** 💾
 
@@ -87,16 +103,24 @@ Votre application MYCONFORT est maintenant **100% opérationnelle** avec EmailJS
 - **📧 Envoi d'emails** avec PDF en pièce jointe
 - **🎨 PDF identique** à l'aperçu de l'application
 - **✍️ Signature électronique** intégrée dans le PDF
-- **💰 Gestion des acomptes** automatique
-- **🧪 Test de connexion** EmailJS
+- **💰 Gestion des acomptes** automatique dans l'email
+- **🧪 Test de connexion** EmailJS avec vos clés complètes
 - **📸 Partage d'aperçu** par email (image PNG)
 - **💾 Téléchargement PDF** direct
+- **🔐 Sécurité renforcée** avec Private Key
 
 ### 🔧 **Interface utilisateur :**
 - **Bouton "EmailJS"** dans l'en-tête pour la configuration
 - **Section "EmailJS - Envoi Automatique"** dans la page principale
 - **Section "Export PDF Simple"** avec html2pdf.js
 - **Aperçu PDF** avec boutons de test et partage
+- **Affichage des clés API** dans la configuration
+
+### 🔐 **Sécurité :**
+- **API Key (Public)** : `hvgYUCG9j2lURrt5k` ✅
+- **Private Key** : `mh3upHQbKrIViyw4T9-S6` ✅
+- **Authentification renforcée** avec les deux clés
+- **Envoi sécurisé** des emails avec pièces jointes
 
 ## 📊 **QUOTAS EMAILJS**
 - **Plan gratuit** : 200 emails/mois
@@ -115,11 +139,20 @@ Votre application MYCONFORT est maintenant **100% opérationnelle** avec EmailJS
 1. Vérifiez que votre template contient `{{pdf_data}}`
 2. Vérifiez la taille du PDF (< 50 MB)
 
+### ❌ **Si l'authentification échoue :**
+1. Vos clés API sont déjà configurées correctement
+2. Vérifiez que votre Service ID et Template ID sont corrects
+3. Assurez-vous que votre service EmailJS est actif
+
 ## 🎉 **FÉLICITATIONS !**
 
 Votre système de facturation MYCONFORT avec EmailJS est maintenant **entièrement fonctionnel** ! 
 
-**Votre API Key `hvgYUCG9j2lURrt5k` est déjà configurée** - il vous suffit de suivre les 3 étapes ci-dessus pour être opérationnel en 2 minutes ! 🚀
+**Vos clés API complètes sont déjà configurées** :
+- ✅ **API Key** : `hvgYUCG9j2lURrt5k`
+- ✅ **Private Key** : `mh3upHQbKrIViyw4T9-S6`
+
+Il vous suffit de suivre les 3 étapes ci-dessus pour être opérationnel en 2 minutes ! 🚀
 
 ---
 
