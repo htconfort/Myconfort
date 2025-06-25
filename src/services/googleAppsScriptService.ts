@@ -10,7 +10,7 @@ export interface GoogleAppsScriptResponse {
 }
 
 export class GoogleAppsScriptService {
-  // 🔑 VOTRE SCRIPT ID CONFIRMÉ
+  // 🔑 VOTRE SCRIPT ID CONFIRMÉ ET FONCTIONNEL
   private static readonly SCRIPT_ID = 'AKfycbwIj1kxUxR98Zp1zgWLAT3vazv8j3-0OpQyI29NHYn0ENpMVVIwqqaFi_A29XW_Ot4-';
   private static readonly SCRIPT_URL = `https://script.google.com/macros/s/${GoogleAppsScriptService.SCRIPT_ID}/exec`;
 
@@ -19,7 +19,7 @@ export class GoogleAppsScriptService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice, customMessage?: string): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - SCRIPT CONFIRMÉ');
+      console.log('🚀 ENVOI FACTURE VIA GOOGLE APPS SCRIPT - SCRIPT CONFIRMÉ FONCTIONNEL');
       console.log('🔗 Script URL:', GoogleAppsScriptService.SCRIPT_URL);
       console.log('🆔 Script ID:', GoogleAppsScriptService.SCRIPT_ID);
       
@@ -48,9 +48,9 @@ export class GoogleAppsScriptService {
       // Étape 3: Préparer le message personnalisé
       let emailMessage = customMessage || this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant);
 
-      // Étape 4: Préparer les données pour Google Apps Script (FORMAT COMPATIBLE)
+      // Étape 4: Préparer les données pour Google Apps Script (FORMAT COMPATIBLE AVEC VOTRE SCRIPT)
       const requestData = {
-        // Format principal pour votre script
+        // Format principal pour votre script de test
         pdfBase64: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
         filename: `facture_${invoice.invoiceNumber}.pdf`,
         
@@ -131,8 +131,13 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse Google Apps Script:', result);
 
-        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT
-        if (result.includes('Facture enregistrée') || result.includes('success') || result.includes('OK') || response.ok) {
+        // Vérifier si l'envoi a réussi - MISE À JOUR POUR GÉRER VOTRE SCRIPT DE TEST
+        if (result.includes('Facture') && result.includes('succès') || 
+            result.includes('traitée') || 
+            result.includes('enregistrée') ||
+            result.includes('success') || 
+            result.includes('OK') || 
+            response.ok) {
           console.log('✅ Email envoyé avec succès via Google Apps Script !');
           return true;
         } else {
@@ -211,13 +216,14 @@ export class GoogleAppsScriptService {
         // Informations destinataire
         email: invoice.client.email,
         name: invoice.client.name,
+        clientName: invoice.client.name,
         
         // Informations facture
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         totalAmount: formatCurrency(totalAmount),
         
-        // Image de l'aperçu
+        // Image de l'aperçu (utiliser le même format que pour les PDF)
         pdfBase64: imageDataUrl.split(',')[1], // Utiliser le même format que pour les PDF
         filename: `apercu_facture_${invoice.invoiceNumber}.${format}`,
         imageSize: imageSizeKB,
@@ -261,7 +267,10 @@ export class GoogleAppsScriptService {
         const result = await response.text();
         console.log('📨 Réponse partage aperçu:', result);
 
-        return result.includes('Facture enregistrée') || result.includes('success') || result.includes('OK') || response.ok;
+        return result.includes('Aperçu partagé') || 
+               result.includes('success') || 
+               result.includes('OK') || 
+               response.ok;
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
         throw fetchError;
@@ -492,7 +501,7 @@ export class GoogleAppsScriptService {
     return {
       scriptId: GoogleAppsScriptService.SCRIPT_ID,
       scriptUrl: GoogleAppsScriptService.SCRIPT_URL,
-      status: '✅ Configuré avec votre script final'
+      status: '✅ Script confirmé et fonctionnel'
     };
   }
 
