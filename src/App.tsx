@@ -294,6 +294,17 @@ function App() {
               ...prev, 
               payment: { ...prev.payment, depositAmount: amount }
             }))}
+            paymentMethod={invoice.payment.method}
+            onPaymentMethodChange={(method) => setInvoice(prev => ({
+              ...prev,
+              payment: { ...prev.payment, method }
+            }))}
+            advisorName={invoice.advisorName}
+            onAdvisorNameChange={(name) => setInvoice(prev => ({ ...prev, advisorName: name }))}
+            termsAccepted={invoice.termsAccepted}
+            onTermsAcceptedChange={(accepted) => setInvoice(prev => ({ ...prev, termsAccepted: accepted }))}
+            signature={invoice.signature}
+            onShowSignaturePad={() => setShowSignaturePad(true)}
           />
         </div>
 
@@ -344,96 +355,6 @@ function App() {
             
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-gray-700 italic">
               <p>📦 Livraison estimée sous 48 heures. Les délais sont donnés à titre indicatif et ne sont pas contractuels.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Section */}
-        <div id="payment-section" className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200 transform transition-all hover:scale-[1.002] hover:shadow-xl">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-            <span className="bg-green-600 text-white px-6 py-3 rounded-full font-bold">
-              MODE DE RÈGLEMENT
-            </span>
-          </h2>
-          
-          <div className="bg-gray-50 rounded-lg p-6 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-900 mb-1 font-semibold">
-                  Méthode de paiement*
-                </label>
-                <select
-                  value={invoice.payment.method}
-                  onChange={(e) => setInvoice(prev => ({
-                    ...prev,
-                    payment: { ...prev.payment, method: e.target.value }
-                  }))}
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-gray-900"
-                >
-                  <option value="">Sélectionner</option>
-                  <option value="Virement">Virement bancaire</option>
-                  <option value="Carte Bleue">Carte Bleue</option>
-                  <option value="Alma">Alma (paiement en plusieurs fois)</option>
-                  <option value="PayPal">PayPal</option>
-                  <option value="Chèque">Chèque</option>
-                  <option value="Acompte">Acompte</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-gray-900 mb-1 font-semibold">
-                  Conseiller(e)
-                </label>
-                <input
-                  value={invoice.advisorName}
-                  onChange={(e) => setInvoice(prev => ({ ...prev, advisorName: e.target.value }))}
-                  type="text"
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-gray-900"
-                  placeholder="Nom du conseiller"
-                />
-                
-                <div className="mt-4">
-                  <label className="flex items-center">
-                    <input
-                      checked={invoice.termsAccepted}
-                      onChange={(e) => setInvoice(prev => ({ ...prev, termsAccepted: e.target.checked }))}
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <span className="ml-2 text-gray-900 font-semibold">
-                      J'ai lu et j'accepte les conditions générales de vente
-                    </span>
-                  </label>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-gray-900 mb-1 font-semibold">Signature client MYCONFORT</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded h-20 flex items-center justify-center bg-white hover:bg-gray-50 transition-colors">
-                    {invoice.signature ? (
-                      <div className="text-center">
-                        <div className="text-green-600 font-semibold flex items-center justify-center space-x-1">
-                          <span>🔒</span>
-                          <span>Signature électronique enregistrée</span>
-                        </div>
-                        <button
-                          onClick={() => setShowSignaturePad(true)}
-                          className="text-sm text-blue-600 hover:text-blue-800 underline mt-1"
-                        >
-                          Modifier la signature
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setShowSignaturePad(true)}
-                        className="text-gray-700 hover:text-gray-900 font-semibold flex items-center space-x-2"
-                      >
-                        <span>✍️</span>
-                        <span>Cliquer pour signer électroniquement</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

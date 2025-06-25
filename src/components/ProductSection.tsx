@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp, CreditCard, Hash } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp, CreditCard, Hash, User, CheckCircle } from 'lucide-react';
 import { Product } from '../types';
 import { productCatalog, productCategories } from '../data/products';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
@@ -12,6 +12,15 @@ interface ProductSectionProps {
   onNotesChange: (notes: string) => void;
   acompteAmount: number;
   onAcompteChange: (amount: number) => void;
+  // Nouvelles props pour le mode de règlement
+  paymentMethod: string;
+  onPaymentMethodChange: (method: string) => void;
+  advisorName: string;
+  onAdvisorNameChange: (name: string) => void;
+  termsAccepted: boolean;
+  onTermsAcceptedChange: (accepted: boolean) => void;
+  signature: string;
+  onShowSignaturePad: () => void;
 }
 
 export const ProductSection: React.FC<ProductSectionProps> = ({
@@ -21,7 +30,15 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   invoiceNotes,
   onNotesChange,
   acompteAmount,
-  onAcompteChange
+  onAcompteChange,
+  paymentMethod,
+  onPaymentMethodChange,
+  advisorName,
+  onAdvisorNameChange,
+  termsAccepted,
+  onTermsAcceptedChange,
+  signature,
+  onShowSignaturePad
 }) => {
   const [newProduct, setNewProduct] = useState({
     category: '',
@@ -425,8 +442,8 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
         </table>
       </div>
       
-      {/* NOUVEAU: Patio avec deux bandes de lancement pour les totaux et acompte */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* NOUVEAU: Patio avec trois bandes de lancement pour les totaux, acompte et mode de règlement */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bande 1: Remarques avec chèques à venir */}
         <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
@@ -447,14 +464,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             />
           </div>
 
-          {/* NOUVEAU: Section Chèques à venir */}
+          {/* Section Chèques à venir */}
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-4">
             <div className="flex items-center mb-3">
               <CreditCard className="w-5 h-5 text-purple-600 mr-2" />
               <h4 className="font-bold text-purple-800">CHÈQUES À VENIR</h4>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {/* Quantité de chèques */}
               <div>
                 <label className="block text-purple-700 font-semibold mb-1 flex items-center">
@@ -503,13 +520,6 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 </div>
               </div>
             )}
-
-            {/* Message informatif */}
-            {chequesQuantity > 0 && chequesMontant > 0 && (
-              <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
-                💡 Ces chèques seront mentionnés dans la facture comme paiements à venir.
-              </div>
-            )}
           </div>
         </div>
 
@@ -553,7 +563,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
               </span>
             </div>
 
-            {/* NOUVEAU: Section Acompte */}
+            {/* Section Acompte */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-4 mt-4">
               <div className="flex items-center mb-3">
                 <Euro className="w-5 h-5 text-blue-600 mr-2" />
@@ -618,16 +628,6 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                     </div>
                   </div>
                 )}
-
-                {/* Message informatif */}
-                {acompteAmount > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded p-2 mt-2">
-                    <p className="text-blue-700 text-xs font-medium">
-                      💡 Un acompte de {formatCurrency(acompteAmount)} a été versé. 
-                      Il reste {formatCurrency(totals.totalARecevoir)} à percevoir.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -648,6 +648,106 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) */}
+        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+          <div className="flex items-center mb-3">
+            <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <h3 className="text-[#14281D] font-bold text-lg">MODE DE RÈGLEMENT</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Méthode de paiement */}
+            <div>
+              <label className="block text-[#14281D] font-semibold mb-1">
+                Méthode de paiement*
+              </label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => onPaymentMethodChange(e.target.value)}
+                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold"
+              >
+                <option value="">Sélectionner</option>
+                <option value="Virement">Virement bancaire</option>
+                <option value="Carte Bleue">Carte Bleue</option>
+                <option value="Alma">Alma (paiement en plusieurs fois)</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Chèque">Chèque</option>
+                <option value="Acompte">Acompte</option>
+              </select>
+            </div>
+            
+            {/* Conseiller */}
+            <div>
+              <label className="block text-[#14281D] font-semibold mb-1">
+                Conseiller(e)
+              </label>
+              <input
+                value={advisorName}
+                onChange={(e) => onAdvisorNameChange(e.target.value)}
+                type="text"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] font-bold"
+                placeholder="Nom du conseiller"
+              />
+            </div>
+
+            {/* Conditions générales */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4">
+              <label className="flex items-center">
+                <input
+                  checked={termsAccepted}
+                  onChange={(e) => onTermsAcceptedChange(e.target.checked)}
+                  type="checkbox"
+                  className="form-checkbox h-5 w-5 text-[#477A0C] rounded focus:ring-[#477A0C] focus:ring-2 mr-3"
+                />
+                <span className="text-[#14281D] font-semibold">
+                  J'ai lu et j'accepte les conditions générales de vente
+                </span>
+              </label>
+              {termsAccepted && (
+                <div className="mt-2 flex items-center text-green-700">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-semibold">Conditions acceptées</span>
+                </div>
+              )}
+            </div>
+
+            {/* Signature client */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-4">
+              <label className="block text-[#14281D] font-semibold mb-2 flex items-center">
+                <User className="w-4 h-4 mr-2" />
+                Signature client MYCONFORT
+              </label>
+              <div className="border-2 border-dashed border-[#477A0C] rounded h-20 flex items-center justify-center bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                   onClick={onShowSignaturePad}>
+                {signature ? (
+                  <div className="text-center">
+                    <div className="text-green-600 font-semibold flex items-center justify-center space-x-1">
+                      <span>🔒</span>
+                      <span>Signature électronique enregistrée</span>
+                    </div>
+                    <button
+                      onClick={onShowSignaturePad}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline mt-1"
+                    >
+                      Modifier la signature
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={onShowSignaturePad}
+                    className="text-[#14281D] hover:text-[#477A0C] font-semibold flex items-center space-x-2"
+                  >
+                    <span>✍️</span>
+                    <span>Cliquer pour signer électroniquement</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
