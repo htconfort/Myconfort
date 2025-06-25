@@ -174,7 +174,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Trouvez votre User ID (Public Key) dans la section "Account" > "API Keys" de votre compte EmailJS
+              Trouvez votre User ID (Public Key) dans la section "Account" &gt; "API Keys" de votre compte EmailJS
             </p>
           </div>
         </div>
@@ -213,12 +213,12 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
             <li>Ajoutez un service email (Gmail, Outlook, etc.)</li>
             <li>Créez un template avec les variables suivantes:
               <ul className="list-disc list-inside ml-4 mt-1 text-xs">
-                <li>{{to_email}} - Email du destinataire</li>
-                <li>{{to_name}} - Nom du destinataire</li>
-                <li>{{from_name}} - Nom de l'expéditeur</li>
-                <li>{{invoice_number}} - Numéro de facture</li>
-                <li>{{message}} - Corps du message</li>
-                <li>{{pdf_data}} - Données PDF en base64 (pour les pièces jointes)</li>
+                <li>{'{{to_email}}'} - Email du destinataire</li>
+                <li>{'{{to_name}}'} - Nom du destinataire</li>
+                <li>{'{{from_name}}'} - Nom de l'expéditeur</li>
+                <li>{'{{invoice_number}}'} - Numéro de facture</li>
+                <li>{'{{message}}'} - Corps du message</li>
+                <li>{'{{pdf_data}}'} - Données PDF en base64 (pour les pièces jointes)</li>
               </ul>
             </li>
             <li>Copiez les IDs et collez-les dans ce formulaire</li>
