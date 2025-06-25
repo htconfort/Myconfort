@@ -56,6 +56,295 @@ export class AdvancedPDFService {
     green: [34, 197, 94]         // Vert pour succès
   };
 
+  // 🗜️ NOUVELLE MÉTHODE - PDF COMPRESSÉ POUR EMAILJS
+  static async generateCompressedPDFForEmail(invoice: Invoice): Promise<{ blob: Blob; sizeKB: number; compressed: boolean }> {
+    console.log('🗜️ GÉNÉRATION PDF COMPRESSÉ POUR EMAILJS (MAX 50KB)');
+    
+    try {
+      // Générer d'abord un PDF standard
+      const standardDoc = await this.generateInvoicePDF(invoice);
+      const standardBlob = standardDoc.output('blob');
+      const standardSizeKB = Math.round(standardBlob.size / 1024);
+      
+      console.log('📊 Taille PDF standard:', standardSizeKB, 'KB');
+      
+      // Si déjà sous 50KB, retourner tel quel
+      if (standardSizeKB <= 50) {
+        console.log('✅ PDF déjà sous 50KB, aucune compression nécessaire');
+        return {
+          blob: standardBlob,
+          sizeKB: standardSizeKB,
+          compressed: false
+        };
+      }
+      
+      // Sinon, générer une version compressée
+      console.log('🔧 PDF trop volumineux, génération version compressée...');
+      const compressedDoc = await this.generateCompressedPDF(invoice);
+      const compressedBlob = compressedDoc.output('blob');
+      const compressedSizeKB = Math.round(compressedBlob.size / 1024);
+      
+      console.log('📊 Taille PDF compressé:', compressedSizeKB, 'KB');
+      
+      if (compressedSizeKB <= 50) {
+        console.log('✅ PDF compressé sous 50KB pour EmailJS');
+        return {
+          blob: compressedBlob,
+          sizeKB: compressedSizeKB,
+          compressed: true
+        };
+      } else {
+        console.warn('⚠️ PDF encore trop volumineux même compressé');
+        // Retourner quand même la version compressée (plus petite)
+        return {
+          blob: compressedBlob,
+          sizeKB: compressedSizeKB,
+          compressed: true
+        };
+      }
+      
+    } catch (error) {
+      console.error('❌ Erreur génération PDF compressé:', error);
+      throw error;
+    }
+  }
+
+  // 🗜️ GÉNÉRATION PDF COMPRESSÉ (VERSION ALLÉGÉE)
+  private static async generateCompressedPDF(invoice: Invoice): Promise<jsPDF> {
+    console.log('🗜️ GÉNÉRATION PDF VERSION COMPRESSÉE');
+    
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      compress: true // Activer la compression jsPDF
+    });
+    
+    const invoiceData = this.convertInvoiceData(invoice);
+    
+    // Version simplifiée pour réduire la taille
+    this.addCompressedHeader(doc, invoiceData);
+    this.addCompressedClientSection(doc, invoiceData);
+    this.addCompressedProductsTable(doc, invoiceData);
+    this.addCompressedTotals(doc, invoiceData);
+    
+    // Signature simplifiée si présente
+    if (invoiceData.signature) {
+      await this.addCompressedSignature(doc, invoiceData.signature);
+    }
+    
+    this.addCompressedFooter(doc);
+    
+    console.log('✅ PDF COMPRESSÉ GÉNÉRÉ');
+    return doc;
+  }
+
+  // 📄 EN-TÊTE COMPRESSÉ
+  private static addCompressedHeader(doc: jsPDF, data: InvoiceData): void {
+    // En-tête simplifié avec moins d'éléments graphiques
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(10, 10, 190, 20, 'F');
+    
+    // Logo texte simple (pas d'emoji pour réduire la taille)
+    doc.setTextColor(...this.COLORS.cream);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MYCONFORT', 15, 22);
+    
+    // Statut signature simplifié
+    if (data.signature) {
+      doc.setFillColor(...this.COLORS.green);
+      doc.rect(150, 12, 35, 6, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(7);
+      doc.text('SIGNEE', 167, 16, { align: 'center' });
+    }
+    
+    // Informations entreprise (version condensée)
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('MYCONFORT - 88 Avenue des Ternes, 75017 Paris', 15, 38);
+    doc.text('Tel: 04 68 50 41 45 - Email: myconfort@gmail.com', 15, 43);
+    doc.text('SIRET: 824 313 530 00027', 15, 48);
+    
+    // Informations facture (coin droit, condensé)
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Facture: ${data.invoiceNumber}`, 140, 38);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: ${new Date(data.invoiceDate).toLocaleDateString('fr-FR')}`, 140, 43);
+  }
+
+  // 👤 SECTION CLIENT COMPRESSÉE
+  private static addCompressedClientSection(doc: jsPDF, data: InvoiceData): void {
+    // Section client simplifiée
+    doc.setFillColor(...this.COLORS.grayLight);
+    doc.rect(10, 55, 190, 25, 'F');
+    
+    doc.setTextColor(...this.COLORS.primary);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CLIENT:', 15, 63);
+    
+    // Informations client condensées
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.clientName, 15, 68);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${data.clientAddress}, ${data.clientPostalCode} ${data.clientCity}`, 15, 72);
+    doc.text(`Tel: ${data.clientPhone} - Email: ${data.clientEmail}`, 15, 76);
+  }
+
+  // 📋 TABLEAU PRODUITS COMPRESSÉ
+  private static addCompressedProductsTable(doc: jsPDF, data: InvoiceData): void {
+    const tableData = data.items.map(item => [
+      item.description,
+      item.qty.toString(),
+      formatCurrency(item.unitPriceTTC),
+      item.discount > 0 ? 
+        (item.discountType === 'percent' ? `${item.discount}%` : formatCurrency(item.discount)) : 
+        '-',
+      formatCurrency(item.total)
+    ]);
+
+    autoTable(doc, {
+      startY: 85,
+      head: [['Produit', 'Qté', 'PU TTC', 'Remise', 'Total']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: this.COLORS.primary,
+        textColor: this.COLORS.cream,
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'center',
+        cellPadding: 2
+      },
+      bodyStyles: {
+        fontSize: 7,
+        cellPadding: 2,
+        textColor: this.COLORS.dark
+      },
+      columnStyles: {
+        0: { cellWidth: 80, halign: 'left' },
+        1: { cellWidth: 20, halign: 'center' },
+        2: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 25, halign: 'center' },
+        4: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+      },
+      margin: { left: 10, right: 10 }
+    });
+  }
+
+  // 💰 TOTAUX COMPRESSÉS
+  private static addCompressedTotals(doc: jsPDF, data: InvoiceData): void {
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    // Cadre totaux simplifié
+    doc.setDrawColor(...this.COLORS.grayBorder);
+    doc.setLineWidth(0.5);
+    doc.rect(130, finalY, 65, 30);
+    
+    doc.setTextColor(...this.COLORS.dark);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    
+    let yPos = finalY + 6;
+    
+    // Total HT
+    doc.text('Total HT:', 135, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(data.totalHT), 190, yPos, { align: 'right' });
+    yPos += 5;
+    
+    // TVA
+    doc.setFont('helvetica', 'normal');
+    doc.text(`TVA (${data.taxRate}%):`, 135, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(data.totalTVA), 190, yPos, { align: 'right' });
+    yPos += 5;
+    
+    // Total TTC
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...this.COLORS.primary);
+    doc.text('TOTAL TTC:', 135, yPos + 3);
+    doc.text(formatCurrency(data.totalTTC), 190, yPos + 3, { align: 'right' });
+    
+    // Acompte si applicable
+    if (data.depositAmount && data.depositAmount > 0) {
+      yPos += 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...this.COLORS.dark);
+      doc.text('Acompte:', 135, yPos);
+      doc.setTextColor(...this.COLORS.blue);
+      doc.text(formatCurrency(data.depositAmount), 190, yPos, { align: 'right' });
+      
+      yPos += 4;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...this.COLORS.orange);
+      doc.text('RESTE:', 135, yPos);
+      doc.text(formatCurrency(data.totalTTC - data.depositAmount), 190, yPos, { align: 'right' });
+    }
+  }
+
+  // ✍️ SIGNATURE COMPRESSÉE
+  private static async addCompressedSignature(doc: jsPDF, signatureDataUrl: string): Promise<void> {
+    try {
+      const signatureY = 180;
+      
+      // Cadre signature minimal
+      doc.setDrawColor(...this.COLORS.grayBorder);
+      doc.setLineWidth(0.5);
+      doc.rect(10, signatureY, 50, 20);
+      
+      doc.setTextColor(...this.COLORS.primary);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SIGNATURE CLIENT', 35, signatureY + 4, { align: 'center' });
+      
+      // Image signature réduite
+      doc.addImage(
+        signatureDataUrl,
+        'PNG',
+        15,
+        signatureY + 6,
+        40,
+        10,
+        undefined,
+        'FAST'
+      );
+      
+    } catch (error) {
+      console.warn('Erreur signature compressée:', error);
+      doc.setTextColor(...this.COLORS.green);
+      doc.setFontSize(7);
+      doc.text('SIGNE ELECTRONIQUEMENT', 35, 185, { align: 'center' });
+    }
+  }
+
+  // 🦶 PIED DE PAGE COMPRESSÉ
+  private static addCompressedFooter(doc: jsPDF): void {
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Pied de page minimal
+    doc.setFillColor(...this.COLORS.primary);
+    doc.rect(10, pageHeight - 20, 190, 20, 'F');
+    
+    doc.setTextColor(...this.COLORS.cream);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MYCONFORT', 105, pageHeight - 12, { align: 'center' });
+    
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Merci de votre confiance !', 105, pageHeight - 7, { align: 'center' });
+  }
+
+  // 📄 MÉTHODE STANDARD (INCHANGÉE)
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
     console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU AVEC SUPPORT ACOMPTE');
     
@@ -619,5 +908,10 @@ export class AdvancedPDFService {
     console.log('📎 GÉNÉRATION BLOB PDF IDENTIQUE AVEC ACOMPTE');
     const doc = await this.generateInvoicePDF(invoice);
     return doc.output('blob');
+  }
+
+  // 🗜️ NOUVELLE MÉTHODE PUBLIQUE - PDF COMPRESSÉ POUR EMAILJS
+  static async getCompressedPDFForEmail(invoice: Invoice): Promise<{ blob: Blob; sizeKB: number; compressed: boolean }> {
+    return await this.generateCompressedPDFForEmail(invoice);
   }
 }

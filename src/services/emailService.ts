@@ -36,12 +36,11 @@ export class EmailService {
   }
 
   /**
-   * 📎 NOUVELLE MÉTHODE - Envoie la facture par email avec PDF en base64
-   * Cette méthode contourne les limitations d'EmailJS pour les attachements
+   * 🗜️ NOUVELLE MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ pour EmailJS
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC PDF COMPRESSÉ (MAX 50KB)');
       console.log('🔑 API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
@@ -49,20 +48,28 @@ export class EmailService {
       // Initialiser EmailJS
       this.initializeEmailJS();
       
-      // Générer le PDF
-      console.log('📄 Génération du PDF...');
-      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
-      const pdfSizeKB = Math.round(pdfBlob.size / 1024);
-      console.log('📊 Taille du PDF:', pdfSizeKB, 'KB');
+      // 🗜️ GÉNÉRER LE PDF COMPRESSÉ POUR EMAILJS
+      console.log('🗜️ Génération du PDF compressé pour EmailJS...');
+      const pdfResult = await AdvancedPDFService.getCompressedPDFForEmail(invoice);
       
-      // Vérifier la taille du PDF (limite EmailJS ~50KB pour base64)
-      if (pdfSizeKB > 40) {
-        console.warn('⚠️ PDF trop volumineux pour EmailJS base64, envoi sans attachement');
-        return await this.sendEmailWithoutPDF(invoice, 'PDF trop volumineux - sera envoyé séparément');
+      console.log('📊 Résultat PDF:', {
+        taille: `${pdfResult.sizeKB} KB`,
+        compressé: pdfResult.compressed ? 'Oui' : 'Non',
+        sousLimite: pdfResult.sizeKB <= 50 ? 'Oui' : 'Non'
+      });
+      
+      // Vérifier si le PDF peut être envoyé via EmailJS
+      if (pdfResult.sizeKB > 50) {
+        console.warn('⚠️ PDF encore trop volumineux pour EmailJS, envoi sans attachement');
+        return await this.sendEmailWithoutPDF(
+          invoice, 
+          `PDF trop volumineux (${pdfResult.sizeKB} KB > 50 KB) - sera envoyé séparément`
+        );
       }
       
       // Convertir le PDF en base64 pour EmailJS
-      const pdfBase64 = await this.blobToBase64(pdfBlob);
+      console.log('🔄 Conversion PDF en base64...');
+      const pdfBase64 = await this.blobToBase64(pdfResult.blob);
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -121,10 +128,11 @@ export class EmailService {
         // Mode de paiement
         payment_method: invoice.payment.method || 'Non spécifié',
         
-        // 📎 PDF EN BASE64
+        // 🗜️ PDF COMPRESSÉ EN BASE64
         pdf_data: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
         pdf_filename: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
-        pdf_size: `${pdfSizeKB} KB`,
+        pdf_size: `${pdfResult.sizeKB} KB`,
+        pdf_compressed: pdfResult.compressed ? 'Oui' : 'Non',
         has_pdf: 'true',
         
         // Métadonnées
@@ -136,26 +144,27 @@ export class EmailService {
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email avec Template ID et PDF en base64...');
-      console.log('📊 Données PDF:', {
+      console.log('📧 Envoi email avec PDF compressé en base64...');
+      console.log('📊 Données PDF compressé:', {
         filename: templateParams.pdf_filename,
         size: templateParams.pdf_size,
+        compressed: templateParams.pdf_compressed,
         base64Length: templateParams.pdf_data.length
       });
 
       // Envoyer via EmailJS avec le Template ID correct
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Utilise maintenant template_yng4k8s
+        EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Email avec PDF envoyé via Template ID:', response);
+      console.log('✅ Email avec PDF compressé envoyé avec succès:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec Template ID:', error);
+      console.error('❌ Erreur lors de l\'envoi avec PDF compressé:', error);
       
       // Fallback : envoyer sans PDF
       console.log('🔄 Tentative d\'envoi sans PDF...');
@@ -227,7 +236,7 @@ export class EmailService {
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
+        EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
@@ -241,28 +250,28 @@ export class EmailService {
   }
 
   /**
-   * 📸 MÉTHODE CORRIGÉE - Partage l'aperçu de la facture via EmailJS
+   * 📸 MÉTHODE AMÉLIORÉE - Partage l'aperçu avec compression optimisée
    */
   static async sharePreviewViaEmail(
     invoice: Invoice, 
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📸 PARTAGE APERÇU VIA TEMPLATE ID AVEC COMPRESSION OPTIMISÉE');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
 
-      // Vérifier et optimiser la taille de l'image
+      // Vérifier et optimiser la taille de l'image pour EmailJS (limite 50KB)
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       let imageSizeKB = Math.round(imageBlob.size / 1024);
       console.log('📊 Taille de l\'image originale:', imageSizeKB, 'KB');
 
       let finalImageDataUrl = imageDataUrl;
 
-      // Si l'image est trop grande, la compresser davantage
-      if (imageSizeKB > 30) { // Limite plus stricte pour les images
-        console.log('🔧 Compression de l\'image...');
+      // Compression agressive pour respecter la limite EmailJS de 50KB
+      if (imageSizeKB > 40) { // Limite stricte pour les images
+        console.log('🗜️ Compression agressive de l\'image pour EmailJS...');
         
         const img = new Image();
         img.src = imageDataUrl;
@@ -274,9 +283,9 @@ export class EmailService {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d')!;
         
-        // Réduire significativement la taille
-        const maxWidth = 600;
-        const maxHeight = 800;
+        // Réduction drastique de la taille pour EmailJS
+        const maxWidth = 400;  // Réduit de 600 à 400
+        const maxHeight = 600; // Réduit de 800 à 600
         let { width, height } = img;
         
         if (width > maxWidth) {
@@ -293,16 +302,16 @@ export class EmailService {
         canvas.height = height;
         
         ctx.drawImage(img, 0, 0, width, height);
-        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.4); // Compression forte
+        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.3); // Compression très forte pour EmailJS
         
         const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
         imageSizeKB = Math.round(compressedBlob.size / 1024);
-        console.log('📊 Taille après compression:', imageSizeKB, 'KB');
+        console.log('📊 Taille après compression pour EmailJS:', imageSizeKB, 'KB');
       }
 
-      // Si encore trop grand, envoyer sans image
-      if (imageSizeKB > 40) {
-        console.warn('⚠️ Image trop volumineuse, envoi sans image');
+      // Si encore trop grand pour EmailJS, envoyer sans image
+      if (imageSizeKB > 45) { // Limite stricte EmailJS
+        console.warn('⚠️ Image encore trop volumineuse pour EmailJS, envoi sans image');
         return await this.sendPreviewWithoutImage(invoice);
       }
 
@@ -323,34 +332,36 @@ export class EmailService {
         invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         message: previewMessage,
         
-        // Image en base64 (plus petite)
+        // Image compressée pour EmailJS
         image_data: finalImageDataUrl.split(',')[1],
         image_filename: `apercu_facture_${invoice.invoiceNumber}.jpg`,
         image_size: `${imageSizeKB} KB`,
+        image_compressed: imageSizeKB < 40 ? 'Non' : 'Oui',
         has_image: 'true',
         
         advisor_name: invoice.advisorName || 'MYCONFORT',
         company_name: 'MYCONFORT'
       };
 
-      console.log('📧 Envoi aperçu via Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('📊 Données image:', {
+      console.log('📧 Envoi aperçu compressé via EmailJS...');
+      console.log('📊 Données image compressée:', {
         filename: templateParams.image_filename,
         size: templateParams.image_size,
+        compressed: templateParams.image_compressed,
         base64Length: templateParams.image_data.length
       });
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
+        EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Aperçu envoyé avec succès via Template ID:', response);
+      console.log('✅ Aperçu compressé envoyé avec succès via EmailJS:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu via Template ID:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu compressé:', error);
       
       // Fallback sans image
       try {
@@ -403,7 +414,7 @@ export class EmailService {
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
+        EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.USER_ID
       );
@@ -421,7 +432,7 @@ export class EmailService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC TEMPLATE ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC COMPRESSION PDF');
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
@@ -437,15 +448,16 @@ export class EmailService {
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
-        subject: 'Test de connexion EmailJS MYCONFORT',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT.',
+        subject: 'Test de connexion EmailJS MYCONFORT avec compression PDF',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec support de compression PDF pour pièces jointes.',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
         company_name: 'MYCONFORT',
         advisor_name: 'Test',
         has_pdf: 'false',
-        has_image: 'false'
+        has_image: 'false',
+        pdf_compressed: 'Non applicable'
       };
 
       // Envoyer un test via EmailJS
@@ -454,7 +466,7 @@ export class EmailService {
       
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID, // Template ID correct
+        EMAILJS_CONFIG.TEMPLATE_ID,
         testParams,
         EMAILJS_CONFIG.USER_ID
       );
@@ -463,7 +475,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec Template ID ${EMAILJS_CONFIG.TEMPLATE_ID} ! Service prêt pour l'envoi d'emails avec PDF en base64.`,
+        message: `✅ Connexion EmailJS réussie avec compression PDF ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB).`,
         responseTime
       };
     } catch (error: any) {
@@ -520,7 +532,7 @@ export class EmailService {
       message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
     }
     
-    message += `📎 Le PDF de votre facture est inclus dans cet email.\n\n`;
+    message += `📎 Le PDF de votre facture est inclus dans cet email (compressé pour optimiser l'envoi).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.\n\n`;
     message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n`;
     message += `---\nMYCONFORT\n`;
@@ -556,7 +568,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec Template ID et PDF en base64',
+      status: '✅ EmailJS configuré avec compression PDF (max 50KB)',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -592,7 +604,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec Template ID correct');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec compression PDF');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
@@ -608,7 +620,7 @@ export class EmailService {
   static getCurrentConfig(): { serviceId: string; templateId: string; userId: string; privateKey: string } {
     return {
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
-      templateId: EMAILJS_CONFIG.TEMPLATE_ID, // Maintenant template_yng4k8s
+      templateId: EMAILJS_CONFIG.TEMPLATE_ID,
       userId: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY
     };
