@@ -8,51 +8,59 @@ interface InvoiceHeaderProps {
 
 export const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, onUpdate }) => {
   return (
-    <div className="bg-white rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 border border-gray-100 transform transition-all hover:scale-[1.005]">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Company Info */}
-        <div>
-          <h2 className="text-xl font-bold text-[#14281D] mb-2">
-            <strong>MYCONFORT</strong>
-          </h2>
-          <p className="text-[#14281D]"><strong>88 Avenue des Ternes</strong></p>
-          <p className="text-[#14281D]">75017 Paris, France</p>
-          <p className="text-[#14281D]">SIRET: 824 313 530 00027</p>
-          <p className="text-[#14281D]">Tél: 04 68 50 41 45</p>
-          <p className="text-[#14281D]">Email: myconfort@gmail.com</p>
-          <p className="text-[#14281D]">Site web: https://www.htconfort.com</p>
-        </div>
-        
-        {/* Invoice Details */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-[#14281D]">Facture n°:</span>
-            <input
-              value={invoice.invoiceNumber}
-              type="text"
-              className="border-b border-gray-300 px-2 py-1 w-32 text-right font-mono text-[#14281D] bg-gray-100"
-              readOnly
-            />
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-[#14281D]">Date:</span>
-            <input
-              value={invoice.invoiceDate}
-              onChange={(e) => onUpdate({ invoiceDate: e.target.value })}
-              type="date"
-              className="border-b border-gray-300 px-2 py-1 text-[#14281D]"
-            />
-          </div>
+    <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 border border-gray-100 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+      <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+        <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+          INFORMATIONS FACTURE
+        </span>
+      </h2>
+      
+      <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Company Info */}
           <div>
-            <label className="block font-semibold mb-1 text-[#14281D]">
-              Lieu de l'événement:
-            </label>
-            <input
-              value={invoice.eventLocation}
-              onChange={(e) => onUpdate({ eventLocation: e.target.value })}
-              type="text"
-              className="w-full border-b border-gray-300 px-2 py-1 text-[#14281D]"
-            />
+            <h2 className="text-xl font-bold text-[#14281D] mb-2">
+              <strong>MYCONFORT</strong>
+            </h2>
+            <p className="text-[#14281D]"><strong>88 Avenue des Ternes</strong></p>
+            <p className="text-[#14281D]">75017 Paris, France</p>
+            <p className="text-[#14281D]">SIRET: 824 313 530 00027</p>
+            <p className="text-[#14281D]">Tél: 04 68 50 41 45</p>
+            <p className="text-[#14281D]">Email: myconfort@gmail.com</p>
+            <p className="text-[#14281D]">Site web: https://www.htconfort.com</p>
+          </div>
+          
+          {/* Invoice Details */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[#14281D]">Facture n°:</span>
+              <input
+                value={invoice.invoiceNumber}
+                type="text"
+                className="border-2 border-[#477A0C] rounded-lg px-4 py-2 w-32 text-right font-mono text-[#14281D] bg-white focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all"
+                readOnly
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-[#14281D]">Date:</span>
+              <input
+                value={invoice.invoiceDate}
+                onChange={(e) => onUpdate({ invoiceDate: e.target.value })}
+                type="date"
+                className="border-2 border-[#477A0C] rounded-lg px-4 py-2 text-[#14281D] bg-white focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1 text-[#14281D]">
+                Lieu de l'événement:
+              </label>
+              <input
+                value={invoice.eventLocation}
+                onChange={(e) => onUpdate({ eventLocation: e.target.value })}
+                type="text"
+                className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-2 text-[#14281D] bg-white focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all"
+              />
+            </div>
           </div>
         </div>
       </div>

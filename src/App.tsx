@@ -308,18 +308,18 @@ function App() {
           />
         </div>
 
-        {/* Delivery Section */}
-        <div id="delivery-section" className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200 transform transition-all hover:scale-[1.002] hover:shadow-xl">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-            <span className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold">
+        {/* Delivery Section - UNIFORMISÉ */}
+        <div id="delivery-section" className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+            <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
               INFORMATIONS LOGISTIQUES
             </span>
           </h2>
           
-          <div className="bg-gray-50 rounded-lg p-6 mt-4">
+          <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-900 mb-1 font-semibold">
+                <label className="block text-[#14281D] mb-1 font-semibold">
                   Mode de livraison
                 </label>
                 <select
@@ -328,7 +328,7 @@ function App() {
                     ...prev,
                     delivery: { ...prev.delivery, method: e.target.value }
                   }))}
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-gray-900"
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
                 >
                   <option value="">Sélectionner</option>
                   <option value="Colissimo 48 heures">Colissimo 48 heures</option>
@@ -338,7 +338,7 @@ function App() {
               </div>
               
               <div>
-                <label className="block text-gray-900 mb-1 font-semibold">
+                <label className="block text-[#14281D] mb-1 font-semibold">
                   Précisions de livraison
                 </label>
                 <textarea
@@ -347,86 +347,102 @@ function App() {
                     ...prev,
                     delivery: { ...prev.delivery, notes: e.target.value }
                   }))}
-                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-gray-900 h-20"
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] h-20"
                   placeholder="Instructions spéciales, étage, code d'accès..."
                 />
               </div>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-gray-700 italic">
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-[#14281D] italic">
               <p>📦 Livraison estimée sous 48 heures. Les délais sont donnés à titre indicatif et ne sont pas contractuels.</p>
             </div>
           </div>
         </div>
 
-        {/* EmailJS Sender - BLOC UNIQUE */}
-        <EmailSender
-          invoice={invoice}
-          onSuccess={handleEmailJSSuccess}
-          onError={handleEmailJSError}
-          onShowConfig={() => setShowEmailJSConfig(true)}
-        />
+        {/* EmailJS Sender - UNIFORMISÉ */}
+        <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <EmailSender
+            invoice={invoice}
+            onSuccess={handleEmailJSSuccess}
+            onError={handleEmailJSError}
+            onShowConfig={() => setShowEmailJSConfig(true)}
+          />
+        </div>
 
-        {/* Aperçu de la facture */}
+        {/* Aperçu de la facture - UNIFORMISÉ */}
         {showInvoicePreview && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+          <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Aperçu de la facture</h2>
+              <h2 className="text-xl font-bold text-[#F2EFE2] flex items-center justify-center">
+                <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+                  APERÇU DE LA FACTURE
+                </span>
+              </h2>
               <button
                 onClick={() => setShowInvoicePreview(!showInvoicePreview)}
-                className="text-blue-600 hover:text-blue-800 underline text-sm"
+                className="text-[#F2EFE2] hover:text-white underline text-sm font-semibold"
               >
                 {showInvoicePreview ? 'Masquer' : 'Afficher'} l'aperçu
               </button>
             </div>
             
-            <div className="border border-gray-300 rounded-lg overflow-hidden">
-              <InvoicePreview invoice={invoice} />
-            </div>
-            
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-              <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
-              <p>Cet aperçu sera converti en PDF et envoyé par email via EmailJS avec votre Template "Myconfort".</p>
+            <div className="bg-[#F2EFE2] rounded-lg p-4">
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <InvoicePreview invoice={invoice} />
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
+                <p>Cet aperçu sera converti en PDF et envoyé par email via EmailJS avec votre Template "Myconfort".</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-200 transform transition-all hover:scale-[1.002] hover:shadow-xl">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div>
-              <label className="block text-gray-700 mb-1 font-semibold">Email du destinataire</label>
-              <input
-                value={invoice.client.email}
-                onChange={(e) => setInvoice(prev => ({
-                  ...prev,
-                  client: { ...prev.client, email: e.target.value }
-                }))}
-                type="email"
-                className="w-full md:w-64 border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                placeholder="client@email.com"
-              />
-            </div>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <button
-                onClick={handleValidateAndPDF}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-              >
-                <span>APERÇU & PDF</span>
-              </button>
-              <button
-                onClick={handleReset}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-              >
-                <span>NOUVELLE FACTURE</span>
-              </button>
-              <button
-                onClick={() => setShowEmailJSConfig(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-              >
-                <span>📧</span>
-                <span>CONFIGURER EMAIL</span>
-              </button>
+        {/* Action Buttons - UNIFORMISÉ */}
+        <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+            <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+              ACTIONS PRINCIPALES
+            </span>
+          </h2>
+          
+          <div className="bg-[#F2EFE2] rounded-lg p-6">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div>
+                <label className="block text-[#14281D] mb-1 font-semibold">Email du destinataire</label>
+                <input
+                  value={invoice.client.email}
+                  onChange={(e) => setInvoice(prev => ({
+                    ...prev,
+                    client: { ...prev.client, email: e.target.value }
+                  }))}
+                  type="email"
+                  className="w-full md:w-64 border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+                  placeholder="client@email.com"
+                />
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <button
+                  onClick={handleValidateAndPDF}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>APERÇU & PDF</span>
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>NOUVELLE FACTURE</span>
+                </button>
+                <button
+                  onClick={() => setShowEmailJSConfig(true)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>📧</span>
+                  <span>CONFIGURER EMAIL</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
