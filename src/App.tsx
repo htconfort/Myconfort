@@ -441,7 +441,7 @@ function App() {
           <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[#14281D] mb-1 font-semibold">
+                <label className="block text-black mb-1 font-bold">
                   Mode de livraison
                 </label>
                 <select
@@ -450,7 +450,7 @@ function App() {
                     ...prev,
                     delivery: { ...prev.delivery, method: e.target.value }
                   }))}
-                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
                 >
                   <option value="">Sélectionner</option>
                   <option value="Colissimo 48 heures">Colissimo 48 heures</option>
@@ -460,7 +460,7 @@ function App() {
               </div>
               
               <div>
-                <label className="block text-[#14281D] mb-1 font-semibold">
+                <label className="block text-black mb-1 font-bold">
                   Précisions de livraison
                 </label>
                 <textarea
@@ -469,13 +469,13 @@ function App() {
                     ...prev,
                     delivery: { ...prev.delivery, notes: e.target.value }
                   }))}
-                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] h-20"
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold h-20"
                   placeholder="Instructions spéciales, étage, code d'accès..."
                 />
               </div>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-[#14281D] italic">
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-black italic font-semibold">
               <p>📦 Livraison estimée sous 48 heures. Les délais sont donnés à titre indicatif et ne sont pas contractuels.</p>
             </div>
           </div>
@@ -532,7 +532,7 @@ function App() {
           <div className="bg-[#F2EFE2] rounded-lg p-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div>
-                <label className="block text-[#14281D] mb-1 font-semibold">Email du destinataire</label>
+                <label className="block text-black mb-1 font-bold">Email du destinataire</label>
                 <input
                   value={invoice.client.email}
                   onChange={(e) => setInvoice(prev => ({
@@ -540,7 +540,7 @@ function App() {
                     client: { ...prev.client, email: e.target.value }
                   }))}
                   type="email"
-                  className="w-full md:w-64 border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+                  className="w-full md:w-64 border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
                   placeholder="client@email.com"
                 />
               </div>

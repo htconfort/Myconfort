@@ -17,9 +17,9 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
     return !value || value.trim() === '';
   };
 
-  // Style pour les champs obligatoires
+  // Style pour les champs obligatoires avec police noire
   const getFieldStyle = (value: string | undefined) => {
-    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D] ${
+    return `w-full border-2 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-semibold ${
       isFieldEmpty(value) 
         ? 'border-red-500 focus:border-red-500' 
         : 'border-[#477A0C] focus:border-[#F55D3E]'
@@ -38,7 +38,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
       <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Nom complet <span className="text-red-600">*</span>
             </label>
             <input
@@ -57,7 +57,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Adresse <span className="text-red-600">*</span>
             </label>
             <input
@@ -76,7 +76,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Code postal <span className="text-red-600">*</span>
             </label>
             <input
@@ -95,7 +95,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Ville <span className="text-red-600">*</span>
             </label>
             <input
@@ -114,7 +114,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Type de logement <span className="text-red-600">*</span>
             </label>
             <select
@@ -135,7 +135,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Code porte / étage <span className="text-red-600">*</span>
             </label>
             <input
@@ -154,7 +154,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Téléphone <span className="text-red-600">*</span>
             </label>
             <input
@@ -173,7 +173,7 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               Email <span className="text-red-600">*</span>
             </label>
             <input
@@ -197,14 +197,14 @@ export const ClientSection: React.FC<ClientSectionProps> = ({ client, onUpdate }
           </div>
           
           <div>
-            <label className="block text-[#14281D] mb-1 font-semibold">
+            <label className="block text-black mb-1 font-bold">
               SIRET (si applicable)
             </label>
             <input
               value={client.siret || ''}
               onChange={(e) => handleInputChange('siret', e.target.value)}
               type="text"
-              className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-[#14281D]"
+              className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-semibold"
               placeholder="SIRET (optionnel)"
             />
           </div>
