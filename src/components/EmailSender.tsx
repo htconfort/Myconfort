@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap } from 'lucide-react';
+import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap, Download, TestTube } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { EmailService } from '../services/emailService';
+import { SeparatePdfEmailService } from '../services/separatePdfEmailService';
 
 interface EmailSenderProps {
   invoice: Invoice;
@@ -19,6 +20,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<string>('');
+  const [separateLoading, setSeparateLoading] = useState(false);
 
   // Calculer le total de la facture
   const totalTTC = invoice.products.reduce((sum, product) => {
@@ -40,7 +42,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
   // Validation des données
   const validation = EmailService.validateEmailData(invoice);
 
-  // 🗜️ ENVOI AUTOMATIQUE AVEC PDF COMPRESSÉ
+  // 🗜️ ENVOI AUTOMATIQUE AVEC PDF COMPRESSÉ (méthode originale)
   const sendEmailWithCompressedPDF = async () => {
     if (!validation.isValid) {
       onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
@@ -50,8 +52,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     setLoading(true);
 
     try {
-      // Étape 1: Génération PDF compressé et envoi
-      setStep('🗜️ Génération PDF compressé pour EmailJS (max 50KB)...');
+      setStep('🗜️ Génération PDF compressé pour EmailJS (max 40KB)...');
       
       const success = await EmailService.sendInvoiceWithPDF(invoice);
 
@@ -59,7 +60,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
         setStep('✅ Envoi réussi avec PDF compressé !');
         
         let successMessage = `✅ Facture envoyée avec succès via EmailJS ! `;
-        successMessage += `PDF compressé (≤50KB) livré automatiquement à ${invoice.client.email}`;
+        successMessage += `PDF compressé (≤40KB) livré automatiquement à ${invoice.client.email}`;
         
         if (acompteAmount > 0) {
           successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
@@ -84,6 +85,69 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     }
   };
 
+  // 🚀 NOUVELLE MÉTHODE SÉPARÉE : PDF LOCAL + EMAIL SANS PAYLOAD
+  const sendWithSeparateMethod = async () => {
+    if (!validation.isValid) {
+      onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
+      return;
+    }
+
+    setSeparateLoading(true);
+
+    try {
+      setStep('🚀 Méthode séparée : PDF local + Email sans payload...');
+      
+      const result = await SeparatePdfEmailService.generatePDFAndSendEmail(invoice);
+
+      if (result.pdfGenerated && result.emailSent) {
+        setStep('✅ Processus séparé terminé avec succès !');
+        
+        let successMessage = `✅ Processus séparé terminé avec succès !\n\n`;
+        successMessage += `📎 PDF généré et téléchargé : facture_MYCONFORT_${invoice.invoiceNumber}_avec_CGV.pdf\n`;
+        successMessage += `📧 Email de notification envoyé à ${invoice.client.email}\n\n`;
+        
+        if (acompteAmount > 0) {
+          successMessage += `💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}\n`;
+        }
+        
+        if (invoice.signature) {
+          successMessage += `🔒 Signature électronique incluse\n`;
+        }
+        
+        successMessage += `🎯 Avantages : Pas de limite de taille, PDF complet avec CGV MYCONFORT`;
+        
+        onSuccess(successMessage);
+      } else if (result.pdfGenerated && !result.emailSent) {
+        onError(`⚠️ PDF généré mais email non envoyé.\n\n${result.message}`);
+      } else if (!result.pdfGenerated && result.emailSent) {
+        onError(`⚠️ Email envoyé mais PDF non généré.\n\n${result.message}`);
+      } else {
+        onError(`❌ Échec du processus séparé.\n\n${result.message}`);
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur méthode séparée:', error);
+      onError(`Erreur lors du processus séparé: ${error.message}`);
+    } finally {
+      setSeparateLoading(false);
+      setStep('');
+    }
+  };
+
+  // 🧪 TEST DE LA MÉTHODE SÉPARÉE
+  const testSeparateMethod = async () => {
+    if (!validation.isValid) {
+      onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
+      return;
+    }
+
+    try {
+      await SeparatePdfEmailService.testSeparateMethod(invoice);
+    } catch (error) {
+      console.error('❌ Erreur test méthode séparée:', error);
+      onError('Erreur lors du test de la méthode séparée');
+    }
+  };
+
   return (
     <>
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
@@ -102,7 +166,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
             </div>
             <div>
               <h3 className="text-xl font-bold text-black">Service d'emails professionnel</h3>
-              <p className="text-black font-semibold">🗜️ PDF compressé • 📧 Max 50KB • 📎 Template personnalisé</p>
+              <p className="text-black font-semibold">🗜️ PDF compressé • 📧 Max 40KB • 📎 Template personnalisé</p>
             </div>
           </div>
           
@@ -153,13 +217,51 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                   <span className="font-bold">Compression PDF activée :</span>
                 </div>
                 <ul className="mt-1 ml-4 list-disc text-xs">
-                  <li>PDF automatiquement compressé si &gt; 50KB</li>
+                  <li>PDF automatiquement compressé si > 40KB</li>
                   <li>Optimisation intelligente pour EmailJS</li>
                   <li>Qualité préservée avec taille réduite</li>
                   <li>Fallback sans PDF si compression insuffisante</li>
                 </ul>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* NOUVELLE SECTION : MÉTHODE SÉPARÉE */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4 border-2 border-purple-300">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <Download className="w-5 h-5 text-purple-600" />
+              <h4 className="font-bold text-purple-800">🚀 NOUVELLE MÉTHODE SÉPARÉE (Recommandée)</h4>
+            </div>
+            <button
+              onClick={testSeparateMethod}
+              disabled={!validation.isValid}
+              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded text-sm flex items-center space-x-1 font-semibold transition-all"
+            >
+              <TestTube className="w-3 h-3" />
+              <span>Test</span>
+            </button>
+          </div>
+          
+          <div className="text-sm text-purple-800">
+            <div className="flex items-center space-x-2 mb-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="font-bold">Méthode séparée : PDF local + Email sans payload</span>
+            </div>
+            <div className="p-2 bg-purple-100 border border-purple-200 rounded text-xs text-purple-700">
+              <div className="flex items-center space-x-1 mb-1">
+                <Download className="w-3 h-3" />
+                <span className="font-bold">Avantages de la méthode séparée :</span>
+              </div>
+              <ul className="ml-4 list-disc text-xs">
+                <li>✅ Pas de limite de taille de fichier</li>
+                <li>✅ PDF complet avec CGV MYCONFORT (2 pages)</li>
+                <li>✅ Email de notification envoyé séparément</li>
+                <li>✅ Évite les erreurs de payload EmailJS</li>
+                <li>✅ Utilise votre script html2pdf.js exact</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -241,25 +343,49 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         )}
 
-        {/* Indicateur de progression avec compression */}
-        {loading && step && (
+        {/* Indicateur de progression */}
+        {(loading || separateLoading) && step && (
           <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-3">
               <Loader className="w-5 h-5 animate-spin text-blue-600" />
               <div>
-                <div className="font-bold text-blue-800">EmailJS avec compression PDF en action...</div>
+                <div className="font-bold text-blue-800">
+                  {separateLoading ? 'Méthode séparée en cours...' : 'EmailJS avec compression PDF en action...'}
+                </div>
                 <div className="text-sm text-blue-700 font-semibold">{step}</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Bouton d'action principal avec compression */}
-        <div className="flex justify-center">
+        {/* Boutons d'action */}
+        <div className="flex flex-col space-y-3">
+          {/* Bouton méthode séparée (recommandée) */}
+          <button
+            onClick={sendWithSeparateMethod}
+            disabled={separateLoading || !validation.isValid}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:bg-gray-400 disabled:text-gray-600 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          >
+            {separateLoading ? (
+              <>
+                <Loader className="w-6 h-6 animate-spin" />
+                <span>Génération et envoi...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-6 h-6" />
+                <Mail className="w-5 h-5" />
+                {invoice.signature && <Shield className="w-5 h-5" />}
+                <span>🚀 MÉTHODE SÉPARÉE (Recommandée)</span>
+              </>
+            )}
+          </button>
+
+          {/* Bouton méthode originale */}
           <button
             onClick={sendEmailWithCompressedPDF}
             disabled={loading || !validation.isValid}
-            className="bg-[#477A0C] hover:bg-[#3A6A0A] disabled:bg-gray-400 disabled:text-gray-600 text-[#F2EFE2] px-8 py-3 rounded-xl font-bold text-lg flex items-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+            className="bg-[#477A0C] hover:bg-[#3A6A0A] disabled:bg-gray-400 disabled:text-gray-600 text-[#F2EFE2] px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
           >
             {loading ? (
               <>
@@ -272,17 +398,17 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                 <FileText className="w-6 h-6" />
                 <Mail className="w-5 h-5" />
                 {invoice.signature && <Shield className="w-5 h-5" />}
-                <span>Envoyer via EmailJS</span>
+                <span>Envoyer via EmailJS (Compressé)</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Instructions avec compression */}
+        {/* Instructions */}
         <div className="mt-4 text-center text-sm text-black">
           <p className="font-bold">
             {validation.isValid 
-              ? `✅ Prêt pour l'envoi avec compression PDF à ${invoice.client.email}`
+              ? `✅ Prêt pour l'envoi à ${invoice.client.email}`
               : '⚠️ Complétez les informations ci-dessus pour activer l\'envoi'
             }
           </p>
@@ -291,9 +417,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
               💰 Acompte: {formatCurrency(acompteAmount)} | 💳 Reste: {formatCurrency(montantRestant)}
             </p>
           )}
-          <p className="mt-1 text-xs text-blue-700 font-bold">
-            🗜️ PDF automatiquement compressé pour EmailJS (max 50KB) • 🚀 Envoi direct optimisé
-          </p>
+          <div className="mt-2 text-xs space-y-1">
+            <p className="text-purple-700 font-bold">
+              🚀 MÉTHODE SÉPARÉE : PDF local complet + Email de notification (Recommandée)
+            </p>
+            <p className="text-blue-700 font-bold">
+              🗜️ MÉTHODE CLASSIQUE : PDF compressé dans l'email (max 40KB)
+            </p>
+          </div>
         </div>
       </div>
     </>
