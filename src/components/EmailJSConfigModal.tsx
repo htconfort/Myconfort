@@ -73,7 +73,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Configuration EmailJS - Template Myconfort" maxWidth="max-w-2xl">
-      <div className="space-y-6 bg-white text-black">
+      <div className="space-y-6">
         {/* En-tête de félicitations avec Template "Myconfort" */}
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-4">
           <div className="flex items-center space-x-3 mb-2">

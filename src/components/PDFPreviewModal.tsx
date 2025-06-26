@@ -40,14 +40,14 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <link href="https://cdn.tailwindcss.com" rel="stylesheet">
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
               <style>
-                body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: white; color: black; }
+                body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: white; }
                 @media print {
                   .no-print { display: none !important; }
-                  body { -webkit-print-color-adjust: exact; color: black; }
+                  body { -webkit-print-color-adjust: exact; }
                 }
               </style>
             </head>
-            <body class="bg-white text-black">
+            <body class="bg-white">
               ${printContent.innerHTML}
             </body>
           </html>
@@ -270,7 +270,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               onClick={handleTestYourScript}
               disabled={isTesting}
               className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
-              title="Tester votre script exact"
+              title="Tester votre script exact avec l'élément .facture-apercu"
             >
               {isTesting ? (
                 <>
@@ -389,7 +389,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
         {/* Content */}
         <div className="overflow-auto max-h-[calc(90vh-220px)] bg-gray-100 p-4">
-          <div id="pdf-preview-content" className="bg-white text-black">
+          <div id="pdf-preview-content">
             <InvoicePDF invoice={invoice} isPreview={true} />
           </div>
         </div>

@@ -114,7 +114,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title="📋 Toutes les Factures MYCONFORT" maxWidth="max-w-7xl">
-        <div className="space-y-6 bg-white">
+        <div className="space-y-6">
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
@@ -208,7 +208,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
           </div>
 
           {/* Liste des factures */}
-          <div className="overflow-x-auto bg-white">
+          <div className="overflow-x-auto">
             <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
               <thead>
                 <tr className="bg-[#477A0C] text-[#F2EFE2]">
@@ -222,7 +222,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                   <th className="border border-gray-300 px-4 py-3 text-center font-bold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white">
+              <tbody>
                 {filteredAndSortedInvoices.map((invoice, index) => {
                   const total = calculateInvoiceTotal(invoice);
                   const originalIndex = invoices.findIndex(inv => 
@@ -231,47 +231,47 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                   );
                   
                   return (
-                    <tr key={`${invoice.invoiceNumber}-${index}`} className="hover:bg-gray-50 bg-white">
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                    <tr key={`${invoice.invoiceNumber}-${index}`} className="hover:bg-gray-50">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="font-bold text-[#477A0C]">{invoice.invoiceNumber}</div>
                         {invoice.products.length > 0 && (
-                          <div className="text-xs text-black font-semibold">
+                          <div className="text-xs text-gray-600 font-semibold">
                             {invoice.products.length} produit{invoice.products.length > 1 ? 's' : ''}
                           </div>
                         )}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4 text-gray-400" />
                           <span className="text-black font-semibold">{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
                         </div>
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4 text-gray-400" />
                           <span className="font-bold text-black">{invoice.client.name}</span>
                         </div>
                         {invoice.client.city && (
-                          <div className="text-xs text-black font-semibold">{invoice.client.city}</div>
+                          <div className="text-xs text-gray-600 font-semibold">{invoice.client.city}</div>
                         )}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <Mail className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-black font-semibold">{invoice.client.email}</span>
                         </div>
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="flex items-center space-x-1">
                           <MapPin className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-black font-semibold">
                             {invoice.eventLocation || (
-                              <span className="text-gray-500 italic">Non spécifié</span>
+                              <span className="text-gray-400 italic">Non spécifié</span>
                             )}
                           </span>
                         </div>
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-right bg-white">
+                      <td className="border border-gray-300 px-4 py-3 text-right">
                         <div className="font-bold text-lg text-[#477A0C]">
                           {formatCurrency(total)}
                         </div>
@@ -281,7 +281,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                           </div>
                         )}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center bg-white">
+                      <td className="border border-gray-300 px-4 py-3 text-center">
                         {invoice.signature ? (
                           <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center justify-center space-x-1">
                             <span>🔒</span>
@@ -293,7 +293,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                           </div>
                         )}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 bg-white">
+                      <td className="border border-gray-300 px-4 py-3">
                         <div className="flex justify-center space-x-1">
                           <button
                             onClick={() => handlePreviewInvoice(invoice)}
@@ -329,8 +329,8 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                   );
                 })}
                 {filteredAndSortedInvoices.length === 0 && (
-                  <tr className="bg-white">
-                    <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center bg-white">
+                  <tr>
+                    <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center">
                       {searchTerm || filterStatus !== 'all' ? (
                         <div>
                           <Filter className="w-8 h-8 mx-auto mb-2 text-gray-400" />
@@ -340,7 +340,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                         <div>
                           <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                           <p className="text-black font-bold">Aucune facture enregistrée</p>
-                          <p className="text-sm mt-1 text-black font-semibold">Les factures seront automatiquement sauvegardées</p>
+                          <p className="text-sm mt-1 text-gray-600 font-semibold">Les factures seront automatiquement sauvegardées</p>
                         </div>
                       )}
                     </td>
