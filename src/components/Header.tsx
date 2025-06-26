@@ -18,6 +18,14 @@ export const Header: React.FC<HeaderProps> = ({
   onShowInvoices,
   onShowProducts
 }) => {
+  const handleTestPDF = () => {
+    if (typeof window.generatePDF === 'function') {
+      window.generatePDF();
+    } else {
+      alert('❌ Fonction generatePDF non disponible. Vérifiez que le script html2pdf.js est chargé.');
+    }
+  };
+
   return (
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -34,6 +42,16 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* Bouton de test PDF */}
+          <button
+            onClick={handleTestPDF}
+            className="bg-purple-500 hover:bg-purple-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            title="📄 Télécharger PDF (test)"
+          >
+            <FileText size={18} />
+            <span className="hidden md:inline">Test PDF</span>
+          </button>
+
           {/* Actions principales */}
           <button
             onClick={onShowProducts}

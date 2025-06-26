@@ -13,5 +13,37 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- html2pdf.js script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      function generatePDF() {
+        const element = document.getElementById('invoice');
+        if (!element) {
+          alert('❌ Élément invoice non trouvé. Assurez-vous qu\'une facture est affichée.');
+          return;
+        }
+        
+        const opt = {
+          margin: 0,
+          filename: 'facture-myconfort.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        console.log('🔄 Génération PDF avec html2pdf.js...');
+        html2pdf().set(opt).from(element).save().then(() => {
+          console.log('✅ PDF généré avec succès !');
+          alert('✅ PDF téléchargé avec succès !');
+        }).catch((error) => {
+          console.error('❌ Erreur génération PDF:', error);
+          alert('❌ Erreur lors de la génération du PDF');
+        });
+      }
+      
+      // Rendre la fonction disponible globalement
+      window.generatePDF = generatePDF;
+    </script>
   </body>
 </html>
