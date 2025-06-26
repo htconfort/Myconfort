@@ -42,7 +42,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   return (
     <div 
       id="facture-apercu" 
-      className={`bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
+      className={`facture-apercu bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
     >
       {/* En-tête avec logo */}
       <div className="flex items-start justify-between mb-6">

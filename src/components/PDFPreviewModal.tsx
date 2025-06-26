@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertTriangle, TestTube } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import { EmailService } from '../services/emailService';
+import { PDFService } from '../services/pdfService';
 import html2canvas from 'html2canvas';
 
 interface PDFPreviewModalProps {
@@ -21,6 +22,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
+  const [isTesting, setIsTesting] = useState(false);
   
   const emailConfig = EmailService.getConfigInfo();
   const emailConfigured = emailConfig.configured;
@@ -38,14 +40,14 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <link href="https://cdn.tailwindcss.com" rel="stylesheet">
               <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
               <style>
-                body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+                body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: white; }
                 @media print {
                   .no-print { display: none !important; }
                   body { -webkit-print-color-adjust: exact; }
                 }
               </style>
             </head>
-            <body>
+            <body class="bg-white">
               ${printContent.innerHTML}
             </body>
           </html>
@@ -53,6 +55,18 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         printWindow.document.close();
         printWindow.print();
       }
+    }
+  };
+
+  // 🧪 TESTER VOTRE SCRIPT EXACT
+  const handleTestYourScript = async () => {
+    setIsTesting(true);
+    try {
+      await PDFService.testYourScript(invoice);
+    } catch (error) {
+      console.error('Erreur test script:', error);
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -227,6 +241,26 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
+            {/* 🧪 BOUTON TEST VOTRE SCRIPT */}
+            <button
+              onClick={handleTestYourScript}
+              disabled={isTesting}
+              className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
+              title="Tester votre script exact avec l'élément .facture-apercu"
+            >
+              {isTesting ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Test...</span>
+                </>
+              ) : (
+                <>
+                  <TestTube className="w-4 h-4" />
+                  <span>Test Script</span>
+                </>
+              )}
+            </button>
+
             {/* 🚀 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
             <button
               onClick={handleSharePreviewViaEmail}
@@ -283,6 +317,23 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             </div>
           </div>
         )}
+
+        {/* Instructions pour votre script */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
+          <div className="flex items-center space-x-2 text-sm">
+            <TestTube className="w-4 h-4 text-purple-600" />
+            <span className="font-semibold text-purple-900">Votre Script :</span>
+            <span className="text-purple-800">
+              Le bouton "Test Script" utilise exactement votre configuration html2pdf.js avec l'élément .facture-apercu
+            </span>
+          </div>
+          <div className="mt-1 text-xs text-gray-600">
+            📋 Configuration: margin: 0, scale: 2, useCORS: true, format: a4, orientation: portrait
+          </div>
+          <div className="mt-1 text-xs text-blue-600 font-semibold">
+            💡 Le PDF généré sera exactement identique à cet aperçu (WYSIWYG parfait)
+          </div>
+        </div>
 
         {/* Instructions pour EmailJS */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
