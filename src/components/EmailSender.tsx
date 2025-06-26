@@ -95,14 +95,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     setSeparateLoading(true);
 
     try {
-      setStep('🚀 Méthode séparée : PDF local + Email sans payload...');
+      setStep('🚀 Création de PDF : PDF local + Email sans payload...');
       
       const result = await SeparatePdfEmailService.generatePDFAndSendEmail(invoice);
 
       if (result.pdfGenerated && result.emailSent) {
-        setStep('✅ Processus séparé terminé avec succès !');
+        setStep('✅ Création de PDF terminée avec succès !');
         
-        let successMessage = `✅ Processus séparé terminé avec succès !\n\n`;
+        let successMessage = `✅ Création de PDF terminée avec succès !\n\n`;
         successMessage += `📎 PDF généré et téléchargé : facture-myconfort-${invoice.invoiceNumber}.pdf\n`;
         successMessage += `📧 Email de notification envoyé à ${invoice.client.email}\n\n`;
         
@@ -122,18 +122,18 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
       } else if (!result.pdfGenerated && result.emailSent) {
         onError(`⚠️ Email envoyé mais PDF non généré.\n\n${result.message}`);
       } else {
-        onError(`❌ Échec du processus séparé.\n\n${result.message}`);
+        onError(`❌ Échec de la création de PDF.\n\n${result.message}`);
       }
     } catch (error: any) {
-      console.error('❌ Erreur méthode séparée:', error);
-      onError(`Erreur lors du processus séparé: ${error.message}`);
+      console.error('❌ Erreur création de PDF:', error);
+      onError(`Erreur lors de la création de PDF: ${error.message}`);
     } finally {
       setSeparateLoading(false);
       setStep('');
     }
   };
 
-  // 🧪 TEST DE LA MÉTHODE SÉPARÉE
+  // 🧪 TEST DE LA CRÉATION DE PDF
   const testSeparateMethod = async () => {
     if (!validation.isValid) {
       onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
@@ -143,8 +143,8 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     try {
       await SeparatePdfEmailService.testSeparateMethod(invoice);
     } catch (error) {
-      console.error('❌ Erreur test méthode séparée:', error);
-      onError('Erreur lors du test de la méthode séparée');
+      console.error('❌ Erreur test création de PDF:', error);
+      onError('Erreur lors du test de la création de PDF');
     }
   };
 
@@ -227,12 +227,12 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         </div>
 
-        {/* NOUVELLE SECTION : MÉTHODE SÉPARÉE */}
+        {/* NOUVELLE SECTION : CRÉATION DE PDF */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4 border-2 border-purple-300">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <Download className="w-5 h-5 text-purple-600" />
-              <h4 className="font-bold text-purple-800">🚀 MÉTHODE SÉPARÉE (Recommandée)</h4>
+              <h4 className="font-bold text-purple-800">🚀 **CRÉATION DE PDF** (Recommandée)</h4>
             </div>
             <button
               onClick={testSeparateMethod}
@@ -247,12 +247,12 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           <div className="text-sm text-purple-800">
             <div className="flex items-center space-x-2 mb-2">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="font-bold">Méthode séparée : PDF local + Email sans payload</span>
+              <span className="font-bold">Création de PDF : PDF local + Email sans payload</span>
             </div>
             <div className="p-2 bg-purple-100 border border-purple-200 rounded text-xs text-purple-700">
               <div className="flex items-center space-x-1 mb-1">
                 <Download className="w-3 h-3" />
-                <span className="font-bold">Avantages de la méthode séparée :</span>
+                <span className="font-bold">Avantages de la création de PDF :</span>
               </div>
               <ul className="ml-4 list-disc text-xs">
                 <li>✅ Pas de limite de taille de fichier</li>
@@ -350,7 +350,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
               <Loader className="w-5 h-5 animate-spin text-blue-600" />
               <div>
                 <div className="font-bold text-blue-800">
-                  {separateLoading ? 'Méthode séparée en cours...' : 'EmailJS avec compression PDF en action...'}
+                  {separateLoading ? 'Création de PDF en cours...' : 'EmailJS avec compression PDF en action...'}
                 </div>
                 <div className="text-sm text-blue-700 font-semibold">{step}</div>
               </div>
@@ -360,7 +360,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
 
         {/* Boutons d'action */}
         <div className="flex flex-col space-y-3">
-          {/* Bouton méthode séparée (recommandée) */}
+          {/* Bouton création de PDF (recommandée) */}
           <button
             onClick={sendWithSeparateMethod}
             disabled={separateLoading || !validation.isValid}
@@ -369,14 +369,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
             {separateLoading ? (
               <>
                 <Loader className="w-6 h-6 animate-spin" />
-                <span>Génération et envoi...</span>
+                <span>Création en cours...</span>
               </>
             ) : (
               <>
                 <Download className="w-6 h-6" />
                 <Mail className="w-5 h-5" />
                 {invoice.signature && <Shield className="w-5 h-5" />}
-                <span>🚀 MÉTHODE SÉPARÉE (Recommandée)</span>
+                <span>🚀 **CRÉATION DE PDF** (Recommandée)</span>
               </>
             )}
           </button>
@@ -419,7 +419,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           )}
           <div className="mt-2 text-xs space-y-1">
             <p className="text-purple-700 font-bold">
-              🚀 MÉTHODE SÉPARÉE : PDF local complet + Email de notification (Recommandée)
+              🚀 **CRÉATION DE PDF** : PDF local complet + Email de notification (Recommandée)
             </p>
             <p className="text-blue-700 font-bold">
               🗜️ MÉTHODE CLASSIQUE : PDF compressé dans l'email (max 50KB)
