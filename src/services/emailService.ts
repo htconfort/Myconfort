@@ -40,7 +40,7 @@ export class EmailService {
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC PDF COMPRESSÉ (MAX 40KB)');
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC PDF COMPRESSÉ (MAX 50KB)');
       console.log('🔑 API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
@@ -55,15 +55,15 @@ export class EmailService {
       console.log('📊 Résultat PDF:', {
         taille: `${pdfResult.sizeKB} KB`,
         compressé: pdfResult.compressed ? 'Oui' : 'Non',
-        sousLimite: pdfResult.sizeKB <= 40 ? 'Oui' : 'Non'
+        sousLimite: pdfResult.sizeKB <= 50 ? 'Oui' : 'Non'
       });
       
-      // Vérifier si le PDF peut être envoyé via EmailJS (limite réduite à 40KB pour laisser de la place aux autres variables)
-      if (pdfResult.sizeKB > 40) {
+      // Vérifier si le PDF peut être envoyé via EmailJS
+      if (pdfResult.sizeKB > 50) {
         console.warn('⚠️ PDF encore trop volumineux pour EmailJS, envoi sans attachement');
         return await this.sendEmailWithoutPDF(
           invoice, 
-          `PDF trop volumineux (${pdfResult.sizeKB} KB > 40 KB) - sera envoyé séparément`
+          `PDF trop volumineux (${pdfResult.sizeKB} KB > 50 KB) - sera envoyé séparément`
         );
       }
       
@@ -262,15 +262,15 @@ export class EmailService {
       // Initialiser EmailJS
       this.initializeEmailJS();
 
-      // Vérifier et optimiser la taille de l'image pour EmailJS (limite 40KB)
+      // Vérifier et optimiser la taille de l'image pour EmailJS (limite 50KB)
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       let imageSizeKB = Math.round(imageBlob.size / 1024);
       console.log('📊 Taille de l\'image originale:', imageSizeKB, 'KB');
 
       let finalImageDataUrl = imageDataUrl;
 
-      // Compression agressive pour respecter la limite EmailJS de 40KB
-      if (imageSizeKB > 30) { // Limite stricte pour les images
+      // Compression agressive pour respecter la limite EmailJS de 50KB
+      if (imageSizeKB > 40) { // Limite stricte pour les images
         console.log('🗜️ Compression agressive de l\'image pour EmailJS...');
         
         const img = new Image();
@@ -310,7 +310,7 @@ export class EmailService {
       }
 
       // Si encore trop grand pour EmailJS, envoyer sans image
-      if (imageSizeKB > 35) { // Limite stricte EmailJS
+      if (imageSizeKB > 45) { // Limite stricte EmailJS
         console.warn('⚠️ Image encore trop volumineuse pour EmailJS, envoi sans image');
         return await this.sendPreviewWithoutImage(invoice);
       }
@@ -336,7 +336,7 @@ export class EmailService {
         image_data: finalImageDataUrl.split(',')[1],
         image_filename: `apercu_facture_${invoice.invoiceNumber}.jpg`,
         image_size: `${imageSizeKB} KB`,
-        image_compressed: imageSizeKB < 30 ? 'Non' : 'Oui',
+        image_compressed: imageSizeKB < 40 ? 'Non' : 'Oui',
         has_image: 'true',
         
         advisor_name: invoice.advisorName || 'MYCONFORT',
@@ -475,7 +475,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec compression PDF ! Service prêt pour l'envoi d'emails avec PDF compressés (max 40KB).`,
+        message: `✅ Connexion EmailJS réussie avec compression PDF ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB).`,
         responseTime
       };
     } catch (error: any) {
@@ -568,7 +568,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec compression PDF (max 40KB)',
+      status: '✅ EmailJS configuré avec compression PDF (max 50KB)',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
