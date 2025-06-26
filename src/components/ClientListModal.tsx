@@ -26,8 +26,8 @@ export const ClientListModal: React.FC<ClientListModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Liste des Clients">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto bg-white">
+        <table className="w-full border-collapse bg-white">
           <thead>
             <tr className="bg-[#477A0C] text-[#F2EFE2]">
               <th className="border px-4 py-2 text-left font-bold">Nom</th>
@@ -37,24 +37,24 @@ export const ClientListModal: React.FC<ClientListModalProps> = ({
               <th className="border px-4 py-2 text-center font-bold">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white">
             {clients.map((client, index) => (
               <tr key={client.id || index} className="bg-white hover:bg-gray-50">
-                <td className="border px-4 py-2">
+                <td className="border px-4 py-2 bg-white">
                   <span className="text-black font-bold">{client.name}</span>
                 </td>
-                <td className="border px-4 py-2">
+                <td className="border px-4 py-2 bg-white">
                   <span className="text-black font-semibold">{client.email}</span>
                 </td>
-                <td className="border px-4 py-2">
+                <td className="border px-4 py-2 bg-white">
                   <span className="text-black font-semibold">{client.phone}</span>
                 </td>
-                <td className="border px-4 py-2">
+                <td className="border px-4 py-2 bg-white">
                   <span className="text-black font-semibold">
                     {`${client.address}, ${client.postalCode} ${client.city}`}
                   </span>
                 </td>
-                <td className="border px-4 py-2 text-center">
+                <td className="border px-4 py-2 text-center bg-white">
                   <div className="flex justify-center space-x-2">
                     <button
                       onClick={() => {
@@ -78,8 +78,8 @@ export const ClientListModal: React.FC<ClientListModalProps> = ({
               </tr>
             ))}
             {clients.length === 0 && (
-              <tr>
-                <td colSpan={5} className="border px-4 py-4 text-center">
+              <tr className="bg-white">
+                <td colSpan={5} className="border px-4 py-4 text-center bg-white">
                   <span className="text-black font-bold">Aucun client enregistré</span>
                 </td>
               </tr>

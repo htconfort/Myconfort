@@ -98,9 +98,9 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Gestion des Produits MYCONFORT" maxWidth="max-w-6xl">
-      <div className="space-y-6" style={{ backgroundColor: '#F2EFE2', color: '#000000' }}>
+      <div className="space-y-6 bg-white">
         {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-lg" style={{ backgroundColor: '#F2EFE2' }}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-lg bg-white">
           <div className="bg-white border-2 border-gray-300 p-4 rounded-lg shadow-sm">
             <div className="flex items-center space-x-2">
               <Package className="w-5 h-5 text-black" />
@@ -255,12 +255,12 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
         )}
 
         {/* Liste des produits par catégorie */}
-        <div className="space-y-6">
+        <div className="space-y-6 bg-white">
           {Object.keys(productsByCategory).length === 0 ? (
             <div className="bg-white p-8 rounded-lg border-2 border-gray-300 text-center">
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-black font-bold">Aucun produit trouvé</p>
-              <p className="text-gray-600 mt-1">Modifiez vos critères de recherche ou ajoutez un nouveau produit</p>
+              <p className="text-black mt-1 font-semibold">Modifiez vos critères de recherche ou ajoutez un nouveau produit</p>
             </div>
           ) : (
             Object.entries(productsByCategory).map(([category, categoryProducts]) => (
@@ -275,8 +275,8 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
                   </h3>
                 </div>
                 
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto bg-white">
+                  <table className="w-full bg-white">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-300">
                         <th className="px-4 py-3 text-left font-bold text-black">Nom du produit</th>
@@ -285,15 +285,15 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
                         <th className="px-4 py-3 text-center font-bold text-black">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white">
                       {categoryProducts.map((product, categoryIndex) => {
                         const globalIndex = products.findIndex(p => 
                           p.name === product.name && p.category === product.category
                         );
                         
                         return (
-                          <tr key={`${product.category}-${categoryIndex}`} className="border-b border-gray-200 hover:bg-gray-50">
-                            <td className="px-4 py-3">
+                          <tr key={`${product.category}-${categoryIndex}`} className="border-b border-gray-200 hover:bg-gray-50 bg-white">
+                            <td className="px-4 py-3 bg-white">
                               {editingIndex === globalIndex ? (
                                 <input
                                   type="text"
@@ -316,7 +316,7 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
                                 </div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-4 py-3 text-right bg-white">
                               {editingIndex === globalIndex ? (
                                 <input
                                   type="number"
@@ -340,7 +340,7 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
                                 </div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-center">
+                            <td className="px-4 py-3 text-center bg-white">
                               {product.autoCalculateHT ? (
                                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
                                   Auto
@@ -351,7 +351,7 @@ export const ProductsListModal: React.FC<ProductsListModalProps> = ({
                                 </span>
                               )}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-4 py-3 bg-white">
                               <div className="flex justify-center space-x-1">
                                 <button
                                   onClick={() => startEditing(globalIndex)}
