@@ -139,8 +139,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
       console.log(`📊 Taille de l'image: ${imageSizeKB} KB`);
 
-      // Check if image is still too large (close to 50KB limit)
-      if (imageSizeKB > 45) {
+      // Check if image is still too large (updated to 49KB limit)
+      if (imageSizeKB > 49) {
         setShareStep('🔧 Optimisation supplémentaire...');
         // Further reduce quality if still too large
         const optimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.4); // Changed from 0.6 to 0.4 for more aggressive compression
@@ -149,7 +149,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         
         console.log(`📊 Taille optimisée: ${optimizedSizeKB} KB`);
         
-        if (optimizedSizeKB <= 45) {
+        if (optimizedSizeKB <= 49) {
           setShareStep('🚀 Envoi via EmailJS...');
           
           // Envoyer via EmailJS avec l'image optimisée
@@ -180,7 +180,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           
           console.log(`📊 Taille compression maximale: ${maxOptimizedSizeKB} KB`);
           
-          if (maxOptimizedSizeKB <= 45) {
+          if (maxOptimizedSizeKB <= 49) {
             setShareStep('🚀 Envoi via EmailJS...');
             
             const success = await EmailService.sharePreviewViaEmail(

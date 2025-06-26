@@ -309,8 +309,8 @@ export class EmailService {
         console.log('📊 Taille après compression pour EmailJS:', imageSizeKB, 'KB');
       }
 
-      // Si encore trop grand pour EmailJS, envoyer sans image
-      if (imageSizeKB > 45) { // Limite stricte EmailJS
+      // Si encore trop grand pour EmailJS, envoyer sans image (updated to 49KB limit)
+      if (imageSizeKB > 49) { // Updated from 45 to 49 KB
         console.warn('⚠️ Image encore trop volumineuse pour EmailJS, envoi sans image');
         return await this.sendPreviewWithoutImage(invoice);
       }
