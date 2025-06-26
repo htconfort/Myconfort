@@ -427,19 +427,19 @@ export class PDFService {
 
   // 🎯 MÉTHODE POUR TESTER VOTRE SCRIPT EXACT AVEC CGV MYCONFORT
   static async testYourScript(invoice: Invoice): Promise<void> {
-    console.log('🧪 TEST DE VOTRE SCRIPT EXACT AVEC CGV MYCONFORT');
+    console.log('🧪 TEST DE VOTRE SCRIPT EXACT : FACTURE + CGV MYCONFORT');
     
     // Chercher l'élément .facture-apercu
     const element = document.querySelector('.facture-apercu') as HTMLElement;
     
     if (!element) {
       console.error('❌ Élément .facture-apercu non trouvé pour le test');
-      alert('Élément .facture-apercu non trouvé. Assurez-vous que l\'aperçu est affiché.');
+      alert('❌ Élément .facture-apercu non trouvé. Assurez-vous que l\'aperçu est affiché.');
       return;
     }
     
     try {
-      console.log('🔄 Test de votre script avec l\'élément .facture-apercu + CGV MYCONFORT...');
+      console.log('🔄 Test de votre script : PAGE 1 (Facture) + PAGE 2 (CGV MYCONFORT)...');
       
       // 📋 CRÉER UN CONTENEUR TEMPORAIRE AVEC FACTURE + CGV
       const tempContainer = await this.createFactureWithCGVContainer(invoice, element);
@@ -457,8 +457,8 @@ export class PDFService {
       // Nettoyer le conteneur temporaire
       document.body.removeChild(tempContainer);
       
-      console.log('✅ Test réussi ! PDF généré avec votre script exact + CGV MYCONFORT');
-      alert('✅ Test réussi ! Le PDF avec CGV MYCONFORT a été généré avec votre script exact.');
+      console.log('✅ Test réussi ! PDF généré : PAGE 1 (Facture) + PAGE 2 (CGV MYCONFORT)');
+      alert('✅ Test réussi ! PDF avec CGV MYCONFORT généré avec votre script exact.\n\nContenu :\n• PAGE 1 : Votre facture\n• PAGE 2 : Conditions générales de vente MYCONFORT');
     } catch (error) {
       console.error('❌ Erreur lors du test de votre script avec CGV:', error);
       alert('❌ Erreur lors du test. Vérifiez la console pour plus de détails.');
@@ -467,7 +467,7 @@ export class PDFService {
 
   // 📋 CRÉER UN CONTENEUR TEMPORAIRE AVEC FACTURE + CGV MYCONFORT
   private static async createFactureWithCGVContainer(invoice: Invoice, factureElement: HTMLElement): Promise<HTMLElement> {
-    console.log('📋 Création du conteneur temporaire avec facture + CGV MYCONFORT...');
+    console.log('📋 Création du conteneur temporaire : PAGE 1 (Facture) + PAGE 2 (CGV MYCONFORT)...');
     
     // Créer un conteneur temporaire
     const tempContainer = document.createElement('div');
@@ -481,13 +481,17 @@ export class PDFService {
     tempContainer.style.lineHeight = '1.5';
     tempContainer.style.color = 'black';
     
-    // PAGE 1: Cloner la facture existante
+    // PAGE 1: Cloner la facture existante (votre aperçu exact)
+    console.log('📄 PAGE 1 : Clonage de votre facture (.facture-apercu)...');
     const factureClone = factureElement.cloneNode(true) as HTMLElement;
     factureClone.style.pageBreakAfter = 'always';
     factureClone.style.minHeight = '297mm';
+    factureClone.style.backgroundColor = 'white';
+    factureClone.style.padding = '10mm';
     tempContainer.appendChild(factureClone);
     
     // PAGE 2: Créer les CGV MYCONFORT
+    console.log('📄 PAGE 2 : Création des CGV MYCONFORT...');
     const cgvPage = this.createCGVMyconfortPage(invoice);
     tempContainer.appendChild(cgvPage);
     
@@ -497,128 +501,133 @@ export class PDFService {
     // Attendre le rendu
     await new Promise(resolve => setTimeout(resolve, 500));
     
+    console.log('✅ Conteneur temporaire créé : 2 pages prêtes');
     return tempContainer;
   }
 
-  // 📋 CRÉER LA PAGE CGV MYCONFORT
+  // 📋 CRÉER LA PAGE CGV MYCONFORT (PAGE 2)
   private static createCGVMyconfortPage(invoice: Invoice): HTMLElement {
+    console.log('📋 Création de la page CGV MYCONFORT...');
+    
     const cgvPage = document.createElement('div');
     cgvPage.style.minHeight = '297mm';
     cgvPage.style.width = '210mm';
-    cgvPage.style.padding = '15mm';
+    cgvPage.style.padding = '10mm';
     cgvPage.style.backgroundColor = 'white';
     cgvPage.style.pageBreakBefore = 'always';
     cgvPage.style.fontFamily = 'Inter, sans-serif';
-    cgvPage.style.fontSize = '10px';
-    cgvPage.style.lineHeight = '1.4';
+    cgvPage.style.fontSize = '9px';
+    cgvPage.style.lineHeight = '1.3';
     cgvPage.style.color = 'black';
+    cgvPage.style.boxSizing = 'border-box';
     
     cgvPage.innerHTML = `
-      <!-- En-tête CGV -->
-      <div style="background: linear-gradient(135deg, #477A0C, #5A8F0F); color: #F2EFE2; padding: 15px; text-align: center; margin-bottom: 20px; border-radius: 8px;">
-        <h1 style="font-size: 18px; font-weight: bold; margin: 0;">CONDITIONS GÉNÉRALES DE VENTE</h1>
-        <p style="font-size: 12px; margin: 5px 0 0 0;">MYCONFORT - Vente de matelas et literie</p>
+      <!-- En-tête CGV MYCONFORT -->
+      <div style="background: linear-gradient(135deg, #477A0C, #5A8F0F); color: #F2EFE2; padding: 12px; text-align: center; margin-bottom: 15px; border-radius: 6px;">
+        <h1 style="font-size: 16px; font-weight: bold; margin: 0;">CONDITIONS GÉNÉRALES DE VENTE</h1>
+        <p style="font-size: 11px; margin: 3px 0 0 0;">MYCONFORT - Vente de matelas et literie</p>
       </div>
       
-      <!-- Articles CGV MYCONFORT -->
-      <div style="columns: 2; column-gap: 15px; font-size: 9px; line-height: 1.3;">
+      <!-- Articles CGV MYCONFORT en 2 colonnes -->
+      <div style="columns: 2; column-gap: 12px; font-size: 8px; line-height: 1.2;">
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 1 - LIVRAISON</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 1 - LIVRAISON</h3>
           <p style="margin: 0; text-align: justify;">Une fois la commande expédiée, vous serez contacté par SMS ou mail pour programmer la livraison en fonction de vos disponibilités (à la journée ou demi-journée). Le transporteur livre le produit au pas de porte ou en bas de l'immeuble. Veuillez vérifier que les dimensions du produit permettent son passage dans les escaliers, couloirs et portes. Aucun service d'installation ou de reprise de l'ancienne literie n'est prévu.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 2 - DÉLAIS DE LIVRAISON</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 2 - DÉLAIS DE LIVRAISON</h3>
           <p style="margin: 0; text-align: justify;">Les délais de livraison sont donnés à titre indicatif et ne constituent pas un engagement ferme. En cas de retard, aucune indemnité ou annulation ne sera acceptée, notamment en cas de force majeure. Nous déclinons toute responsabilité en cas de délai dépassé.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 3 - RISQUES DE TRANSPORT</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 3 - RISQUES DE TRANSPORT</h3>
           <p style="margin: 0; text-align: justify;">Les marchandises voyagent aux risques du destinataire. En cas d'avarie ou de perte, il appartient au client de faire les réserves nécessaires obligatoires sur le bordereau du transporteur.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 4 - ACCEPTATION DES CONDITIONS</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 4 - ACCEPTATION DES CONDITIONS</h3>
           <p style="margin: 0; text-align: justify;">Toute livraison implique l'acceptation des présentes conditions. Le transporteur livre à l'adresse indiquée sans monter les étages. Le client est responsable de vérifier et d'accepter les marchandises lors de la livraison.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 5 - RÉCLAMATIONS</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 5 - RÉCLAMATIONS</h3>
           <p style="margin: 0; text-align: justify;">Les réclamations concernant la qualité des marchandises doivent être formulées par écrit dans les huit jours suivant la livraison, par lettre recommandée avec accusé de réception.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 6 - RETOURS</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 6 - RETOURS</h3>
           <p style="margin: 0; text-align: justify;">Aucun retour de marchandises ne sera accepté sans notre accord écrit préalable.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 7 - TAILLES DES MATELAS</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 7 - TAILLES DES MATELAS</h3>
           <p style="margin: 0; text-align: justify;">Les dimensions des matelas peuvent varier de +/- 5 cm en raison de la thermosensibilité des mousses viscoélastiques. Les tailles standards sont données à titre indicatif.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 8 - ODEUR DES MATÉRIAUX</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 8 - ODEUR DES MATÉRIAUX</h3>
           <p style="margin: 0; text-align: justify;">Les mousses viscoélastiques naturelles (à base d'huile de ricin) et les matériaux de conditionnement peuvent émettre une légère odeur après déballage.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 9 - RÈGLEMENTS ET REMISES</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 9 - RÈGLEMENTS ET REMISES</h3>
           <p style="margin: 0; text-align: justify;">Sauf accord express, aucun rabais ou escompte ne sera appliqué pour paiement comptant.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 10 - PAIEMENT</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 10 - PAIEMENT</h3>
           <p style="margin: 0; text-align: justify;">Les factures sont payables par chèque, virement, carte bancaire ou espèce à réception.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 11 - PÉNALITÉS DE RETARD</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 11 - PÉNALITÉS DE RETARD</h3>
           <p style="margin: 0; text-align: justify;">En cas de non-paiement, une majoration de 10% avec un minimum de 300 € sera appliquée.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 12 - EXIGIBILITÉ EN CAS DE NON-PAIEMENT</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 12 - EXIGIBILITÉ EN CAS DE NON-PAIEMENT</h3>
           <p style="margin: 0; text-align: justify;">Le non-paiement d'une échéance rend immédiatement exigible le solde de toutes les échéances à venir.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 13 - LIVRAISON INCOMPLÈTE OU NON-CONFORME</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 13 - LIVRAISON INCOMPLÈTE OU NON-CONFORME</h3>
           <p style="margin: 0; text-align: justify;">En cas de livraison endommagée ou non conforme, mentionnez-le sur le bon de livraison. Contactez-nous sous 72h ouvrables si constatée après le départ du transporteur.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 14 - LITIGES</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 14 - LITIGES</h3>
           <p style="margin: 0; text-align: justify;">Tout litige sera de la compétence exclusive du Tribunal de Commerce de Perpignan ou du tribunal compétent du prestataire.</p>
         </div>
         
-        <div style="margin-bottom: 12px; break-inside: avoid;">
-          <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 4px 0;">ART. 15 - HORAIRES DE LIVRAISON</h3>
+        <div style="margin-bottom: 8px; break-inside: avoid;">
+          <h3 style="color: #477A0C; font-weight: bold; font-size: 9px; margin: 0 0 3px 0;">ART. 15 - HORAIRES DE LIVRAISON</h3>
           <p style="margin: 0; text-align: justify;">Les livraisons sont effectuées du lundi au vendredi. Une personne majeure doit être présente. Toute modification d'adresse doit être signalée immédiatement à myconfort66@gmail.com.</p>
         </div>
         
       </div>
       
-      <!-- Informations légales -->
-      <div style="background: #f8f9fa; padding: 15px; margin-top: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-        <h3 style="color: #477A0C; font-weight: bold; font-size: 12px; margin: 0 0 8px 0;">INFORMATIONS LÉGALES MYCONFORT</h3>
-        <div style="font-size: 9px; line-height: 1.4;">
-          <p style="margin: 0 0 3px 0;"><strong>MYCONFORT</strong> - SARL au capital de 10 000 €</p>
-          <p style="margin: 0 0 3px 0;">SIRET : 824 313 530 00027 - RCS Paris</p>
-          <p style="margin: 0 0 3px 0;">Siège social : 88 Avenue des Ternes, 75017 Paris</p>
-          <p style="margin: 0 0 3px 0;">Téléphone : 04 68 50 41 45 - Email : myconfort@gmail.com</p>
+      <!-- Informations légales MYCONFORT -->
+      <div style="background: #f8f9fa; padding: 10px; margin-top: 15px; border-radius: 6px; border: 1px solid #dee2e6;">
+        <h3 style="color: #477A0C; font-weight: bold; font-size: 10px; margin: 0 0 6px 0;">INFORMATIONS LÉGALES MYCONFORT</h3>
+        <div style="font-size: 8px; line-height: 1.3;">
+          <p style="margin: 0 0 2px 0;"><strong>MYCONFORT</strong> - SARL au capital de 10 000 €</p>
+          <p style="margin: 0 0 2px 0;">SIRET : 824 313 530 00027 - RCS Paris</p>
+          <p style="margin: 0 0 2px 0;">Siège social : 88 Avenue des Ternes, 75017 Paris</p>
+          <p style="margin: 0 0 2px 0;">Téléphone : 04 68 50 41 45 - Email : myconfort@gmail.com</p>
           <p style="margin: 0;">Email support : myconfort66@gmail.com</p>
         </div>
       </div>
       
-      <!-- Pied de page -->
-      <div style="background: linear-gradient(135deg, #477A0C, #5A8F0F); color: #F2EFE2; padding: 15px; text-align: center; margin-top: 20px; border-radius: 8px;">
-        <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0;">🌸 MYCONFORT - Conditions Générales de Vente</p>
-        <p style="font-size: 9px; margin: 0;">Version en vigueur au ${new Date().toLocaleDateString('fr-FR')}</p>
+      <!-- Pied de page CGV -->
+      <div style="background: linear-gradient(135deg, #477A0C, #5A8F0F); color: #F2EFE2; padding: 10px; text-align: center; margin-top: 15px; border-radius: 6px;">
+        <p style="font-weight: bold; font-size: 10px; margin: 0 0 3px 0;">🌸 MYCONFORT - Conditions Générales de Vente</p>
+        <p style="font-size: 8px; margin: 0;">Version en vigueur au ${new Date().toLocaleDateString('fr-FR')}</p>
       </div>
     `;
     
+    console.log('✅ Page CGV MYCONFORT créée');
     return cgvPage;
   }
 }
