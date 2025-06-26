@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Send, Users, Package, Building2, Archive } from 'lucide-react';
+import { Send, Users, Package, Building2, Archive } from 'lucide-react';
 
 interface HeaderProps {
   onGeneratePDF: () => void;
@@ -12,38 +12,11 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onGeneratePDF,
   onShowClients,
   onSendEmail,
   onShowInvoices,
   onShowProducts
 }) => {
-  const handleTestPDF = () => {
-    // Use your exact script configuration
-    const element = document.querySelector('.facture-apercu') || document.getElementById('invoice');
-    if (!element) {
-      alert('❌ Élément facture non trouvé. Assurez-vous qu\'une facture est affichée.');
-      return;
-    }
-    
-    const opt = {
-      margin: 0,
-      filename: 'facture_MYCONFORT.pdf',
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    console.log('🔄 Génération PDF avec votre script exact...');
-    // @ts-ignore - html2pdf is loaded globally
-    html2pdf().set(opt).from(element).save().then(() => {
-      console.log('✅ PDF généré avec succès !');
-      alert('✅ PDF téléchargé avec succès !');
-    }).catch((error: any) => {
-      console.error('❌ Erreur génération PDF:', error);
-      alert('❌ Erreur lors de la génération du PDF');
-    });
-  };
-
   return (
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -60,16 +33,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4">
-          {/* Bouton de test PDF avec votre script exact */}
-          <button
-            onClick={handleTestPDF}
-            className="bg-purple-500 hover:bg-purple-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
-            title="📄 Télécharger PDF avec votre script exact"
-          >
-            <FileText size={18} />
-            <span className="hidden md:inline">Test PDF</span>
-          </button>
-
           {/* Actions principales */}
           <button
             onClick={onShowProducts}
@@ -78,15 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Package size={18} />
             <span className="hidden md:inline">Produits</span>
-          </button>
-          
-          <button
-            onClick={onGeneratePDF}
-            className="bg-[#F55D3E] hover:bg-[#E54D2E] px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-[#F2EFE2]"
-            title="Générer le PDF"
-          >
-            <FileText size={18} />
-            <span className="hidden md:inline">PDF</span>
           </button>
 
           <button
