@@ -3,10 +3,10 @@ import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
 export class PDFService {
-  // 🎯 MÉTHODE PRINCIPALE - PRIORITÉ ABSOLUE À L'APERÇU HTML AFFICHÉ (.facture-apercu)
+  // 🎯 MÉTHODE PRINCIPALE - UTILISE VOTRE SCRIPT EXACT
   static async generateInvoicePDF(invoice: Invoice, elementId?: string): Promise<Blob> {
     try {
-      console.log('🎯 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU AFFICHÉ (.facture-apercu)');
+      console.log('🎯 GÉNÉRATION PDF AVEC VOTRE SCRIPT EXACT');
       
       // 🥇 PRIORITÉ 1: Chercher l'élément .facture-apercu (votre conteneur exact)
       const factureApercuElement = document.querySelector('.facture-apercu') as HTMLElement;
@@ -38,15 +38,8 @@ export class PDFService {
         return await this.generateFromHTMLElementWithYourScript(invoice, pdfPreviewElement, 'pdf-preview-content');
       }
       
-      // 🥇 PRIORITÉ 5: Recherche d'autres aperçus disponibles
-      const invoicePreviewElement = document.querySelector('[id*="invoice"], [id*="apercu"], [class*="invoice"], [class*="apercu"]') as HTMLElement;
-      if (invoicePreviewElement) {
-        console.log('✅ Utilisation d\'un aperçu trouvé automatiquement');
-        return await this.generateFromHTMLElementWithYourScript(invoice, invoicePreviewElement, 'apercu-automatique');
-      }
-      
       // 🔄 FALLBACK: Service avancé seulement si aucun aperçu HTML disponible
-      console.warn('⚠️ Aucun aperçu HTML trouvé, utilisation du service avancé (peut différer de l\'aperçu)');
+      console.warn('⚠️ Aucun aperçu HTML trouvé, utilisation du service avancé');
       return await AdvancedPDFService.getPDFBlob(invoice);
     } catch (error) {
       console.error('❌ Erreur génération PDF depuis aperçu:', error);
@@ -54,10 +47,10 @@ export class PDFService {
     }
   }
 
-  // 🎯 MÉTHODE DE TÉLÉCHARGEMENT - PRIORITÉ ABSOLUE À L'APERÇU HTML (.facture-apercu)
+  // 🎯 MÉTHODE DE TÉLÉCHARGEMENT - UTILISE VOTRE SCRIPT EXACT
   static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
     try {
-      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU (.facture-apercu)');
+      console.log('📥 TÉLÉCHARGEMENT PDF AVEC VOTRE SCRIPT EXACT');
       
       // 🥇 PRIORITÉ 1: Chercher l'élément .facture-apercu (votre conteneur exact)
       const factureApercuElement = document.querySelector('.facture-apercu') as HTMLElement;
@@ -93,14 +86,6 @@ export class PDFService {
         return;
       }
       
-      // 🥇 PRIORITÉ 5: Recherche automatique d'aperçus
-      const invoicePreviewElement = document.querySelector('[id*="invoice"], [id*="apercu"], [class*="invoice"], [class*="apercu"]') as HTMLElement;
-      if (invoicePreviewElement) {
-        console.log('✅ Téléchargement depuis aperçu trouvé automatiquement');
-        await this.downloadFromHTMLElementWithYourScript(invoice, invoicePreviewElement, 'apercu-automatique');
-        return;
-      }
-      
       // 🔄 FALLBACK: Service avancé
       console.warn('⚠️ Aucun aperçu HTML trouvé, utilisation du service avancé');
       await AdvancedPDFService.downloadPDF(invoice);
@@ -110,39 +95,19 @@ export class PDFService {
     }
   }
 
-  // 🎯 GÉNÉRATION PDF AVEC VOTRE SCRIPT EXACT (WYSIWYG PARFAIT)
+  // 🎯 GÉNÉRATION PDF AVEC VOTRE SCRIPT EXACT (CONFIGURATION IDENTIQUE)
   private static async generateFromHTMLElementWithYourScript(invoice: Invoice, element: HTMLElement, elementId: string): Promise<Blob> {
-    console.log(`🎯 Génération PDF WYSIWYG avec votre script depuis: ${elementId}`);
+    console.log(`🎯 Génération PDF avec votre script exact depuis: ${elementId}`);
     
     // Attendre que l'élément soit complètement rendu
     await this.waitForElementToRender(element);
     
-    // 📋 CONFIGURATION EXACTE DE VOTRE SCRIPT
+    // 📋 VOTRE CONFIGURATION EXACTE
     const opt = {
       margin: 0,
-      filename: `facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true,
-        letterRendering: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        // Options supplémentaires pour correspondance exacte
-        foreignObjectRendering: true,
-        removeContainer: false
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true,
-        precision: 16 // Haute précision pour correspondance exacte
-      }
+      filename: 'facture_MYCONFORT.pdf',
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
@@ -156,7 +121,7 @@ export class PDFService {
       
       // 🎯 UTILISATION EXACTE DE VOTRE SCRIPT
       const pdf = await html2pdf().set(opt).from(element).outputPdf('blob');
-      console.log('✅ PDF généré avec correspondance exacte à l\'aperçu (votre script)');
+      console.log('✅ PDF généré avec votre script exact');
       return pdf;
     } catch (error) {
       console.error('❌ Erreur conversion HTML vers PDF avec votre script:', error);
@@ -171,31 +136,12 @@ export class PDFService {
     // Attendre que l'élément soit complètement rendu
     await this.waitForElementToRender(element);
     
-    // 📋 CONFIGURATION EXACTE DE VOTRE SCRIPT
+    // 📋 VOTRE CONFIGURATION EXACTE
     const opt = {
       margin: 0,
-      filename: `facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true,
-        letterRendering: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        foreignObjectRendering: true,
-        removeContainer: false
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true,
-        precision: 16
-      }
+      filename: 'facture_MYCONFORT.pdf',
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
@@ -203,7 +149,7 @@ export class PDFService {
       
       // 🎯 UTILISATION EXACTE DE VOTRE SCRIPT POUR TÉLÉCHARGEMENT
       await html2pdf().set(opt).from(element).save();
-      console.log('✅ PDF téléchargé avec correspondance exacte à l\'aperçu (votre script)');
+      console.log('✅ PDF téléchargé avec votre script exact');
     } catch (error) {
       console.error('❌ Erreur téléchargement avec votre script:', error);
       throw new Error(`Erreur lors du téléchargement du PDF depuis l'aperçu ${elementId} avec votre script`);
@@ -434,11 +380,11 @@ export class PDFService {
     
     if (!element) {
       console.error('❌ Élément .facture-apercu non trouvé pour le test');
-      alert('Élément .facture-apercu non trouvé. Assurez-vous que l\'aperçu est affiché.');
+      alert('❌ Élément .facture-apercu non trouvé. Assurez-vous que l\'aperçu est affiché.');
       return;
     }
     
-    // Configuration exacte de votre script
+    // VOTRE CONFIGURATION EXACTE
     const opt = {
       margin: 0,
       filename: 'facture_MYCONFORT.pdf',
@@ -454,6 +400,35 @@ export class PDFService {
     } catch (error) {
       console.error('❌ Erreur lors du test de votre script:', error);
       alert('❌ Erreur lors du test. Vérifiez la console pour plus de détails.');
+    }
+  }
+
+  // 🚀 MÉTHODE GLOBALE POUR UTILISER VOTRE SCRIPT EXACT
+  static async generateWithYourExactScript(): Promise<void> {
+    console.log('🚀 GÉNÉRATION PDF AVEC VOTRE SCRIPT EXACT');
+    
+    const element = document.querySelector('.facture-apercu') || document.getElementById('invoice');
+    if (!element) {
+      alert('❌ Élément facture non trouvé. Assurez-vous qu\'une facture est affichée.');
+      return;
+    }
+    
+    // VOTRE CONFIGURATION EXACTE
+    const opt = {
+      margin: 0,
+      filename: 'facture_MYCONFORT.pdf',
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    try {
+      console.log('🔄 Génération PDF avec votre script exact...');
+      await html2pdf().set(opt).from(element).save();
+      console.log('✅ PDF généré avec succès !');
+      alert('✅ PDF téléchargé avec succès !');
+    } catch (error) {
+      console.error('❌ Erreur génération PDF:', error);
+      alert('❌ Erreur lors de la génération du PDF');
     }
   }
 }
