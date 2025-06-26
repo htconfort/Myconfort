@@ -344,15 +344,15 @@ export class AdvancedPDFService {
     doc.text('Merci de votre confiance !', 105, pageHeight - 7, { align: 'center' });
   }
 
-  // 📄 GÉNÉRATION PDF COMPLET AVEC CONDITIONS GÉNÉRALES DE VENTE
+  // 📄 GÉNÉRATION PDF COMPLET (UNE SEULE PAGE)
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
-    console.log('🎨 GÉNÉRATION PDF COMPLET : FACTURE + CONDITIONS GÉNÉRALES DE VENTE');
+    console.log('🎨 GÉNÉRATION PDF COMPLET : FACTURE MYCONFORT');
     
     const doc = new jsPDF();
     const invoiceData = this.convertInvoiceData(invoice);
     
-    // ===== PAGE 1 : FACTURE COMPLÈTE =====
-    console.log('📄 PAGE 1 : Génération de la facture...');
+    // ===== PAGE UNIQUE : FACTURE COMPLÈTE =====
+    console.log('📄 Génération de la facture...');
     
     // 1. BORDURE SUPÉRIEURE VERTE (comme dans l'aperçu)
     doc.setFillColor(...this.COLORS.primary);
@@ -384,170 +384,8 @@ export class AdvancedPDFService {
     // 9. PIED DE PAGE AVEC FOND VERT
     this.addFooterIdentical(doc);
     
-    // ===== PAGE 2 : CONDITIONS GÉNÉRALES DE VENTE =====
-    console.log('📄 PAGE 2 : Ajout des conditions générales de vente...');
-    doc.addPage();
-    this.addTermsAndConditions(doc);
-    
-    console.log('✅ PDF COMPLET GÉNÉRÉ - FACTURE + CGV (2 PAGES)');
+    console.log('✅ PDF COMPLET GÉNÉRÉ - FACTURE MYCONFORT');
     return doc;
-  }
-
-  // 📋 NOUVELLE MÉTHODE : CONDITIONS GÉNÉRALES DE VENTE (PAGE 2)
-  private static addTermsAndConditions(doc: jsPDF): void {
-    console.log('📋 Ajout des conditions générales de vente...');
-    
-    // En-tête de la page CGV
-    doc.setFillColor(...this.COLORS.primary);
-    doc.rect(0, 0, 210, 4, 'F');
-    
-    // Titre principal
-    doc.setFillColor(...this.COLORS.primary);
-    doc.rect(15, 10, 180, 15, 'F');
-    doc.setTextColor(...this.COLORS.cream);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CONDITIONS GÉNÉRALES DE VENTE', 105, 20, { align: 'center' });
-    
-    // Sous-titre
-    doc.setTextColor(...this.COLORS.dark);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT - Vente de matelas et literie', 105, 32, { align: 'center' });
-    
-    // Contenu des CGV
-    let yPos = 45;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...this.COLORS.dark);
-    
-    // Article 1 : Objet
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 1 - OBJET', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article1 = 'Les présentes conditions générales de vente régissent les relations contractuelles entre MYCONFORT, société spécialisée dans la vente de matelas et articles de literie, et ses clients. Toute commande implique l\'acceptation sans réserve des présentes conditions.';
-    const splitArticle1 = doc.splitTextToSize(article1, 180);
-    doc.text(splitArticle1, 15, yPos);
-    yPos += splitArticle1.length * 4 + 8;
-    
-    // Article 2 : Produits
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 2 - PRODUITS ET SERVICES', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article2 = 'MYCONFORT propose une gamme complète de matelas, sur-matelas, couettes, oreillers et accessoires de literie. Tous nos produits sont conformes aux normes en vigueur et bénéficient des garanties légales. Les caractéristiques des produits sont décrites avec précision sur nos supports commerciaux.';
-    const splitArticle2 = doc.splitTextToSize(article2, 180);
-    doc.text(splitArticle2, 15, yPos);
-    yPos += splitArticle2.length * 4 + 8;
-    
-    // Article 3 : Prix
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 3 - PRIX ET PAIEMENT', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article3 = 'Les prix sont indiqués en euros toutes taxes comprises (TTC). MYCONFORT se réserve le droit de modifier ses prix à tout moment, les produits étant facturés sur la base des tarifs en vigueur au moment de la commande. Le paiement peut s\'effectuer par virement bancaire, carte bancaire, PayPal, Alma ou chèque. Un acompte peut être demandé à la commande.';
-    const splitArticle3 = doc.splitTextToSize(article3, 180);
-    doc.text(splitArticle3, 15, yPos);
-    yPos += splitArticle3.length * 4 + 8;
-    
-    // Article 4 : Livraison
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 4 - LIVRAISON', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article4 = 'Les livraisons sont effectuées à l\'adresse indiquée par le client. Les délais de livraison sont donnés à titre indicatif et ne sont pas contractuels. MYCONFORT s\'engage à informer le client de tout retard éventuel. La livraison peut s\'effectuer par Colissimo, transporteur ou retrait en magasin selon les modalités convenues.';
-    const splitArticle4 = doc.splitTextToSize(article4, 180);
-    doc.text(splitArticle4, 15, yPos);
-    yPos += splitArticle4.length * 4 + 8;
-    
-    // Article 5 : Garanties
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 5 - GARANTIES', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article5 = 'Tous les produits MYCONFORT bénéficient de la garantie légale de conformité et de la garantie contre les vices cachés. Les matelas bénéficient d\'une garantie constructeur dont la durée varie selon les modèles. Les conditions de garantie sont précisées lors de la vente et sur les documents d\'accompagnement des produits.';
-    const splitArticle5 = doc.splitTextToSize(article5, 180);
-    doc.text(splitArticle5, 15, yPos);
-    yPos += splitArticle5.length * 4 + 8;
-    
-    // Article 6 : Droit de rétractation
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 6 - DROIT DE RÉTRACTATION', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article6 = 'Conformément à l\'article L121-21 du Code de la consommation, le client dispose d\'un délai de 14 jours francs pour exercer son droit de rétractation sans avoir à justifier de motifs ni à payer de pénalités, à l\'exception des frais de retour. Ce délai court à compter de la réception des produits.';
-    const splitArticle6 = doc.splitTextToSize(article6, 180);
-    doc.text(splitArticle6, 15, yPos);
-    yPos += splitArticle6.length * 4 + 8;
-    
-    // Article 7 : Responsabilité
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 7 - RESPONSABILITÉ', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article7 = 'MYCONFORT ne saurait être tenue responsable des dommages indirects ou imprévisibles. Sa responsabilité est limitée au montant de la commande. Le client s\'engage à vérifier la conformité des produits à la livraison et à signaler toute anomalie dans les 48 heures.';
-    const splitArticle7 = doc.splitTextToSize(article7, 180);
-    doc.text(splitArticle7, 15, yPos);
-    yPos += splitArticle7.length * 4 + 8;
-    
-    // Article 8 : Protection des données
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 8 - PROTECTION DES DONNÉES PERSONNELLES', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article8 = 'Les données personnelles collectées sont nécessaires au traitement de la commande et à la relation commerciale. Elles ne sont pas transmises à des tiers sans accord préalable. Conformément au RGPD, le client dispose d\'un droit d\'accès, de rectification et de suppression de ses données.';
-    const splitArticle8 = doc.splitTextToSize(article8, 180);
-    doc.text(splitArticle8, 15, yPos);
-    yPos += splitArticle8.length * 4 + 8;
-    
-    // Article 9 : Litiges
-    doc.setFont('helvetica', 'bold');
-    doc.text('ARTICLE 9 - RÈGLEMENT DES LITIGES', 15, yPos);
-    yPos += 6;
-    doc.setFont('helvetica', 'normal');
-    const article9 = 'En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut, les tribunaux de Paris seront seuls compétents. Le droit français est applicable. Pour les litiges de consommation, le client peut recourir à la médiation de la consommation.';
-    const splitArticle9 = doc.splitTextToSize(article9, 180);
-    doc.text(splitArticle9, 15, yPos);
-    yPos += splitArticle9.length * 4 + 8;
-    
-    // Informations légales
-    yPos += 5;
-    doc.setFillColor(...this.COLORS.grayLight);
-    doc.rect(15, yPos - 3, 180, 25, 'F');
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('INFORMATIONS LÉGALES', 15, yPos + 3);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    yPos += 8;
-    doc.text('MYCONFORT - SARL au capital de 10 000 €', 15, yPos);
-    yPos += 4;
-    doc.text('SIRET : 824 313 530 00027 - RCS Paris', 15, yPos);
-    yPos += 4;
-    doc.text('Siège social : 88 Avenue des Ternes, 75017 Paris', 15, yPos);
-    yPos += 4;
-    doc.text('Téléphone : 04 68 50 41 45 - Email : myconfort@gmail.com', 15, yPos);
-    yPos += 4;
-    doc.text('Site web : https://www.htconfort.com', 15, yPos);
-    
-    // Pied de page CGV
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFillColor(...this.COLORS.primary);
-    doc.rect(15, pageHeight - 20, 180, 20, 'F');
-    
-    doc.setTextColor(...this.COLORS.cream);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MYCONFORT - Conditions Générales de Vente', 105, pageHeight - 12, { align: 'center' });
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Version en vigueur au ' + new Date().toLocaleDateString('fr-FR'), 105, pageHeight - 7, { align: 'center' });
-    
-    console.log('✅ Conditions générales de vente ajoutées (Page 2)');
   }
 
   private static addHeaderIdenticalToPreview(doc: jsPDF, data: InvoiceData): void {
@@ -1062,13 +900,13 @@ export class AdvancedPDFService {
   }
 
   static async downloadPDF(invoice: Invoice): Promise<void> {
-    console.log('📥 TÉLÉCHARGEMENT PDF COMPLET : FACTURE + CONDITIONS GÉNÉRALES DE VENTE');
+    console.log('📥 TÉLÉCHARGEMENT PDF COMPLET : FACTURE MYCONFORT');
     const doc = await this.generateInvoicePDF(invoice);
-    doc.save(`facture_${invoice.invoiceNumber}_avec_CGV.pdf`);
+    doc.save(`facture_${invoice.invoiceNumber}.pdf`);
   }
 
   static async getPDFBlob(invoice: Invoice): Promise<Blob> {
-    console.log('📎 GÉNÉRATION BLOB PDF COMPLET : FACTURE + CONDITIONS GÉNÉRALES DE VENTE');
+    console.log('📎 GÉNÉRATION BLOB PDF COMPLET : FACTURE MYCONFORT');
     const doc = await this.generateInvoicePDF(invoice);
     return doc.output('blob');
   }
