@@ -3,29 +3,43 @@ import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
 export class PDFService {
-  // 🎯 MÉTHODE PRINCIPALE - UTILISE L'APERÇU EXACT POUR GÉNÉRER LE PDF
+  // 🎯 MÉTHODE PRINCIPALE - PRIORITÉ ABSOLUE À L'APERÇU HTML AFFICHÉ
   static async generateInvoicePDF(invoice: Invoice, elementId?: string): Promise<Blob> {
     try {
-      console.log('🎯 GÉNÉRATION PDF À PARTIR DE L\'APERÇU EXACT');
+      console.log('🎯 GÉNÉRATION PDF IDENTIQUE À L\'APERÇU AFFICHÉ DANS BOLT');
       
-      // PRIORITÉ 1: Utiliser l'aperçu HTML si disponible (identique à ce que voit l'utilisateur)
+      // 🥇 PRIORITÉ 1: Aperçu spécifique demandé (modal PDF, etc.)
       if (elementId) {
         const element = document.getElementById(elementId);
         if (element) {
-          console.log('✅ Utilisation de l\'aperçu HTML pour générer le PDF identique');
-          return await this.generateHTMLToPDF(invoice, elementId);
+          console.log(`✅ Utilisation de l'aperçu spécifique: ${elementId}`);
+          return await this.generateFromHTMLElement(invoice, element, elementId);
         }
       }
       
-      // PRIORITÉ 2: Utiliser l'aperçu de la facture si disponible
-      const previewElement = document.getElementById('facture-apercu');
-      if (previewElement) {
-        console.log('✅ Utilisation de l\'aperçu de la facture pour générer le PDF identique');
-        return await this.generateFromPreviewElement(invoice, 'facture-apercu');
+      // 🥇 PRIORITÉ 2: Aperçu principal de la facture (section principale)
+      const mainPreviewElement = document.getElementById('facture-apercu');
+      if (mainPreviewElement) {
+        console.log('✅ Utilisation de l\'aperçu principal de la facture');
+        return await this.generateFromHTMLElement(invoice, mainPreviewElement, 'facture-apercu');
       }
       
-      // PRIORITÉ 3: Fallback vers le service avancé seulement si aucun aperçu disponible
-      console.log('⚠️ Aucun aperçu disponible, utilisation du service avancé');
+      // 🥇 PRIORITÉ 3: Aperçu dans le modal PDF
+      const pdfPreviewElement = document.getElementById('pdf-preview-content');
+      if (pdfPreviewElement) {
+        console.log('✅ Utilisation de l\'aperçu du modal PDF');
+        return await this.generateFromHTMLElement(invoice, pdfPreviewElement, 'pdf-preview-content');
+      }
+      
+      // 🥇 PRIORITÉ 4: Recherche d'autres aperçus disponibles
+      const invoicePreviewElement = document.querySelector('[id*="invoice"], [id*="apercu"], [class*="invoice"], [class*="apercu"]') as HTMLElement;
+      if (invoicePreviewElement) {
+        console.log('✅ Utilisation d\'un aperçu trouvé automatiquement');
+        return await this.generateFromHTMLElement(invoice, invoicePreviewElement, 'apercu-automatique');
+      }
+      
+      // 🔄 FALLBACK: Service avancé seulement si aucun aperçu HTML disponible
+      console.warn('⚠️ Aucun aperçu HTML trouvé, utilisation du service avancé (peut différer de l\'aperçu)');
       return await AdvancedPDFService.getPDFBlob(invoice);
     } catch (error) {
       console.error('❌ Erreur génération PDF depuis aperçu:', error);
@@ -33,39 +47,47 @@ export class PDFService {
     }
   }
 
-  // 🎯 MÉTHODE DE TÉLÉCHARGEMENT - UTILISE L'APERÇU EXACT
+  // 🎯 MÉTHODE DE TÉLÉCHARGEMENT - PRIORITÉ ABSOLUE À L'APERÇU HTML
   static async downloadPDF(invoice: Invoice, elementId?: string): Promise<void> {
     try {
-      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU');
+      console.log('📥 TÉLÉCHARGEMENT PDF IDENTIQUE À L\'APERÇU AFFICHÉ');
       
-      // PRIORITÉ 1: Utiliser l'aperçu HTML si spécifié
+      // 🥇 PRIORITÉ 1: Aperçu spécifique demandé
       if (elementId) {
         const element = document.getElementById(elementId);
         if (element) {
-          console.log('✅ Téléchargement depuis l\'aperçu HTML spécifié');
-          await this.downloadFromHTMLElement(invoice, elementId);
+          console.log(`✅ Téléchargement depuis l'aperçu spécifique: ${elementId}`);
+          await this.downloadFromHTMLElement(invoice, element, elementId);
           return;
         }
       }
       
-      // PRIORITÉ 2: Chercher l'aperçu de la facture
-      const previewElement = document.getElementById('facture-apercu');
-      if (previewElement) {
-        console.log('✅ Téléchargement depuis l\'aperçu de la facture');
-        await this.downloadFromHTMLElement(invoice, 'facture-apercu');
+      // 🥇 PRIORITÉ 2: Aperçu principal de la facture
+      const mainPreviewElement = document.getElementById('facture-apercu');
+      if (mainPreviewElement) {
+        console.log('✅ Téléchargement depuis l\'aperçu principal');
+        await this.downloadFromHTMLElement(invoice, mainPreviewElement, 'facture-apercu');
         return;
       }
       
-      // PRIORITÉ 3: Chercher l'aperçu dans le modal PDF
+      // 🥇 PRIORITÉ 3: Aperçu dans le modal PDF
       const pdfPreviewElement = document.getElementById('pdf-preview-content');
       if (pdfPreviewElement) {
         console.log('✅ Téléchargement depuis l\'aperçu du modal PDF');
-        await this.downloadFromHTMLElement(invoice, 'pdf-preview-content');
+        await this.downloadFromHTMLElement(invoice, pdfPreviewElement, 'pdf-preview-content');
         return;
       }
       
-      // PRIORITÉ 4: Fallback vers le service avancé
-      console.log('⚠️ Aucun aperçu trouvé, utilisation du service avancé');
+      // 🥇 PRIORITÉ 4: Recherche automatique d'aperçus
+      const invoicePreviewElement = document.querySelector('[id*="invoice"], [id*="apercu"], [class*="invoice"], [class*="apercu"]') as HTMLElement;
+      if (invoicePreviewElement) {
+        console.log('✅ Téléchargement depuis aperçu trouvé automatiquement');
+        await this.downloadFromHTMLElement(invoice, invoicePreviewElement, 'apercu-automatique');
+        return;
+      }
+      
+      // 🔄 FALLBACK: Service avancé
+      console.warn('⚠️ Aucun aperçu HTML trouvé, utilisation du service avancé');
       await AdvancedPDFService.downloadPDF(invoice);
     } catch (error) {
       console.error('❌ Erreur téléchargement PDF depuis aperçu:', error);
@@ -73,25 +95,23 @@ export class PDFService {
     }
   }
 
-  // 🎯 GÉNÉRATION PDF DEPUIS UN ÉLÉMENT HTML SPÉCIFIQUE (APERÇU)
-  private static async generateFromPreviewElement(invoice: Invoice, elementId: string): Promise<Blob> {
-    console.log(`🎯 Génération PDF depuis l'élément: ${elementId}`);
+  // 🎯 GÉNÉRATION PDF DEPUIS UN ÉLÉMENT HTML SPÉCIFIQUE (WYSIWYG)
+  private static async generateFromHTMLElement(invoice: Invoice, element: HTMLElement, elementId: string): Promise<Blob> {
+    console.log(`🎯 Génération PDF WYSIWYG depuis: ${elementId}`);
     
-    const element = document.getElementById(elementId);
-    if (!element) {
-      throw new Error(`Élément ${elementId} non trouvé`);
-    }
-
-    // Configuration optimisée pour reproduire exactement l'aperçu
+    // Attendre que l'élément soit complètement rendu
+    await this.waitForElementToRender(element);
+    
+    // Configuration optimisée pour reproduire EXACTEMENT l'aperçu
     const options = {
-      margin: [10, 10, 10, 10], // Marges en mm
+      margin: [5, 5, 5, 5], // Marges minimales pour correspondre à l'aperçu
       filename: `facture_${invoice.invoiceNumber}.pdf`,
       image: { 
         type: 'jpeg', 
-        quality: 0.95 // Haute qualité pour correspondre à l'aperçu
+        quality: 0.98 // Très haute qualité pour correspondance exacte
       },
       html2canvas: { 
-        scale: 2, // Haute résolution
+        scale: 2, // Haute résolution pour netteté
         useCORS: true,
         letterRendering: true,
         allowTaint: true,
@@ -100,43 +120,58 @@ export class PDFService {
         width: element.scrollWidth,
         height: element.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        // Options supplémentaires pour correspondance exacte
+        foreignObjectRendering: true,
+        removeContainer: false
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: 'portrait',
-        compress: true
+        compress: true,
+        precision: 16 // Haute précision pour correspondance exacte
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: '.no-page-break'
       }
     };
 
     try {
-      console.log('🔄 Conversion HTML vers PDF avec options optimisées...');
+      console.log('🔄 Conversion HTML vers PDF avec correspondance exacte...');
+      console.log('📐 Dimensions élément:', {
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        offsetWidth: element.offsetWidth,
+        offsetHeight: element.offsetHeight
+      });
+      
       const pdf = await html2pdf().from(element).set(options).outputPdf('blob');
-      console.log('✅ PDF généré depuis l\'aperçu avec succès');
+      console.log('✅ PDF généré avec correspondance exacte à l\'aperçu');
       return pdf;
     } catch (error) {
       console.error('❌ Erreur conversion HTML vers PDF:', error);
-      throw new Error('Erreur lors de la conversion de l\'aperçu en PDF');
+      throw new Error(`Erreur lors de la conversion de l'aperçu ${elementId} en PDF`);
     }
   }
 
-  // 🎯 TÉLÉCHARGEMENT DEPUIS UN ÉLÉMENT HTML SPÉCIFIQUE
-  private static async downloadFromHTMLElement(invoice: Invoice, elementId: string): Promise<void> {
-    console.log(`📥 Téléchargement PDF depuis l'élément: ${elementId}`);
+  // 🎯 TÉLÉCHARGEMENT DIRECT DEPUIS UN ÉLÉMENT HTML
+  private static async downloadFromHTMLElement(invoice: Invoice, element: HTMLElement, elementId: string): Promise<void> {
+    console.log(`📥 Téléchargement direct depuis: ${elementId}`);
     
-    const element = document.getElementById(elementId);
-    if (!element) {
-      throw new Error(`Élément ${elementId} non trouvé pour le téléchargement`);
-    }
-
-    // Configuration identique à la génération pour cohérence
+    // Attendre que l'élément soit complètement rendu
+    await this.waitForElementToRender(element);
+    
+    // Configuration identique à la génération pour cohérence parfaite
     const options = {
-      margin: [10, 10, 10, 10],
+      margin: [5, 5, 5, 5],
       filename: `facture_${invoice.invoiceNumber}.pdf`,
       image: { 
         type: 'jpeg', 
-        quality: 0.95
+        quality: 0.98
       },
       html2canvas: { 
         scale: 2,
@@ -148,46 +183,95 @@ export class PDFService {
         width: element.scrollWidth,
         height: element.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        foreignObjectRendering: true,
+        removeContainer: false
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: 'portrait',
-        compress: true
+        compress: true,
+        precision: 16
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: '.no-page-break'
       }
     };
 
     try {
-      console.log('🔄 Téléchargement direct depuis l\'aperçu...');
+      console.log('🔄 Téléchargement direct avec correspondance exacte...');
       await html2pdf().from(element).set(options).save();
-      console.log('✅ PDF téléchargé depuis l\'aperçu avec succès');
+      console.log('✅ PDF téléchargé avec correspondance exacte à l\'aperçu');
     } catch (error) {
       console.error('❌ Erreur téléchargement depuis aperçu:', error);
-      throw new Error('Erreur lors du téléchargement du PDF depuis l\'aperçu');
+      throw new Error(`Erreur lors du téléchargement du PDF depuis l'aperçu ${elementId}`);
     }
   }
 
-  // 🎯 MÉTHODE GÉNÉRIQUE HTML VERS PDF (UTILISÉE EN INTERNE)
-  private static async generateHTMLToPDF(invoice: Invoice, elementId: string): Promise<Blob> {
-    return await this.generateFromPreviewElement(invoice, elementId);
+  // 🕐 ATTENDRE QUE L'ÉLÉMENT SOIT COMPLÈTEMENT RENDU
+  private static async waitForElementToRender(element: HTMLElement): Promise<void> {
+    return new Promise((resolve) => {
+      // Attendre que toutes les images soient chargées
+      const images = element.querySelectorAll('img');
+      let loadedImages = 0;
+      
+      if (images.length === 0) {
+        // Pas d'images, attendre un court délai pour le rendu CSS
+        setTimeout(resolve, 100);
+        return;
+      }
+      
+      const checkAllImagesLoaded = () => {
+        loadedImages++;
+        if (loadedImages >= images.length) {
+          // Toutes les images sont chargées, attendre un peu plus pour le rendu final
+          setTimeout(resolve, 200);
+        }
+      };
+      
+      images.forEach((img) => {
+        if (img.complete) {
+          checkAllImagesLoaded();
+        } else {
+          img.onload = checkAllImagesLoaded;
+          img.onerror = checkAllImagesLoaded; // Continuer même si une image échoue
+        }
+      });
+      
+      // Timeout de sécurité
+      setTimeout(resolve, 2000);
+    });
   }
 
-  // 🖨️ IMPRESSION (UTILISE AUSSI L'APERÇU)
+  // 🖨️ IMPRESSION DEPUIS L'APERÇU
   static printInvoice(elementId: string, invoiceNumber: string): void {
     console.log(`🖨️ Impression depuis l'aperçu: ${elementId}`);
     
-    const printContent = document.getElementById(elementId);
+    // Chercher l'élément spécifique ou un aperçu disponible
+    let printContent = document.getElementById(elementId);
     
     if (!printContent) {
-      // Fallback: chercher l'aperçu de la facture
-      const fallbackElement = document.getElementById('facture-apercu');
-      if (fallbackElement) {
-        console.log('🔄 Utilisation de l\'aperçu de la facture pour l\'impression');
-        this.printFromElement(fallbackElement, invoiceNumber);
-        return;
+      // Fallback: chercher l'aperçu principal
+      printContent = document.getElementById('facture-apercu');
+      if (printContent) {
+        console.log('🔄 Utilisation de l\'aperçu principal pour l\'impression');
       }
-      throw new Error('Aucun contenu d\'aperçu trouvé pour l\'impression');
+    }
+    
+    if (!printContent) {
+      // Fallback: chercher l'aperçu du modal
+      printContent = document.getElementById('pdf-preview-content');
+      if (printContent) {
+        console.log('🔄 Utilisation de l\'aperçu du modal pour l\'impression');
+      }
+    }
+    
+    if (!printContent) {
+      throw new Error('Aucun aperçu trouvé pour l\'impression');
     }
 
     this.printFromElement(printContent, invoiceNumber);
@@ -201,12 +285,29 @@ export class PDFService {
       throw new Error('Impossible d\'ouvrir la fenêtre d\'impression');
     }
 
-    // Copier exactement le contenu de l'aperçu
+    // Copier exactement le contenu et les styles de l'aperçu
+    const elementClone = element.cloneNode(true) as HTMLElement;
+    
+    // Récupérer tous les styles CSS appliqués
+    const allStyles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('\n');
+        } catch (e) {
+          console.warn('Impossible d\'accéder aux règles CSS:', e);
+          return '';
+        }
+      })
+      .join('\n');
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>Facture ${invoiceNumber}</title>
+          <meta charset="UTF-8">
           <link href="https://cdn.tailwindcss.com" rel="stylesheet">
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
           <style>
@@ -216,23 +317,42 @@ export class PDFService {
               padding: 20px; 
               background: white;
               color: black;
+              line-height: 1.5;
             }
+            
+            /* Styles pour l'impression */
             @media print {
               .no-print { display: none !important; }
-              body { -webkit-print-color-adjust: exact; }
-              * { print-color-adjust: exact; }
-              @page { margin: 0.5in; }
+              body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 10mm;
+              }
+              * { 
+                print-color-adjust: exact; 
+                -webkit-print-color-adjust: exact;
+              }
+              @page { 
+                margin: 10mm; 
+                size: A4;
+              }
             }
-            /* Assurer que les couleurs sont visibles à l'impression */
+            
+            /* Préservation des couleurs MYCONFORT */
             .bg-\\[\\#477A0C\\] { background-color: #477A0C !important; }
             .text-\\[\\#F2EFE2\\] { color: #F2EFE2 !important; }
+            .text-\\[\\#477A0C\\] { color: #477A0C !important; }
             .text-black { color: black !important; }
             .font-bold { font-weight: bold !important; }
             .font-semibold { font-weight: 600 !important; }
+            
+            /* Styles récupérés de la page */
+            ${allStyles}
           </style>
         </head>
         <body class="bg-white">
-          ${element.innerHTML}
+          ${elementClone.innerHTML}
         </body>
       </html>
     `);
@@ -243,7 +363,51 @@ export class PDFService {
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.print();
+        // Fermer la fenêtre après impression
+        setTimeout(() => {
+          printWindow.close();
+        }, 1000);
       }, 500);
     };
+  }
+
+  // 🔍 MÉTHODE DE DIAGNOSTIC - LISTER LES APERÇUS DISPONIBLES
+  static listAvailablePreviews(): string[] {
+    const previews: string[] = [];
+    
+    // Chercher les aperçus par ID
+    const previewIds = [
+      'facture-apercu',
+      'pdf-preview-content',
+      'invoice-preview',
+      'apercu-facture'
+    ];
+    
+    previewIds.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        previews.push(`ID: ${id} (${element.tagName})`);
+      }
+    });
+    
+    // Chercher les aperçus par classe ou attribut
+    const previewSelectors = [
+      '[class*="invoice"]',
+      '[class*="apercu"]',
+      '[class*="preview"]',
+      '[id*="invoice"]',
+      '[id*="apercu"]'
+    ];
+    
+    previewSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((element, index) => {
+        const id = element.id || `${selector}-${index}`;
+        previews.push(`Selector: ${selector} -> ${id} (${element.tagName})`);
+      });
+    });
+    
+    console.log('🔍 Aperçus disponibles:', previews);
+    return previews;
   }
 }
