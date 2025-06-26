@@ -11,6 +11,7 @@ import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { SignaturePad } from './components/SignaturePad';
 import { EmailSender } from './components/EmailSender';
 import { InvoicePreview } from './components/InvoicePreview';
+import { TestInvoiceComponent } from './components/TestInvoiceComponent';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
@@ -58,6 +59,7 @@ function App() {
   const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [showInvoicePreview, setShowInvoicePreview] = useState(true);
+  const [showTestComponent, setShowTestComponent] = useState(false);
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -388,9 +390,22 @@ function App() {
                   </div>
                 )}
               </div>
+              
+              {/* Bouton Test Component */}
+              <div className="mt-2">
+                <button
+                  onClick={() => setShowTestComponent(!showTestComponent)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-full text-sm font-semibold transition-all"
+                >
+                  🧪 {showTestComponent ? 'Masquer' : 'Afficher'} Test
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Composant de test (conditionnel) */}
+        {showTestComponent && <TestInvoiceComponent />}
 
         <InvoiceHeader
           invoice={invoice}
