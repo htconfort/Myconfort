@@ -17,22 +17,22 @@
     <!-- html2pdf.js script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-      function generatePDF() {
-        const element = document.getElementById('invoice');
+      // Fonction globale pour générer le PDF (votre script exact)
+      function generateInvoicePDF() {
+        const element = document.querySelector('.facture-apercu') || document.getElementById('invoice');
         if (!element) {
-          alert('❌ Élément invoice non trouvé. Assurez-vous qu\'une facture est affichée.');
+          alert('❌ Élément facture non trouvé. Assurez-vous qu\'une facture est affichée.');
           return;
         }
         
         const opt = {
           margin: 0,
           filename: 'facture-myconfort.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         
-        console.log('🔄 Génération PDF avec html2pdf.js...');
+        console.log('🔄 Génération PDF avec votre script exact...');
         html2pdf().set(opt).from(element).save().then(() => {
           console.log('✅ PDF généré avec succès !');
           alert('✅ PDF téléchargé avec succès !');
@@ -42,8 +42,15 @@
         });
       }
       
-      // Rendre la fonction disponible globalement
-      window.generatePDF = generatePDF;
+      // Fonction pour envoyer l'email séparément
+      function sendEmail() {
+        // Cette fonction sera appelée par le composant React
+        console.log('📧 Fonction sendEmail appelée');
+      }
+      
+      // Rendre les fonctions disponibles globalement
+      window.generateInvoicePDF = generateInvoicePDF;
+      window.sendEmail = sendEmail;
     </script>
   </body>
 </html>
