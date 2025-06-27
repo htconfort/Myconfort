@@ -46,7 +46,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
     : "w-full bg-white";
 
   return (
-    <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif', color: '#080F0F' }}>
       {/* Bordure supérieure verte */}
       <div className="h-1 bg-[#477A0C]"></div>
       
@@ -63,12 +63,12 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                 <h1 className="text-4xl font-black text-[#477A0C] tracking-tight">
                   MYCONFORT
                 </h1>
-                <p className="text-lg text-[#14281D] font-medium">Facturation Professionnelle</p>
+                <p className="text-lg font-medium" style={{ color: '#080F0F' }}>Facturation Professionnelle</p>
               </div>
             </div>
             
-            <div className="text-sm text-gray-700 space-y-1">
-              <p className="font-semibold text-lg text-gray-900">MYCONFORT</p>
+            <div className="text-sm space-y-1" style={{ color: '#080F0F' }}>
+              <p className="font-semibold text-lg" style={{ color: '#080F0F' }}>MYCONFORT</p>
               <p className="font-semibold">88 Avenue des Ternes</p>
               <p>75017 Paris, France</p>
               <p>SIRET: 824 313 530 00027</p>
@@ -86,17 +86,17 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center min-w-[200px]">
-                <span className="font-semibold text-gray-600">N° Facture:</span>
+                <span className="font-semibold" style={{ color: '#080F0F' }}>N° Facture:</span>
                 <span className="font-bold text-xl text-[#477A0C]">{invoice.invoiceNumber}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-600">Date:</span>
-                <span className="font-semibold">{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
+                <span className="font-semibold" style={{ color: '#080F0F' }}>Date:</span>
+                <span className="font-semibold" style={{ color: '#080F0F' }}>{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
               </div>
               {invoice.eventLocation && (
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-600">Lieu:</span>
-                  <span className="font-semibold">{invoice.eventLocation}</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>Lieu:</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>{invoice.eventLocation}</span>
                 </div>
               )}
             </div>
@@ -112,15 +112,15 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               FACTURER À
             </h3>
             <div className="space-y-2 text-sm">
-              <p className="font-bold text-lg text-gray-900">{invoice.client.name}</p>
-              <p className="text-gray-700">{invoice.client.address}</p>
-              <p className="text-gray-700">{invoice.client.postalCode} {invoice.client.city}</p>
-              {invoice.client.siret && <p className="text-gray-700">SIRET: {invoice.client.siret}</p>}
+              <p className="font-bold text-lg" style={{ color: '#080F0F' }}>{invoice.client.name}</p>
+              <p style={{ color: '#080F0F' }}>{invoice.client.address}</p>
+              <p style={{ color: '#080F0F' }}>{invoice.client.postalCode} {invoice.client.city}</p>
+              {invoice.client.siret && <p style={{ color: '#080F0F' }}>SIRET: {invoice.client.siret}</p>}
               <div className="pt-2 space-y-1">
-                <p className="text-gray-700">
+                <p style={{ color: '#080F0F' }}>
                   <span className="font-semibold">Tél:</span> {invoice.client.phone}
                 </p>
-                <p className="text-gray-700">
+                <p style={{ color: '#080F0F' }}>
                   <span className="font-semibold">Email:</span> {invoice.client.email}
                 </p>
               </div>
@@ -133,16 +133,16 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             </h3>
             <div className="space-y-2 text-sm">
               {invoice.client.housingType && (
-                <p><span className="font-semibold">Type de logement:</span> {invoice.client.housingType}</p>
+                <p style={{ color: '#080F0F' }}><span className="font-semibold">Type de logement:</span> {invoice.client.housingType}</p>
               )}
               {invoice.client.doorCode && (
-                <p><span className="font-semibold">Code d'accès:</span> {invoice.client.doorCode}</p>
+                <p style={{ color: '#080F0F' }}><span className="font-semibold">Code d'accès:</span> {invoice.client.doorCode}</p>
               )}
               {invoice.delivery.method && (
-                <p><span className="font-semibold">Livraison:</span> {invoice.delivery.method}</p>
+                <p style={{ color: '#080F0F' }}><span className="font-semibold">Livraison:</span> {invoice.delivery.method}</p>
               )}
               {invoice.advisorName && (
-                <p><span className="font-semibold">Conseiller:</span> {invoice.advisorName}</p>
+                <p style={{ color: '#080F0F' }}><span className="font-semibold">Conseiller:</span> {invoice.advisorName}</p>
               )}
             </div>
           </div>
@@ -171,18 +171,18 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               {invoice.products.map((product, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                   <td className="border border-gray-300 px-4 py-4">
-                    <div className="font-semibold text-gray-900">{product.name}</div>
+                    <div className="font-semibold" style={{ color: '#080F0F' }}>{product.name}</div>
                     {product.category && (
-                      <div className="text-xs text-gray-500 mt-1">{product.category}</div>
+                      <div className="text-xs mt-1" style={{ color: '#080F0F' }}>{product.category}</div>
                     )}
                   </td>
-                  <td className="border border-gray-300 px-3 py-4 text-center font-semibold">
+                  <td className="border border-gray-300 px-3 py-4 text-center font-semibold" style={{ color: '#080F0F' }}>
                     {product.quantity}
                   </td>
-                  <td className="border border-gray-300 px-3 py-4 text-right">
+                  <td className="border border-gray-300 px-3 py-4 text-right" style={{ color: '#080F0F' }}>
                     {formatCurrency(calculateHT(product.priceTTC, invoice.taxRate))}
                   </td>
-                  <td className="border border-gray-300 px-3 py-4 text-right font-semibold">
+                  <td className="border border-gray-300 px-3 py-4 text-right font-semibold" style={{ color: '#080F0F' }}>
                     {formatCurrency(product.priceTTC)}
                   </td>
                   <td className="border border-gray-300 px-3 py-4 text-right">
@@ -193,9 +193,11 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                           : formatCurrency(product.discount)
                         }
                       </span>
-                    ) : '-'}
+                    ) : (
+                      <span style={{ color: '#080F0F' }}>-</span>
+                    )}
                   </td>
-                  <td className="border border-gray-300 px-3 py-4 text-right font-bold">
+                  <td className="border border-gray-300 px-3 py-4 text-right font-bold" style={{ color: '#080F0F' }}>
                     {formatCurrency(calculateProductTotal(
                       product.quantity,
                       product.priceTTC,
@@ -215,12 +217,12 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="font-semibold">Total HT:</span>
-                  <span className="font-semibold">{formatCurrency(totals.subtotal)}</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>Total HT:</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>{formatCurrency(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="font-semibold">TVA ({invoice.taxRate}%):</span>
-                  <span className="font-semibold">{formatCurrency(totals.taxAmount)}</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>TVA ({invoice.taxRate}%):</span>
+                  <span className="font-semibold" style={{ color: '#080F0F' }}>{formatCurrency(totals.taxAmount)}</span>
                 </div>
                 {totals.totalDiscount > 0 && (
                   <div className="flex justify-between text-sm text-red-600">
@@ -230,7 +232,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                 )}
                 <div className="border-t border-gray-300 pt-3">
                   <div className="flex justify-between text-xl font-bold">
-                    <span>TOTAL TTC:</span>
+                    <span style={{ color: '#080F0F' }}>TOTAL TTC:</span>
                     <span className="text-[#477A0C]">{formatCurrency(totals.totalWithTax)}</span>
                   </div>
                 </div>
@@ -240,7 +242,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                   <>
                     <div className="border-t border-gray-300 pt-3">
                       <div className="flex justify-between text-sm">
-                        <span className="font-semibold">Acompte versé:</span>
+                        <span className="font-semibold" style={{ color: '#080F0F' }}>Acompte versé:</span>
                         <span className="font-semibold text-blue-600">{formatCurrency(invoice.payment.depositAmount)}</span>
                       </div>
                     </div>
@@ -265,7 +267,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               <div className="h-16 flex items-center justify-center">
                 <img src={invoice.signature} alt="Signature" className="max-h-full max-w-full" />
               </div>
-              <p className="text-xs text-gray-500 text-center mt-2">
+              <p className="text-xs text-center mt-2" style={{ color: '#080F0F' }}>
                 Signé le {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -280,7 +282,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
             <h3 className="text-lg font-bold text-[#477A0C] mb-4">MODALITÉS DE PAIEMENT</h3>
             <div className="space-y-2 text-sm">
               {invoice.payment.method && (
-                <p><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
+                <p style={{ color: '#080F0F' }}><span className="font-semibold">Mode de règlement:</span> {invoice.payment.method}</p>
               )}
               
               {/* Affichage spécial pour acompte */}
@@ -293,7 +295,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               )}
               
               <div className="bg-white p-4 rounded border mt-4">
-                <p className="text-xs text-gray-600">
+                <p className="text-xs" style={{ color: '#080F0F' }}>
                   Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées.
                 </p>
               </div>
@@ -305,7 +307,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               <>
                 <h3 className="text-lg font-bold text-[#477A0C] mb-4">REMARQUES</h3>
                 <div className="text-sm bg-white p-4 rounded border">
-                  <p>{invoice.invoiceNotes}</p>
+                  <p style={{ color: '#080F0F' }}>{invoice.invoiceNotes}</p>
                 </div>
               </>
             )}
@@ -314,7 +316,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               <>
                 <h3 className="text-lg font-bold text-[#477A0C] mb-4 mt-6">LIVRAISON</h3>
                 <div className="text-sm bg-white p-4 rounded border">
-                  <p>{invoice.delivery.notes}</p>
+                  <p style={{ color: '#080F0F' }}>{invoice.delivery.notes}</p>
                 </div>
               </>
             )}

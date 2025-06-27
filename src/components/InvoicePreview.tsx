@@ -42,7 +42,8 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   return (
     <div 
       id="facture-apercu" 
-      className={`facture-apercu bg-white text-black max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
+      className={`facture-apercu bg-white max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
+      style={{ color: '#080F0F' }}
     >
       {/* En-tête avec logo */}
       <div className="flex items-start justify-between mb-6">
@@ -52,16 +53,16 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
           </div>
           <div>
             <h1 className="text-2xl font-bold text-[#477A0C]">MYCONFORT</h1>
-            <p className="text-sm text-gray-600">Facturation professionnelle</p>
+            <p className="text-sm" style={{ color: '#080F0F' }}>Facturation professionnelle</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-sm">
+          <p className="text-sm" style={{ color: '#080F0F' }}>
             Facture n° : <strong className="text-[#477A0C]">{invoice.invoiceNumber}</strong>
           </p>
-          <p className="text-sm">Date : {new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</p>
+          <p className="text-sm" style={{ color: '#080F0F' }}>Date : {new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</p>
           {invoice.eventLocation && (
-            <p className="text-sm">Lieu : {invoice.eventLocation}</p>
+            <p className="text-sm" style={{ color: '#080F0F' }}>Lieu : {invoice.eventLocation}</p>
           )}
         </div>
       </div>
@@ -94,13 +95,13 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
             FACTURER À
           </h2>
           <div className="space-y-1">
-            <p className="font-bold text-gray-900">{invoice.client.name}</p>
-            <p className="text-gray-700">{invoice.client.address}</p>
-            <p className="text-gray-700">{invoice.client.postalCode} {invoice.client.city}</p>
-            <p className="text-gray-700">Tél: {invoice.client.phone}</p>
-            <p className="text-gray-700">Email: {invoice.client.email}</p>
+            <p className="font-bold" style={{ color: '#080F0F' }}>{invoice.client.name}</p>
+            <p style={{ color: '#080F0F' }}>{invoice.client.address}</p>
+            <p style={{ color: '#080F0F' }}>{invoice.client.postalCode} {invoice.client.city}</p>
+            <p style={{ color: '#080F0F' }}>Tél: {invoice.client.phone}</p>
+            <p style={{ color: '#080F0F' }}>Email: {invoice.client.email}</p>
             {invoice.client.siret && (
-              <p className="text-gray-700">SIRET: {invoice.client.siret}</p>
+              <p style={{ color: '#080F0F' }}>SIRET: {invoice.client.siret}</p>
             )}
           </div>
         </div>
@@ -111,27 +112,27 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
           </h2>
           <div className="space-y-1">
             {invoice.advisorName && (
-              <p className="text-gray-700">
+              <p style={{ color: '#080F0F' }}>
                 <span className="font-medium">Conseiller:</span> {invoice.advisorName}
               </p>
             )}
             {invoice.client.housingType && (
-              <p className="text-gray-700">
+              <p style={{ color: '#080F0F' }}>
                 <span className="font-medium">Type logement:</span> {invoice.client.housingType}
               </p>
             )}
             {invoice.client.doorCode && (
-              <p className="text-gray-700">
+              <p style={{ color: '#080F0F' }}>
                 <span className="font-medium">Code d'accès:</span> {invoice.client.doorCode}
               </p>
             )}
             {invoice.delivery.method && (
-              <p className="text-gray-700">
+              <p style={{ color: '#080F0F' }}>
                 <span className="font-medium">Livraison:</span> {invoice.delivery.method}
               </p>
             )}
             {invoice.payment.method && (
-              <p className="text-gray-700">
+              <p style={{ color: '#080F0F' }}>
                 <span className="font-medium">Paiement:</span> {invoice.payment.method}
               </p>
             )}
@@ -167,15 +168,15 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 return (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="border border-gray-300 px-3 py-2">
-                      <div className="font-medium">{item.name}</div>
+                      <div className="font-medium" style={{ color: '#080F0F' }}>{item.name}</div>
                       {item.category && (
-                        <div className="text-xs text-gray-500">{item.category}</div>
+                        <div className="text-xs" style={{ color: '#080F0F' }}>{item.category}</div>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center font-semibold">
+                    <td className="border border-gray-300 px-2 py-2 text-center font-semibold" style={{ color: '#080F0F' }}>
                       {item.quantity}
                     </td>
-                    <td className="border border-gray-300 px-2 py-2 text-right">
+                    <td className="border border-gray-300 px-2 py-2 text-right" style={{ color: '#080F0F' }}>
                       {formatCurrency(item.priceTTC)}
                     </td>
                     <td className="border border-gray-300 px-2 py-2 text-center">
@@ -187,10 +188,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                           }
                         </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span style={{ color: '#080F0F' }}>-</span>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-2 py-2 text-right font-bold">
+                    <td className="border border-gray-300 px-2 py-2 text-right font-bold" style={{ color: '#080F0F' }}>
                       {formatCurrency(totalProduct)}
                     </td>
                   </tr>
@@ -198,7 +199,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               })}
               {invoice.products.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="border border-gray-300 px-3 py-6 text-center text-gray-500">
+                  <td colSpan={5} className="border border-gray-300 px-3 py-6 text-center" style={{ color: '#080F0F' }}>
                     Aucun produit ajouté
                   </td>
                 </tr>
@@ -214,12 +215,12 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="font-medium">Total HT:</span>
-                <span className="font-medium">{formatCurrency(totalHT)}</span>
+                <span className="font-medium" style={{ color: '#080F0F' }}>Total HT:</span>
+                <span className="font-medium" style={{ color: '#080F0F' }}>{formatCurrency(totalHT)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="font-medium">TVA ({invoice.taxRate}%):</span>
-                <span className="font-medium">{formatCurrency(totalTVA)}</span>
+                <span className="font-medium" style={{ color: '#080F0F' }}>TVA ({invoice.taxRate}%):</span>
+                <span className="font-medium" style={{ color: '#080F0F' }}>{formatCurrency(totalTVA)}</span>
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-red-600">
@@ -229,7 +230,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               )}
               <div className="border-t border-gray-300 pt-2">
                 <div className="flex justify-between text-lg font-bold">
-                  <span>TOTAL TTC:</span>
+                  <span style={{ color: '#080F0F' }}>TOTAL TTC:</span>
                   <span className="text-[#477A0C]">{formatCurrency(totalTTC)}</span>
                 </div>
               </div>
@@ -239,7 +240,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 <>
                   <div className="border-t border-gray-300 pt-2">
                     <div className="flex justify-between text-sm">
-                      <span className="font-medium">Acompte versé:</span>
+                      <span className="font-medium" style={{ color: '#080F0F' }}>Acompte versé:</span>
                       <span className="font-medium text-blue-600">
                         {formatCurrency(acompteAmount)}
                       </span>
@@ -273,7 +274,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                   className="max-h-full max-w-full"
                 />
               </div>
-              <p className="text-xs text-gray-500 text-center mt-2">
+              <p className="text-xs text-center mt-2" style={{ color: '#080F0F' }}>
                 Signé électroniquement le {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -288,7 +289,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
             REMARQUES
           </h3>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p className="text-gray-700 text-sm">{invoice.invoiceNotes}</p>
+            <p className="text-sm" style={{ color: '#080F0F' }}>{invoice.invoiceNotes}</p>
           </div>
         </div>
       )}
@@ -302,10 +303,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
         <p className="text-lg font-semibold text-[#477A0C] mb-2">
           Merci pour votre confiance !
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm" style={{ color: '#080F0F' }}>
           Votre spécialiste en matelas et literie de qualité
         </p>
-        <div className="mt-3 text-xs text-gray-500">
+        <div className="mt-3 text-xs" style={{ color: '#080F0F' }}>
           <p>88 Avenue des Ternes, 75017 Paris - Tél: 04 68 50 41 45</p>
           <p>Email: myconfort@gmail.com - SIRET: 824 313 530 00027</p>
         </div>
