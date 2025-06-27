@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp, CreditCard, Hash, User, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, Edit3, Calculator, Euro, TrendingUp, CreditCard, Hash, User, CheckCircle, Percent, Tag, DollarSign } from 'lucide-react';
 import { Product } from '../types';
 import { productCatalog, productCategories } from '../data/products';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
@@ -54,6 +54,12 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
   const [chequesQuantity, setChequesQuantity] = useState<number>(0);
   const [totalARecevoir, setTotalARecevoir] = useState<number>(0);
 
+  // 🆕 NOUVEAUX ÉTATS POUR LA TARIFICATION AVANCÉE
+  const [globalDiscount, setGlobalDiscount] = useState<number>(0);
+  const [globalDiscountType, setGlobalDiscountType] = useState<'percent' | 'fixed'>('percent');
+  const [marginRate, setMarginRate] = useState<number>(0);
+  const [showPricingDetails, setShowPricingDetails] = useState<boolean>(false);
+
   const filteredProducts = useMemo(() => {
     return productCatalog.filter(p => p.category === newProduct.category);
   }, [newProduct.category]);
@@ -83,18 +89,36 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       return sum + (originalTotal - discountedTotal);
     }, 0);
 
+    // 🆕 CALCULS AVANCÉS POUR LA TARIFICATION
+    const totalBeforeGlobalDiscount = totalWithTax;
+    let totalAfterGlobalDiscount = totalBeforeGlobalDiscount;
+    
+    if (globalDiscount > 0) {
+      if (globalDiscountType === 'percent') {
+        totalAfterGlobalDiscount = totalBeforeGlobalDiscount * (1 - globalDiscount / 100);
+      } else {
+        totalAfterGlobalDiscount = totalBeforeGlobalDiscount - globalDiscount;
+      }
+    }
+
+    const marginAmount = marginRate > 0 ? (totalAfterGlobalDiscount * marginRate / 100) : 0;
+    const finalTotal = totalAfterGlobalDiscount + marginAmount;
+
     return {
       subtotal,
-      totalWithTax,
-      totalDiscount,
-      taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100))),
+      totalWithTax: finalTotal, // Utiliser le total final avec remise globale et marge
+      originalTotal: totalBeforeGlobalDiscount,
+      totalDiscount: totalDiscount + (totalBeforeGlobalDiscount - totalAfterGlobalDiscount),
+      globalDiscountAmount: totalBeforeGlobalDiscount - totalAfterGlobalDiscount,
+      marginAmount,
+      taxAmount: finalTotal - (finalTotal / (1 + (taxRate / 100))),
       totalPercu: acompteAmount,
-      totalARecevoir: Math.max(0, totalWithTax - acompteAmount),
+      totalARecevoir: Math.max(0, finalTotal - acompteAmount),
       // Calcul automatique du montant par chèque
       montantParCheque: (totalARecevoir && chequesQuantity) ? (totalARecevoir / chequesQuantity) : 0,
       totalCheques: (totalARecevoir && chequesQuantity) ? totalARecevoir : 0
     };
-  }, [products, taxRate, acompteAmount, chequesQuantity, totalARecevoir]);
+  }, [products, taxRate, acompteAmount, chequesQuantity, totalARecevoir, globalDiscount, globalDiscountType, marginRate]);
 
   // 🔒 FONCTION POUR VÉRIFIER SI LES CHAMPS OBLIGATOIRES SONT REMPLIS
   const isPaymentMethodEmpty = () => {
@@ -144,6 +168,27 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       priceTTC,
       unitPrice: calculateHT(priceTTC, taxRate)
     });
+  };
+
+  // 🆕 FONCTION POUR APPLIQUER UNE REMISE GLOBALE
+  const applyGlobalDiscount = () => {
+    if (globalDiscount <= 0) return;
+    
+    const updatedProducts = products.map(product => ({
+      ...product,
+      discount: globalDiscount,
+      discountType: globalDiscountType
+    }));
+    
+    onUpdate(updatedProducts);
+    setGlobalDiscount(0);
+    alert(`✅ Remise globale de ${globalDiscountType === 'percent' ? `${globalDiscount}%` : formatCurrency(globalDiscount)} appliquée à tous les produits !`);
+  };
+
+  // 🆕 FONCTION POUR CALCULER LA MARGE BÉNÉFICIAIRE
+  const calculateMargin = () => {
+    if (marginRate <= 0) return 0;
+    return totals.originalTotal * marginRate / 100;
   };
 
   const addProduct = () => {
@@ -221,11 +266,147 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
         <ShoppingCart className="mr-3 text-xl" />
         <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
-          PRODUITS & TARIFICATION
+          PRODUITS & TARIFICATION AVANCÉE
         </span>
       </h2>
       
       <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
+        {/* 🆕 SECTION TARIFICATION AVANCÉE */}
+        <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border-2 border-purple-300">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="bg-purple-600 text-white p-2 rounded-full">
+                <Calculator className="w-5 h-5" />
+              </div>
+              <h3 className="text-purple-800 font-bold text-lg">TARIFICATION AVANCÉE</h3>
+            </div>
+            <button
+              onClick={() => setShowPricingDetails(!showPricingDetails)}
+              className="text-purple-600 hover:text-purple-800 underline text-sm font-semibold"
+            >
+              {showPricingDetails ? 'Masquer' : 'Afficher'} les détails
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Remise globale */}
+            <div className="bg-white rounded-lg p-4 border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Percent className="w-4 h-4 text-purple-600 mr-2" />
+                <h4 className="font-bold text-purple-800">Remise Globale</h4>
+              </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <select
+                  value={globalDiscountType}
+                  onChange={(e) => setGlobalDiscountType(e.target.value as 'percent' | 'fixed')}
+                  className="border border-purple-300 rounded px-2 py-1 text-xs w-16 text-purple-800 font-bold"
+                >
+                  <option value="percent">%</option>
+                  <option value="fixed">€</option>
+                </select>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={globalDiscount}
+                  onChange={(e) => setGlobalDiscount(parseFloat(e.target.value) || 0)}
+                  className="flex-1 border border-purple-300 rounded px-3 py-2 text-purple-800 font-bold"
+                  placeholder="0"
+                />
+              </div>
+              <button
+                onClick={applyGlobalDiscount}
+                disabled={globalDiscount <= 0}
+                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-3 py-2 rounded text-sm font-bold transition-all"
+              >
+                Appliquer à tous
+              </button>
+              {totals.globalDiscountAmount > 0 && (
+                <div className="mt-2 text-xs text-purple-700 font-semibold">
+                  Économie: {formatCurrency(totals.globalDiscountAmount)}
+                </div>
+              )}
+            </div>
+
+            {/* Marge bénéficiaire */}
+            <div className="bg-white rounded-lg p-4 border border-green-200">
+              <div className="flex items-center mb-2">
+                <TrendingUp className="w-4 h-4 text-green-600 mr-2" />
+                <h4 className="font-bold text-green-800">Marge Bénéficiaire</h4>
+              </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  value={marginRate}
+                  onChange={(e) => setMarginRate(parseFloat(e.target.value) || 0)}
+                  className="flex-1 border border-green-300 rounded px-3 py-2 text-green-800 font-bold"
+                  placeholder="0"
+                />
+                <span className="text-green-800 font-bold">%</span>
+              </div>
+              {marginRate > 0 && (
+                <div className="text-xs text-green-700 font-semibold">
+                  Marge: {formatCurrency(totals.marginAmount)}
+                </div>
+              )}
+            </div>
+
+            {/* Statistiques tarifaires */}
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <div className="flex items-center mb-2">
+                <Tag className="w-4 h-4 text-blue-600 mr-2" />
+                <h4 className="font-bold text-blue-800">Statistiques</h4>
+              </div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Prix moyen:</span>
+                  <span className="font-bold text-blue-800">
+                    {products.length > 0 ? formatCurrency(totals.originalTotal / products.length) : '0,00 €'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Produits:</span>
+                  <span className="font-bold text-blue-800">{products.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Quantité totale:</span>
+                  <span className="font-bold text-blue-800">
+                    {products.reduce((sum, p) => sum + p.quantity, 0)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Détails de tarification (affichage conditionnel) */}
+          {showPricingDetails && (
+            <div className="mt-4 bg-white rounded-lg p-4 border border-purple-200">
+              <h4 className="font-bold text-purple-800 mb-3">📊 Détails de la Tarification</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-purple-700 font-semibold">Total initial:</span>
+                  <div className="font-bold text-purple-800">{formatCurrency(totals.originalTotal)}</div>
+                </div>
+                <div>
+                  <span className="text-red-700 font-semibold">Remises totales:</span>
+                  <div className="font-bold text-red-600">-{formatCurrency(totals.totalDiscount)}</div>
+                </div>
+                <div>
+                  <span className="text-green-700 font-semibold">Marge ajoutée:</span>
+                  <div className="font-bold text-green-600">+{formatCurrency(totals.marginAmount)}</div>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-semibold">Total final:</span>
+                  <div className="font-bold text-blue-800">{formatCurrency(totals.totalWithTax)}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Add Product Form */}
         <div className="mb-6 bg-white rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
@@ -603,6 +784,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 </span>
               </div>
             )}
+            {totals.marginAmount > 0 && (
+              <div className="flex justify-between text-green-600 border-b border-gray-300 pb-2">
+                <span className="font-semibold">Marge ({marginRate}%):</span>
+                <span className="font-semibold">
+                  +{formatCurrency(totals.marginAmount)}
+                </span>
+              </div>
+            )}
             
             {/* Total TTC */}
             <div className="flex justify-between bg-[#477A0C] text-[#F2EFE2] p-3 rounded-lg shadow-md">
@@ -700,7 +889,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         </div>
 
-        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) AVEC CHAMPS OBLIGATOIRES */}
+        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) AVEC CHAMPS OBLIGATOIRES ET ESPÈCES */}
         <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
@@ -710,7 +899,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
           
           <div className="space-y-4">
-            {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE */}
+            {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE AVEC ESPÈCES */}
             <div>
               <label className="block text-black font-semibold mb-1">
                 Méthode de paiement <span className="text-red-600">*</span>
@@ -727,12 +916,33 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 <option value="Alma">Alma (paiement en plusieurs fois)</option>
                 <option value="PayPal">PayPal</option>
                 <option value="Chèque">Chèque</option>
+                <option value="Espèces">💰 Espèces</option>
                 <option value="Acompte">Acompte</option>
               </select>
               {isPaymentMethodEmpty() && (
                 <p className="text-red-600 text-xs mt-1 font-semibold">
                   ⚠️ La méthode de paiement est obligatoire
                 </p>
+              )}
+              
+              {/* 🆕 AFFICHAGE SPÉCIAL POUR ESPÈCES */}
+              {paymentMethod === 'Espèces' && (
+                <div className="mt-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <DollarSign className="w-5 h-5 text-yellow-600" />
+                    <span className="font-bold text-yellow-800">Paiement en Espèces</span>
+                  </div>
+                  <div className="text-sm text-yellow-700 space-y-1">
+                    <p>• <strong>Montant total :</strong> {formatCurrency(totals.totalWithTax)}</p>
+                    <p>• <strong>Limite légale :</strong> 1 000 € maximum pour les particuliers</p>
+                    <p>• <strong>Reçu obligatoire</strong> pour tout paiement en espèces</p>
+                  </div>
+                  {totals.totalWithTax > 1000 && (
+                    <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded text-red-700 text-xs font-semibold">
+                      ⚠️ Attention : Le montant dépasse la limite légale de 1 000 € pour les paiements en espèces entre particuliers.
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             
