@@ -710,7 +710,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
           
           <div className="space-y-4">
-            {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE */}
+            {/* 🔒 MÉTHODE DE PAIEMENT OBLIGATOIRE AVEC ESPÈCES */}
             <div>
               <label className="block text-black font-semibold mb-1">
                 Méthode de paiement <span className="text-red-600">*</span>
@@ -724,6 +724,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 <option value="">Sélectionner obligatoirement</option>
                 <option value="Virement">Virement bancaire</option>
                 <option value="Carte Bleue">Carte Bleue</option>
+                <option value="Espèces">Espèces</option>
                 <option value="Alma">Alma (paiement en plusieurs fois)</option>
                 <option value="PayPal">PayPal</option>
                 <option value="Chèque">Chèque</option>
