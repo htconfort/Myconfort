@@ -3,12 +3,12 @@ import emailjs from 'emailjs-com';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration EmailJS
+// Configuration EmailJS - Updated with correct credentials
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ocsxnme',
-  TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'hvgYUCG9j2lURrt5k',
-  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6'
+  SERVICE_ID: 'ovh_smtp_htconfort',
+  TEMPLATE_ID: 'template_ymq4kbs',
+  USER_ID: 'NolLx53s3c6GsTgjQ',
+  PRIVATE_KEY: 'y85MrESGk9k2xEPTam4VG'
 };
 
 export class SeparatePdfEmailService {
@@ -207,7 +207,7 @@ export class SeparatePdfEmailService {
 
     } catch (error: any) {
       console.error('❌ Erreur lors de l\'envoi de l\'email séparé:', error);
-      throw new Error(`Erreur d'envoi email: ${error.message}`);
+      throw new Error(`Erreur d'envoi email: ${error.message || error.text || 'Erreur inconnue'}`);
     }
   }
 
@@ -238,9 +238,9 @@ export class SeparatePdfEmailService {
         console.log('📧 Étape 2: Envoi email de notification...');
         emailSent = await this.sendEmailSeparately(invoice);
         message += '✅ Email de notification envoyé avec succès\n';
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Erreur envoi email:', error);
-        message += '❌ Erreur lors de l\'envoi de l\'email\n';
+        message += `❌ Erreur lors de l'envoi de l'email: ${error.message}\n`;
       }
 
       // Résultat final
