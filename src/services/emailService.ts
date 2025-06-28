@@ -3,9 +3,9 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS CONFIRMÉE avec votre Template ID
+// Configuration EmailJS CONFIRMÉE avec votre Template ID et Service ID CORRIGÉ
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jih', // ✅ SERVICE GMAIL CONFIRMÉ
+  SERVICE_ID: 'service_ymw6jjh', // ✅ le vrai Service ID Gmail confirmé
   TEMPLATE_ID: 'template_yng4k8s', // ✅ VOTRE TEMPLATE ID CONFIRMÉ
   USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ Votre API Key (Public Key)
   PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Votre Private Key
@@ -33,7 +33,7 @@ export class EmailService {
       // Initialiser EmailJS avec votre User ID (Public Key)
       emailjs.init(EMAILJS_CONFIG.USER_ID);
       console.log('✅ EmailJS initialisé avec votre API Key confirmée:', EMAILJS_CONFIG.USER_ID);
-      console.log('✅ Service Gmail ID confirmé:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('✅ Service Gmail ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('🚀 Support pièces jointes 2MB activé (Gmail service confirmé)');
       console.log('🎨 Template HTML personnalisé template_yng4k8s CONFIRMÉ');
@@ -72,7 +72,7 @@ export class EmailService {
     try {
       console.log('🚀 ENVOI FACTURE VIA EMAILJS GMAIL AVEC TEMPLATE template_yng4k8s CONFIRMÉ');
       console.log('🔑 API Key confirmée:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 Service Gmail ID confirmé:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 Service Gmail ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Limite pièces jointes: 2MB (plan premium)');
       console.log('🎨 Template HTML: template_yng4k8s CONFIRMÉ et ACTIF');
@@ -216,9 +216,9 @@ export class EmailService {
         template: 'template_yng4k8s'
       });
 
-      // Envoyer via EmailJS avec service Gmail et template template_yng4k8s CONFIRMÉ
+      // Envoyer via EmailJS avec service Gmail CORRIGÉ et template template_yng4k8s CONFIRMÉ
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID
@@ -306,7 +306,7 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID
@@ -380,7 +380,7 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID
@@ -460,7 +460,7 @@ export class EmailService {
       console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via Gmail...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID
@@ -526,7 +526,7 @@ export class EmailService {
     try {
       console.log('🧪 TEST DE CONNEXION EMAILJS GMAIL AVEC TEMPLATE template_yng4k8s CONFIRMÉ');
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 Service Gmail ID:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 Service Gmail ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Support pièces jointes: 2MB (service Gmail)');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design personnalisé');
@@ -567,7 +567,7 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
         EMAILJS_CONFIG.USER_ID
@@ -736,7 +736,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec service Gmail, template template_yng4k8s CONFIRMÉ et support pièces jointes 2MB',
+      status: '✅ EmailJS configuré avec service Gmail CORRIGÉ, template template_yng4k8s CONFIRMÉ et support pièces jointes 2MB',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -772,7 +772,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec service Gmail, template template_yng4k8s et support 2MB');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec service Gmail CORRIGÉ, template template_yng4k8s et support 2MB');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
