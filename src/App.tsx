@@ -491,7 +491,7 @@ function App() {
           />
         </div>
 
-        {/* Aperçu de la facture - UNIFORMISÉ */}
+        {/* Aperçu de la facture - UNIFORMISÉ SANS BOUTON TÉLÉCHARGER PDF */}
         {showInvoicePreview && (
           <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
             <div className="flex items-center justify-between mb-4">
