@@ -3,15 +3,15 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS CORRIGÉE avec le Service ID exact
+// Configuration EmailJS CORRIGÉE avec le Service ID exact fourni
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ocsxnme', // ✅ SERVICE ID CORRIGÉ EXACT
+  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID EXACT FOURNI PAR L'UTILISATEUR
   TEMPLATE_ID: 'template_yng4k8s', // ✅ Template ID CONFIRMÉ
   USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ User ID CONFIRMÉ
   PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Private Key
   CONFIGURED: true, // ✅ CONFIGURATION 100% CORRIGÉE !
   
-  // 🚀 PLAN PREMIUM GMAIL AVEC SERVICE ID CORRIGÉ
+  // 🚀 PLAN PREMIUM AVEC SERVICE ID CORRIGÉ
   MAX_ATTACHMENT_SIZE: 2 * 1024 * 1024, // 2MB en bytes
   SUPPORTED_FORMATS: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xlsx'],
   FALLBACK_SIZE: 50 * 1024 // 50KB pour fallback base64
@@ -35,7 +35,7 @@ export class EmailService {
       console.log('✅ EmailJS initialisé avec User ID:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('🚀 Support pièces jointes 2MB activé (service Gmail corrigé)');
+      console.log('🚀 Support pièces jointes 2MB activé (service corrigé)');
       console.log('🎨 Template HTML personnalisé template_yng4k8s CONFIRMÉ');
       console.log('🎯 CONFIGURATION CORRIGÉE AVEC SERVICE ID EXACT !');
     } catch (error) {
@@ -67,13 +67,13 @@ export class EmailService {
   }
 
   /**
-   * 🚀 MÉTHODE PRINCIPALE - Envoie la facture avec PDF 2MB via Service Gmail corrigé
+   * 🚀 MÉTHODE PRINCIPALE - Envoie la facture avec PDF 2MB via Service corrigé
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
       console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC SERVICE ID CORRIGÉ');
       console.log('🔑 User ID:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 SERVICE GMAIL ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Limite pièces jointes: 2MB (plan premium)');
       console.log('🎨 Template HTML: template_yng4k8s CONFIRMÉ et ACTIF');
@@ -83,7 +83,7 @@ export class EmailService {
       this.initializeEmailJS();
       
       // 📄 GÉNÉRER LE PDF COMPLET (sans compression agressive)
-      console.log('📄 Génération du PDF complet pour service Gmail corrigé...');
+      console.log('📄 Génération du PDF complet pour service corrigé...');
       const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
       const pdfSizeKB = Math.round(pdfBlob.size / 1024);
       const pdfSizeMB = (pdfBlob.size / 1024 / 1024).toFixed(2);
@@ -101,12 +101,12 @@ export class EmailService {
       const validation = this.validateAttachment(pdfBlob, pdfFilename);
       
       if (!validation.isValid) {
-        console.warn('⚠️ PDF trop volumineux pour service Gmail corrigé, tentative avec compression...');
+        console.warn('⚠️ PDF trop volumineux pour service corrigé, tentative avec compression...');
         return await this.sendWithCompressedPDF(invoice);
       }
       
-      // 🚀 ENVOYER AVEC PIÈCE JOINTE 2MB VIA SERVICE GMAIL CORRIGÉ
-      console.log('🚀 Envoi avec pièce jointe 2MB via service Gmail corrigé...');
+      // 🚀 ENVOYER AVEC PIÈCE JOINTE 2MB VIA SERVICE CORRIGÉ
+      console.log('🚀 Envoi avec pièce jointe 2MB via service corrigé...');
       return await this.sendEmailWithAttachment(invoice, pdfBlob, pdfFilename);
       
     } catch (error: any) {
@@ -124,7 +124,7 @@ export class EmailService {
   }
 
   /**
-   * 📎 Envoie email avec pièce jointe 2MB via Service Gmail corrigé
+   * 📎 Envoie email avec pièce jointe 2MB via Service corrigé
    */
   private static async sendEmailWithAttachment(
     invoice: Invoice, 
@@ -191,19 +191,19 @@ export class EmailService {
         // === MODE DE PAIEMENT POUR template_yng4k8s ===
         payment_method: invoice.payment.method || 'Non spécifié',
         
-        // === PIÈCE JOINTE 2MB VIA SERVICE GMAIL CORRIGÉ ===
+        // === PIÈCE JOINTE 2MB VIA SERVICE CORRIGÉ ===
         attachment_name: attachmentFilename,
         attachment_content: attachmentBase64.split(',')[1], // Enlever le préfixe
         attachment_type: 'application/pdf',
         attachment_size: `${(attachmentBlob.size / 1024 / 1024).toFixed(2)}MB`,
         has_pdf: 'true',
-        pdf_method: 'attachment_2mb_service_gmail_corrige',
+        pdf_method: 'attachment_2mb_service_corrige',
         
         // === MÉTADONNÉES POUR template_yng4k8s ===
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ocsxnme',
+        service_used: 'service_ymw6jjh',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // === PRODUITS POUR template_yng4k8s ===
@@ -211,34 +211,34 @@ export class EmailService {
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email avec template template_yng4k8s et pièce jointe 2MB via SERVICE GMAIL CORRIGÉ...');
+      console.log('📧 Envoi email avec template template_yng4k8s et pièce jointe 2MB via SERVICE CORRIGÉ...');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design professionnel MYCONFORT');
       console.log('🔑 SERVICE ID CORRIGÉ utilisé:', {
         service: EMAILJS_CONFIG.SERVICE_ID,
         template: EMAILJS_CONFIG.TEMPLATE_ID,
         user: EMAILJS_CONFIG.USER_ID
       });
-      console.log('📎 Pièce jointe via SERVICE GMAIL CORRIGÉ:', {
+      console.log('📎 Pièce jointe via SERVICE CORRIGÉ:', {
         nom: attachmentFilename,
         taille: templateParams.attachment_size,
         type: templateParams.attachment_type,
-        service: 'service_ocsxnme'
+        service: 'service_ymw6jjh'
       });
 
       // Envoyer via EmailJS avec SERVICE ID CORRIGÉ
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
       );
 
-      console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via SERVICE GMAIL CORRIGÉ:', response);
+      console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via SERVICE CORRIGÉ:', response);
       console.log('🎯 SUCCÈS AVEC SERVICE ID CORRIGÉ !');
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec template template_yng4k8s via SERVICE GMAIL CORRIGÉ:', error);
+      console.error('❌ Erreur lors de l\'envoi avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
       throw error;
     }
   }
@@ -305,9 +305,9 @@ export class EmailService {
         pdf_size: `${pdfResult.sizeKB} KB`,
         pdf_compressed: pdfResult.compressed ? 'Oui' : 'Non',
         has_pdf: 'true',
-        pdf_method: 'base64_compressed_service_gmail_corrige',
+        pdf_method: 'base64_compressed_service_corrige',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ocsxnme',
+        service_used: 'service_ymw6jjh',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de pièce jointe dans ce cas pour template_yng4k8s
@@ -318,17 +318,17 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
       );
 
-      console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via SERVICE GMAIL CORRIGÉ:', response);
+      console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via SERVICE CORRIGÉ:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur envoi PDF compressé avec template template_yng4k8s via SERVICE GMAIL CORRIGÉ:', error);
+      console.error('❌ Erreur envoi PDF compressé avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
       throw error;
     }
   }
@@ -338,7 +338,7 @@ export class EmailService {
    */
   private static async sendEmailWithoutPDF(invoice: Invoice, pdfNote: string): Promise<boolean> {
     try {
-      console.log('📧 Envoi email sans PDF avec template template_yng4k8s via SERVICE GMAIL CORRIGÉ');
+      console.log('📧 Envoi email sans PDF avec template template_yng4k8s via SERVICE CORRIGÉ');
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -383,7 +383,7 @@ export class EmailService {
         has_pdf: 'false',
         pdf_note: pdfNote,
         template_used: 'template_yng4k8s',
-        service_used: 'service_ocsxnme',
+        service_used: 'service_ymw6jjh',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de pièce jointe pour template_yng4k8s
@@ -394,16 +394,16 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
       );
 
-      console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via SERVICE GMAIL CORRIGÉ:', response);
+      console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via SERVICE CORRIGÉ:', response);
       return true;
     } catch (error) {
-      console.error('❌ Erreur envoi sans PDF avec template template_yng4k8s via SERVICE GMAIL CORRIGÉ:', error);
+      console.error('❌ Erreur envoi sans PDF avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
       return false;
     }
   }
@@ -416,7 +416,7 @@ export class EmailService {
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA TEMPLATE template_yng4k8s AVEC SERVICE GMAIL CORRIGÉ');
+      console.log('📸 PARTAGE APERÇU VIA TEMPLATE template_yng4k8s AVEC SERVICE CORRIGÉ');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -466,26 +466,26 @@ export class EmailService {
         attachment_size: `${imageSizeKB} KB`,
         has_image: 'true',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ocsxnme',
+        service_used: 'service_ymw6jjh',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de PDF pour l'aperçu avec template_yng4k8s
         has_pdf: 'false'
       };
 
-      console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via SERVICE GMAIL CORRIGÉ...');
+      console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via SERVICE CORRIGÉ...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
       );
 
-      console.log('✅ Aperçu avec template template_yng4k8s envoyé via SERVICE GMAIL CORRIGÉ:', response);
+      console.log('✅ Aperçu avec template template_yng4k8s envoyé via SERVICE CORRIGÉ:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu avec template template_yng4k8s via SERVICE GMAIL CORRIGÉ:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
       throw new Error(`Erreur d'envoi d'aperçu avec template template_yng4k8s: ${error.message}`);
     }
   }
@@ -536,15 +536,15 @@ export class EmailService {
   }
 
   /**
-   * Test de connexion avec EmailJS Gmail et service corrigé
+   * Test de connexion avec EmailJS et service corrigé
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS GMAIL AVEC SERVICE ID CORRIGÉ');
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC SERVICE ID CORRIGÉ');
       console.log('🔑 User ID:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 SERVICE GMAIL ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('📎 Support pièces jointes: 2MB (service Gmail corrigé)');
+      console.log('📎 Support pièces jointes: 2MB (service corrigé)');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design personnalisé');
       console.log('🎯 SERVICE ID CORRIGÉ OPÉRATIONNEL !');
       
@@ -560,7 +560,7 @@ export class EmailService {
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
         subject: 'Test de connexion EmailJS MYCONFORT avec SERVICE ID CORRIGÉ',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec template template_yng4k8s personnalisé et support des pièces jointes 2MB via SERVICE Gmail CORRIGÉ.',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec template template_yng4k8s personnalisé et support des pièces jointes 2MB via SERVICE corrigé.',
         
         // Informations test pour template_yng4k8s
         invoice_number: 'TEST-001',
@@ -579,14 +579,14 @@ export class EmailService {
         attachment_content: '',
         attachment_type: '',
         attachment_size: '0 KB',
-        pdf_method: 'test_service_gmail_corrige',
+        pdf_method: 'test_service_corrige',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ocsxnme',
+        service_used: 'service_ymw6jjh',
         user_id_used: 'hvgYUCG9j2lURrt5k'
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
@@ -596,13 +596,13 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS Gmail réussie avec SERVICE ID CORRIGÉ ! Service prêt pour l'envoi d'emails avec design personnalisé et pièces jointes jusqu'à 2MB via Gmail avec votre template template_yng4k8s et SERVICE ID CORRIGÉ opérationnel.`,
+        message: `✅ Connexion EmailJS réussie avec SERVICE ID CORRIGÉ ! Service prêt pour l'envoi d'emails avec design personnalisé et pièces jointes jusqu'à 2MB avec votre template template_yng4k8s et SERVICE ID CORRIGÉ opérationnel.`,
         responseTime
       };
     } catch (error: any) {
-      console.error('❌ Erreur test connexion EmailJS Gmail avec SERVICE ID CORRIGÉ:', error);
+      console.error('❌ Erreur test connexion EmailJS avec SERVICE ID CORRIGÉ:', error);
       
-      let errorMessage = '❌ Erreur de connexion EmailJS Gmail avec SERVICE ID CORRIGÉ: ';
+      let errorMessage = '❌ Erreur de connexion EmailJS avec SERVICE ID CORRIGÉ: ';
       
       if (error.status === 401 || error.status === 403) {
         errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
@@ -622,7 +622,7 @@ export class EmailService {
   }
 
   /**
-   * 📧 Génère un message HTML pour plan premium via Gmail avec service corrigé
+   * 📧 Génère un message HTML pour plan premium avec service corrigé
    */
   private static generatePremiumHTMLMessage(
     invoice: Invoice, 
@@ -652,14 +652,14 @@ export class EmailService {
       message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
-    message += `📎 Le PDF de votre facture est joint à cet email (envoyé via Gmail avec service corrigé - jusqu'à 2MB).\n\n`;
+    message += `📎 Le PDF de votre facture est joint à cet email (envoyé via service corrigé - jusqu'à 2MB).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.`;
 
     return message;
   }
 
   /**
-   * 📧 Génère un message HTML pour PDF compressé via Gmail avec service corrigé
+   * 📧 Génère un message HTML pour PDF compressé avec service corrigé
    */
   private static generateCompressedHTMLMessage(
     invoice: Invoice, 
@@ -689,14 +689,14 @@ export class EmailService {
       message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
-    message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi via Gmail avec service corrigé).\n\n`;
+    message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi via service corrigé).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.`;
 
     return message;
   }
 
   /**
-   * Génère un message HTML par défaut via Gmail avec service corrigé
+   * Génère un message HTML par défaut avec service corrigé
    */
   private static generateDefaultHTMLMessage(
     invoice: Invoice, 
@@ -755,7 +755,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec SERVICE Gmail CORRIGÉ, template template_yng4k8s CONFIRMÉ, User ID CONFIRMÉ et support pièces jointes 2MB - SERVICE ID CORRIGÉ OPÉRATIONNEL !',
+      status: '✅ EmailJS configuré avec SERVICE CORRIGÉ, template template_yng4k8s CONFIRMÉ, User ID CONFIRMÉ et support pièces jointes 2MB - SERVICE ID CORRIGÉ OPÉRATIONNEL !',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -791,7 +791,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec SERVICE Gmail CORRIGÉ, template template_yng4k8s, User ID CONFIRMÉ et support 2MB - SERVICE ID CORRIGÉ !');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec SERVICE CORRIGÉ, template template_yng4k8s, User ID CONFIRMÉ et support 2MB - SERVICE ID CORRIGÉ !');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
