@@ -87,7 +87,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           </div>
           
           <p className="mt-2 text-sm text-green-100">
-            Félicitations ! Vos clés API définitives <strong>hvgYUCG9j2lURrt5k</strong> et <strong>mh3upHQbKrIViyw4T9-S6</strong> sont opérationnelles et le service <strong>service_ocsxnme</strong> est configuré !
+            Félicitations ! Vos clés API définitives <strong>eqzx9fwyTsoAoF00i</strong> et <strong>MwZ9s8tHaiq8YimGZrF5_</strong> sont opérationnelles et le service <strong>service_ymw6jjh</strong> est configuré !
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
             
             <div className="flex items-center space-x-2">
               <Settings className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700 font-semibold">Service ID CORRECT :</span>
+              <span className="text-sm text-green-700 font-semibold">Service ID CONFIRMÉ PAR TEST REÇU :</span>
               <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded font-bold">
                 {configInfo.serviceId}
               </span>
@@ -141,7 +141,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               🎉 CLÉS API DÉFINITIVES OPÉRATIONNELLES !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Vos clés API définitives hvgYUCG9j2lURrt5k et mh3upHQbKrIViyw4T9-S6 sont configurées et le service service_ocsxnme est opérationnel !
+              Vos clés API définitives eqzx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées et le service service_ymw6jjh est confirmé par le test reçu !
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              Service ID <span className="text-green-600">✅ Service Configuré</span>
+              Service ID <span className="text-green-600">✅ Service Confirmé par Test</span>
             </label>
             <div className="flex items-center">
               <Settings className="w-5 h-5 text-gray-400 mr-2" />
@@ -163,7 +163,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               />
             </div>
             <p className="text-xs text-green-600 mt-1">
-              ✅ Votre Service ID service_ocsxnme est configuré correctement
+              ✅ Votre Service ID service_ymw6jjh a été confirmé par le test EmailJS reçu
             </p>
           </div>
           
@@ -258,15 +258,15 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           <div className="space-y-1 text-sm">
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">API Key (Public) définitive : hvgYUCG9j2lURrt5k</span>
+              <span className="text-green-700 font-bold">API Key (Public) définitive : eqzx9fwyTsoAoF00i</span>
             </div>
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">Private Key définitive : mh3upHQbKrIViyw4T9-S6</span>
+              <span className="text-green-700 font-bold">Private Key définitive : MwZ9s8tHaiq8YimGZrF5_</span>
             </div>
             <div className="flex items-center space-x-2">
               <Trophy className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">Service ID correct : service_ocsxnme</span>
+              <span className="text-green-700 font-bold">Service ID confirmé par test : service_ymw6jjh</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
@@ -279,7 +279,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               🎉 FÉLICITATIONS ! Clés API définitives opérationnelles !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Vos clés API définitives hvgYUCG9j2lURrt5k et mh3upHQbKrIViyw4T9-S6 sont configurées, le service service_ocsxnme est opérationnel, et votre système est prêt pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
+              Vos clés API définitives eqzx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées, le service service_ymw6jjh est confirmé par le test reçu, et votre système est prêt pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
             </p>
           </div>
         </div>

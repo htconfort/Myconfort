@@ -86,7 +86,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC EMAILJS - Version simplifiée
+  // 🚀 PARTAGE APERÇU AVEC EMAILJS - Version simplifiée et optimisée
   const handleSharePreviewViaEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
@@ -102,32 +102,30 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
     try {
       // Étapes de progression
-      setShareStep('📸 Capture de l\'aperçu exact...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      setShareStep('📸 Capture de l\'aperçu...');
+      
       // Capturer l'aperçu avec html2canvas
       const element = document.getElementById('pdf-preview-content');
       if (!element) {
         throw new Error('Élément aperçu non trouvé');
       }
 
-      setShareStep('🖼️ Conversion en image...');
+      setShareStep('🖼️ Conversion en image optimisée...');
+      
+      // Utiliser des options optimisées pour réduire la taille
       const canvas = await html2canvas(element, {
-        scale: 1,
+        scale: 0.75, // Réduire l'échelle pour diminuer la taille
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        logging: false
+        logging: false,
+        // Ne pas définir width/height pour laisser html2canvas gérer les dimensions
       });
 
-      // Convert to JPEG with basic quality
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-      setShareStep('🚀 Envoi via EmailJS...');
+      // Convertir en JPEG avec qualité réduite
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+      
+      setShareStep('🚀 Envoi via EmailJS (compression automatique)...');
       
       // Laisser EmailService gérer la compression finale
       const success = await EmailService.sharePreviewViaEmail(
@@ -140,7 +138,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         
         const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
           `📸 Image envoyée à ${invoice.client.email}\n` +
-          `🚀 Envoyé via EmailJS`;
+          `🚀 Envoyé via EmailJS avec compression automatique`;
         
         alert(successMessage);
       } else {
@@ -275,7 +273,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            📎 Format: JPEG optimisé • 🎯 Limite 50KB pour EmailJS
+            📎 Format: JPEG optimisé • 🎯 Limite 49KB pour EmailJS
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
             💡 {emailConfigured 
