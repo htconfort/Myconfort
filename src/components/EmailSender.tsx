@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap, Download, TestTube, Attachment } from 'lucide-react';
+import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap, Download, TestTube, Contact as Attachment } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { EmailService } from '../services/emailService';
