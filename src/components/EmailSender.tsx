@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Download, TestTube } from 'lucide-react';
+import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Download } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
@@ -39,53 +39,12 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     errors: []
   };
 
-  // Fonction pour générer le PDF
-  const handleGeneratePDF = () => {
-    if (!validation.isValid) {
-      onError(`Veuillez compléter les informations client et ajouter au moins un produit`);
-      return;
-    }
-
-    setLoading(true);
-    setStep('📄 Génération du PDF...');
-
-    try {
-      // Appel à la fonction globale définie dans index.html
-      if (typeof window.generateInvoicePDF === 'function') {
-        window.generateInvoicePDF();
-        
-        setStep('✅ PDF généré avec succès !');
-        
-        let successMessage = `✅ PDF généré avec succès ! `;
-        successMessage += `Le fichier a été téléchargé sur votre appareil.`;
-        
-        if (acompteAmount > 0) {
-          successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
-        }
-        
-        if (invoice.signature) {
-          successMessage += `\n🔒 Signature électronique incluse`;
-        }
-        
-        onSuccess(successMessage);
-      } else {
-        throw new Error("La fonction de génération PDF n'est pas disponible");
-      }
-    } catch (error: any) {
-      console.error('❌ Erreur génération PDF:', error);
-      onError(`Erreur lors de la génération du PDF: ${error.message}`);
-    } finally {
-      setLoading(false);
-      setStep('');
-    }
-  };
-
   return (
     <>
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
         <Mail className="mr-3 text-xl" />
         <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
-          GÉNÉRATION DE PDF
+          INFORMATIONS FACTURE
         </span>
       </h2>
       
@@ -97,8 +56,8 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
               <FileText className="w-8 h-8 text-[#F2EFE2]" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-black">Génération de PDF professionnels</h3>
-              <p className="text-black font-semibold">📎 PDF haute qualité • 🚀 Téléchargement direct • 📄 Format A4</p>
+              <h3 className="text-xl font-bold text-black">Récapitulatif de la facture</h3>
+              <p className="text-black font-semibold">📎 Facture professionnelle • 🚀 Prête à imprimer • 📄 Format A4</p>
             </div>
           </div>
           
@@ -185,7 +144,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
               <Loader className="w-5 h-5 animate-spin text-blue-600" />
               <div>
                 <div className="font-bold text-blue-800">
-                  Génération de PDF en cours...
+                  Traitement en cours...
                 </div>
                 <div className="text-sm text-blue-700 font-semibold">{step}</div>
               </div>
@@ -193,36 +152,12 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         )}
 
-        {/* Boutons d'action */}
-        <div className="flex flex-col space-y-3">
-          {/* Bouton génération PDF */}
-          <button
-            onClick={handleGeneratePDF}
-            disabled={loading || !validation.isValid}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:bg-gray-400 disabled:text-gray-600 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
-          >
-            {loading ? (
-              <>
-                <Loader className="w-6 h-6 animate-spin" />
-                <span>Génération en cours...</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-6 h-6" />
-                <FileText className="w-6 h-6" />
-                {invoice.signature && <Shield className="w-5 h-5" />}
-                <span>Générer et télécharger le PDF</span>
-              </>
-            )}
-          </button>
-        </div>
-
         {/* Instructions */}
         <div className="mt-4 text-center text-sm text-black">
           <p className="font-bold">
             {validation.isValid 
-              ? `✅ Prêt pour la génération du PDF`
-              : '⚠️ Complétez les informations ci-dessus pour activer la génération'
+              ? `✅ Facture prête`
+              : '⚠️ Complétez les informations ci-dessus pour finaliser la facture'
             }
           </p>
           {acompteAmount > 0 && (
@@ -232,7 +167,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           )}
           <div className="mt-2 text-xs space-y-1">
             <p className="text-green-700 font-bold">
-              📎 Le PDF généré sera téléchargé directement sur votre appareil
+              📎 Utilisez le bouton "APERÇU & PDF" pour prévisualiser et générer votre facture
             </p>
             <p className="text-purple-700 font-bold">
               🚀 Utilisez le bouton "Partager Aperçu" dans la prévisualisation pour envoyer par email
