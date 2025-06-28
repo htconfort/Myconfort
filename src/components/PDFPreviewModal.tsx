@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
@@ -201,13 +201,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <span>Imprimer</span>
             </button>
             <button
-              onClick={onDownload}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105"
-            >
-              <Download size={18} />
-              <span>Télécharger PDF</span>
-            </button>
-            <button
               onClick={onClose}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-2 rounded-lg transition-all hover:scale-105"
             >
@@ -235,7 +228,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             <FileText className="w-4 h-4 text-green-600" />
             <span className="font-semibold text-green-900">Génération PDF :</span>
             <span className="text-green-800">
-              Le bouton "Télécharger PDF" utilise exactement votre configuration html2pdf.js
+              Utilisez le bouton "Générer et télécharger le PDF" dans la section principale
             </span>
           </div>
           <div className="mt-1 text-xs text-gray-600">
