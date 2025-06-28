@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
-import { EmailService } from '../services/emailService';
 import html2canvas from 'html2canvas';
 
 interface PDFPreviewModalProps {
@@ -22,9 +21,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
   
-  const emailConfig = EmailService.getConfigInfo();
-  const emailConfigured = emailConfig.configured;
-
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
     if (printContent) {
@@ -86,15 +82,10 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC EMAILJS - Version simplifiée et optimisée
+  // Partage d'aperçu par email
   const handleSharePreviewViaEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
-      return;
-    }
-
-    if (!emailConfigured) {
-      alert('Veuillez configurer EmailJS avant de partager l\'aperçu');
       return;
     }
 
@@ -110,51 +101,52 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         throw new Error('Élément aperçu non trouvé');
       }
 
-      setShareStep('🖼️ Conversion en image optimisée...');
+      setShareStep('🖼️ Conversion en image...');
       
       // Utiliser des options optimisées pour réduire la taille
       const canvas = await html2canvas(element, {
-        scale: 0.75, // Réduire l'échelle pour diminuer la taille
+        scale: 0.75,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false,
-        // Ne pas définir width/height pour laisser html2canvas gérer les dimensions
+        logging: false
       });
 
       // Convertir en JPEG avec qualité réduite
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
       
-      setShareStep('🚀 Envoi via EmailJS (compression automatique)...');
+      setShareStep('🚀 Préparation pour l\'envoi...');
       
-      // Laisser EmailService gérer la compression finale
-      const success = await EmailService.sharePreviewViaEmail(
-        invoice,
-        imageDataUrl
-      );
-
-      if (success) {
-        setShareStep('✅ Aperçu partagé !');
-        
-        const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
-          `📸 Image envoyée à ${invoice.client.email}\n` +
-          `🚀 Envoyé via EmailJS avec compression automatique`;
-        
-        alert(successMessage);
-      } else {
-        throw new Error('Échec de l\'envoi via EmailJS');
-      }
+      // Créer un lien de téléchargement pour l'image
+      const link = document.createElement('a');
+      link.href = imageDataUrl;
+      link.download = `apercu-facture-${invoice.invoiceNumber}.jpg`;
+      
+      // Déclencher le téléchargement
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setShareStep('✅ Aperçu capturé !');
+      
+      // Ouvrir le client mail par défaut
+      const mailtoLink = `mailto:${invoice.client.email}?subject=Aperçu facture MYCONFORT n°${invoice.invoiceNumber}&body=Bonjour ${invoice.client.name},%0D%0A%0D%0AVeuillez trouver ci-joint l'aperçu de votre facture n°${invoice.invoiceNumber}.%0D%0A%0D%0ACordialement,%0D%0A${invoice.advisorName || 'MYCONFORT'}`;
+      
+      window.open(mailtoLink, '_blank');
+      
+      const successMessage = `✅ Aperçu capturé avec succès !\n\n` +
+        `📸 Image enregistrée sur votre appareil\n` +
+        `📧 Client mail ouvert pour envoi à ${invoice.client.email}\n\n` +
+        `Joignez manuellement l'image téléchargée à votre email.`;
+      
+      alert(successMessage);
 
     } catch (error) {
       console.error('❌ Erreur partage aperçu:', error);
       
-      const errorMessage = `❌ Erreur lors du partage de l'aperçu\n\n` +
-        `🔧 Vérifiez votre configuration EmailJS :\n` +
-        `• Assurez-vous que vos identifiants sont corrects\n` +
-        `• Vérifiez que votre template est configuré correctement\n` +
-        `• Vérifiez votre quota d'emails\n\n` +
-        `💡 Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}\n\n` +
-        `💡 Consultez la console pour plus de détails`;
+      const errorMessage = `❌ Erreur lors de la capture de l'aperçu\n\n` +
+        `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}\n\n` +
+        `Consultez la console pour plus de détails`;
       
       alert(errorMessage);
     } finally {
@@ -181,22 +173,21 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* 🚀 BOUTON PARTAGE APERÇU AVEC EMAILJS */}
+            {/* Bouton partage aperçu */}
             <button
               onClick={handleSharePreviewViaEmail}
-              disabled={isSharing || !invoice.client.email || !emailConfigured}
+              disabled={isSharing || !invoice.client.email}
               className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
-              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : !emailConfigured ? "Veuillez configurer EmailJS" : "Partager cet aperçu exact via EmailJS"}
+              title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Capturer cet aperçu et l'envoyer par email"}
             >
               {isSharing ? (
                 <>
                   <Loader className="w-4 h-4 animate-spin" />
-                  <span>Partage...</span>
+                  <span>Capture en cours...</span>
                 </>
               ) : (
                 <>
                   <Share2 size={18} />
-                  <Mail size={16} />
                   <span>Partager Aperçu</span>
                 </>
               )}
@@ -231,7 +222,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             <div className="flex items-center space-x-3">
               <Loader className="w-5 h-5 animate-spin text-purple-600" />
               <div>
-                <div className="font-semibold text-purple-900">Partage de l'aperçu optimisé avec EmailJS...</div>
+                <div className="font-semibold text-purple-900">Capture de l'aperçu en cours...</div>
                 <div className="text-sm text-purple-700">{shareStep}</div>
               </div>
             </div>
@@ -241,8 +232,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         {/* Instructions pour votre script */}
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
-            <Zap className="w-4 h-4 text-green-600" />
-            <span className="font-semibold text-green-900">Votre Script :</span>
+            <FileText className="w-4 h-4 text-green-600" />
+            <span className="font-semibold text-green-900">Génération PDF :</span>
             <span className="text-green-800">
               Le bouton "Télécharger PDF" utilise exactement votre configuration html2pdf.js
             </span>
@@ -255,31 +246,23 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         </div>
 
-        {/* Instructions pour EmailJS */}
+        {/* Instructions pour le partage */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
-            <Mail className="w-4 h-4 text-purple-600" />
-            <span className="font-semibold text-purple-900">EmailJS :</span>
+            <Share2 className="w-4 h-4 text-purple-600" />
+            <span className="font-semibold text-purple-900">Partage d'aperçu :</span>
             <span className="text-purple-800">
-              {emailConfigured 
-                ? "Votre service d'emails est configuré pour l'envoi automatique !"
-                : "⚠️ Veuillez configurer EmailJS pour activer l'envoi d'emails"
+              {invoice.client.email 
+                ? "Cliquez sur \"Partager Aperçu\" pour capturer et envoyer par email"
+                : "⚠️ Email client requis pour le partage d'aperçu"
               }
             </span>
-            {!invoice.client.email && (
-              <span className="text-red-600 font-semibold">
-                ⚠️ Email client requis
-              </span>
-            )}
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            📎 Format: JPEG optimisé • 🎯 Limite 49KB pour EmailJS
+            📸 Format: JPEG optimisé • 🎯 Téléchargement automatique
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 {emailConfigured 
-              ? "Cliquez sur \"Partager Aperçu\" pour envoyer l'image par email"
-              : "Configurez EmailJS pour activer l'envoi d'emails"
-            }
+            💡 L'image sera téléchargée et votre client mail s'ouvrira automatiquement
           </div>
         </div>
 

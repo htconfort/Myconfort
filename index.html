@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MYCONFORT - Facturation Professionnelle</title>
-    <meta name="description" content="MYCONFORT - Système de facturation professionnelle avec signature électronique et envoi automatique par email">
+    <meta name="description" content="MYCONFORT - Système de facturation professionnelle avec signature électronique et génération de PDF">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
       function generateInvoicePDF() {
         console.log('🎯 GÉNÉRATION PDF AVEC CONFIGURATION EXACTE');
         
-        const element = document.querySelector('.facture-apercu') || document.getElementById('invoice');
+        const element = document.querySelector('.facture-apercu') || document.getElementById('pdf-preview-content');
         if (!element) {
           alert('❌ Élément facture non trouvé. Assurez-vous qu\'une facture est affichée.');
           return;
@@ -60,14 +60,8 @@
         });
       }
       
-      // Fonction pour envoyer l'email séparément
-      function sendEmail() {
-        console.log('📧 Fonction sendEmail appelée');
-      }
-      
-      // Rendre les fonctions disponibles globalement
+      // Rendre la fonction disponible globalement
       window.generateInvoicePDF = generateInvoicePDF;
-      window.sendEmail = sendEmail;
     </script>
   </body>
 </html>

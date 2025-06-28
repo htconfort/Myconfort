@@ -466,7 +466,7 @@ function App() {
           </div>
         </div>
 
-        {/* EmailJS Sender - UNIFORMISÉ */}
+        {/* PDF Generation Section */}
         <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
           <EmailSender
             invoice={invoice}
@@ -500,7 +500,7 @@ function App() {
               
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
                 <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
-                <p>Cet aperçu sera converti en PDF et envoyé par email via EmailJS avec votre Template "Myconfort".</p>
+                <p>Cet aperçu sera converti en PDF lorsque vous cliquerez sur le bouton "Générer et télécharger le PDF".</p>
               </div>
             </div>
           </div>
@@ -561,8 +561,8 @@ function App() {
                   onClick={() => setShowEmailJSConfig(true)}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
                 >
-                  <span>📧</span>
-                  <span>CONFIGURER EMAIL</span>
+                  <span>📋</span>
+                  <span>GUIDE PDF</span>
                 </button>
               </div>
             </div>
