@@ -222,23 +222,6 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         )}
 
-        {/* Instructions pour votre script */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b p-3">
-          <div className="flex items-center space-x-2 text-sm">
-            <FileText className="w-4 h-4 text-green-600" />
-            <span className="font-semibold text-green-900">Génération PDF :</span>
-            <span className="text-green-800">
-              Utilisez le bouton "Générer et télécharger le PDF" dans la section principale
-            </span>
-          </div>
-          <div className="mt-1 text-xs text-gray-600">
-            📋 Configuration: margin: 0, scale: 2, useCORS: true, format: a4, orientation: portrait
-          </div>
-          <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 Le PDF généré sera exactement identique à cet aperçu (WYSIWYG parfait)
-          </div>
-        </div>
-
         {/* Instructions pour le partage */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
