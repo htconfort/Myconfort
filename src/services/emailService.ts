@@ -5,7 +5,7 @@ import { AdvancedPDFService } from './advancedPdfService';
 
 // Configuration EmailJS CORRIGÉE avec le Service ID exact
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CORRIGÉ EXACT
+  SERVICE_ID: 'service_ocsxnme', // ✅ SERVICE ID CORRIGÉ EXACT
   TEMPLATE_ID: 'template_yng4k8s', // ✅ Template ID CONFIRMÉ
   USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ User ID CONFIRMÉ
   PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Private Key
@@ -203,7 +203,7 @@ export class EmailService {
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
+        service_used: 'service_ocsxnme',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // === PRODUITS POUR template_yng4k8s ===
@@ -222,12 +222,12 @@ export class EmailService {
         nom: attachmentFilename,
         taille: templateParams.attachment_size,
         type: templateParams.attachment_type,
-        service: 'service_ymw6jjh'
+        service: 'service_ocsxnme'
       });
 
       // Envoyer via EmailJS avec SERVICE ID CORRIGÉ
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
@@ -307,7 +307,7 @@ export class EmailService {
         has_pdf: 'true',
         pdf_method: 'base64_compressed_service_gmail_corrige',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
+        service_used: 'service_ocsxnme',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de pièce jointe dans ce cas pour template_yng4k8s
@@ -318,7 +318,7 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
@@ -383,7 +383,7 @@ export class EmailService {
         has_pdf: 'false',
         pdf_note: pdfNote,
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
+        service_used: 'service_ocsxnme',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de pièce jointe pour template_yng4k8s
@@ -394,7 +394,7 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
@@ -466,7 +466,7 @@ export class EmailService {
         attachment_size: `${imageSizeKB} KB`,
         has_image: 'true',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
+        service_used: 'service_ocsxnme',
         user_id_used: 'hvgYUCG9j2lURrt5k',
         
         // Pas de PDF pour l'aperçu avec template_yng4k8s
@@ -476,7 +476,7 @@ export class EmailService {
       console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via SERVICE GMAIL CORRIGÉ...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
@@ -581,12 +581,12 @@ export class EmailService {
         attachment_size: '0 KB',
         pdf_method: 'test_service_gmail_corrige',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
+        service_used: 'service_ocsxnme',
         user_id_used: 'hvgYUCG9j2lURrt5k'
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRIGÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
         EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
