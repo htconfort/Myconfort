@@ -15,7 +15,6 @@ import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
-import { PDFService } from './services/pdfService';
 import { AdvancedPDFService } from './services/advancedPdfService';
 
 function App() {
@@ -213,25 +212,11 @@ function App() {
     } catch (error) {
       console.error('PDF generation error:', error);
       showToast('Erreur lors de la génération du PDF', 'error');
-      
-      // Fallback vers l'ancienne méthode
-      try {
-        await PDFService.downloadPDF(invoice, 'pdf-preview-content');
-        showToast('PDF téléchargé avec succès (méthode alternative)', 'success');
-      } catch (fallbackError) {
-        console.error('Fallback PDF error:', fallbackError);
-        handlePrint();
-      }
     }
   };
 
   const handlePrint = () => {
-    try {
-      PDFService.printInvoice('pdf-preview-content', invoice.invoiceNumber);
-      showToast('Impression lancée', 'success');
-    } catch (error) {
-      showToast('Erreur lors de l\'impression', 'error');
-    }
+    window.print();
   };
 
   const handleEmailJSSuccess = (message: string) => {
