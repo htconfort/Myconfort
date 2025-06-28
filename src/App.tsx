@@ -557,13 +557,6 @@ function App() {
                   <span>✨</span>
                   <span>NOUVELLE FACTURE</span>
                 </button>
-                <button
-                  onClick={() => setShowEmailJSConfig(true)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-                >
-                  <span>📋</span>
-                  <span>GUIDE PDF</span>
-                </button>
               </div>
             </div>
           </div>
