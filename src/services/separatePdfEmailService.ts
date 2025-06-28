@@ -3,12 +3,12 @@ import emailjs from 'emailjs-com';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration EmailJS - Mise à jour avec vos nouveaux paramètres
+// Configuration EmailJS - Mise à jour avec les BONS paramètres
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'ovh_smtp_htconfort',
-  TEMPLATE_ID: 'template_ymq4kbs', 
-  USER_ID: 'NolLx53s3c6GsTgjQ',
-  PRIVATE_KEY: 'y85MrESGk9k2xEPTam4VG'
+  SERVICE_ID: 'service_ocsxnme', // ✅ Service ID correct
+  TEMPLATE_ID: 'Myconfort', // ✅ Template ID correct
+  USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ Public Key correcte
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6' // ✅ Private Key correcte
 } as const;
 
 // Configuration spécifique Netlify
@@ -119,14 +119,14 @@ export class SeparatePdfEmailService {
       });
       
       this.isInitialized = true;
-      console.log('✅ EmailJS initialisé avec nouveaux paramètres:', {
+      console.log('✅ EmailJS initialisé avec les BONS paramètres:', {
         publicKey: EMAILJS_CONFIG.USER_ID,
         serviceId: EMAILJS_CONFIG.SERVICE_ID,
         templateId: EMAILJS_CONFIG.TEMPLATE_ID
       });
     } catch (error) {
       this.logToNetlify(error, 'EMAILJS_INIT');
-      throw new Error('Impossible d\'initialiser EmailJS avec les nouveaux paramètres');
+      throw new Error('Impossible d\'initialiser EmailJS avec les BONS paramètres');
     }
   }
 
@@ -226,11 +226,11 @@ export class SeparatePdfEmailService {
           const message = this.generateEmailMessage(invoice, totalAmount, acompteAmount, montantRestant);
 
           const templateParams = {
-            // Format mis à jour pour correspondre à votre template
+            // Format mis à jour pour correspondre au template
             from_name: 'HT Confort',
             to_name: invoice.client.name,
             to_email: invoice.client.email,
-            reply_to: 'bgx226700465.002@htconfort.com',
+            reply_to: 'htconfort@gmail.com',
             
             // Sujet et message
             subject: `Facture HT Confort n°${invoice.invoiceNumber}`,
@@ -256,7 +256,7 @@ export class SeparatePdfEmailService {
             company_name: 'HT Confort',
             company_address: '88 Avenue des Ternes, 75017 Paris',
             company_phone: '04 68 50 41 45',
-            company_email: 'bgx226700465.002@htconfort.com',
+            company_email: 'htconfort@gmail.com',
             company_siret: '824 313 530 00027',
             
             // Conseiller
@@ -448,7 +448,7 @@ export class SeparatePdfEmailService {
     message += `📎 Le PDF de votre facture a été généré et téléchargé.\n\n`;
     message += `Pour toute question, contactez-nous :\n`;
     message += `• Téléphone: 04 68 50 41 45\n`;
-    message += `• Email: bgx226700465.002@htconfort.com\n\n`;
+    message += `• Email: htconfort@gmail.com\n\n`;
     message += `Cordialement,\n${invoice.advisorName || 'L\'équipe HT Confort'}`;
 
     return message;
@@ -543,7 +543,7 @@ export class SeparatePdfEmailService {
       if (typeof emailjs !== 'undefined') {
         this.initializeEmailJS();
         emailjsAvailable = true;
-        message += '✅ EmailJS disponible et initialisé avec nouveaux paramètres\n';
+        message += '✅ EmailJS disponible et initialisé avec les BONS paramètres\n';
         message += `🔧 Service ID: ${EMAILJS_CONFIG.SERVICE_ID}\n`;
         message += `📧 Template ID: ${EMAILJS_CONFIG.TEMPLATE_ID}\n`;
         message += `🔑 Public Key: ${EMAILJS_CONFIG.USER_ID}\n`;

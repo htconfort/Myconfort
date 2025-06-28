@@ -3,13 +3,13 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS MISE À JOUR avec vos NOUVEAUX paramètres
+// Configuration EmailJS MISE À JOUR avec les BONS paramètres
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'ovh_smtp_htconfort', // ✅ Service OVH SMTP
-  TEMPLATE_ID: 'template_ymq4kbs', // ✅ Template ID
-  USER_ID: 'eqxx9fwyTsoAoF00i', // ✅ NOUVELLE API KEY (Public Key)
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ NOUVELLE Private Key
-  CONFIGURED: true // ✅ CONFIGURATION 100% COMPLÈTE avec NOUVEAUX paramètres !
+  SERVICE_ID: 'service_ocsxnme', // ✅ Service ID correct
+  TEMPLATE_ID: 'Myconfort', // ✅ Template ID correct
+  USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ Public Key correcte
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Private Key correcte
+  CONFIGURED: true // ✅ CONFIGURATION 100% COMPLÈTE avec les BONS paramètres !
 };
 
 export class EmailService {
@@ -21,14 +21,14 @@ export class EmailService {
   }
 
   /**
-   * Initialise EmailJS avec vos NOUVELLES clés et le service OVH
+   * Initialise EmailJS avec les BONNES clés
    */
   static initializeEmailJS(): void {
     try {
-      // Initialiser EmailJS avec votre NOUVELLE User ID (Public Key)
+      // Initialiser EmailJS avec la BONNE User ID (Public Key)
       emailjs.init(EMAILJS_CONFIG.USER_ID);
-      console.log('✅ EmailJS initialisé avec votre NOUVELLE API Key:', EMAILJS_CONFIG.USER_ID);
-      console.log('✅ Service OVH SMTP configuré:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('✅ EmailJS initialisé avec la BONNE API Key:', EMAILJS_CONFIG.USER_ID);
+      console.log('✅ Service configuré:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('✅ Email de notification configuré: htconfort@gmail.com');
     } catch (error) {
@@ -37,21 +37,21 @@ export class EmailService {
   }
 
   /**
-   * 🗜️ NOUVELLE MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ via OVH SMTP
+   * 🗜️ NOUVELLE MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA OVH SMTP AVEC NOUVEAUX PARAMÈTRES');
-      console.log('🔑 Nouvelle API Key:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 Service OVH SMTP:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('🚀 ENVOI FACTURE AVEC LES BONS PARAMÈTRES');
+      console.log('🔑 Bonne API Key:', EMAILJS_CONFIG.USER_ID);
+      console.log('🎯 Bon Service:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('📧 Bon Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📬 Email de notification: htconfort@gmail.com');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
       // 🗜️ GÉNÉRER LE PDF COMPRESSÉ POUR EMAILJS
-      console.log('🗜️ Génération du PDF compressé pour OVH SMTP...');
+      console.log('🗜️ Génération du PDF compressé...');
       const pdfResult = await AdvancedPDFService.getCompressedPDFForEmail(invoice);
       
       console.log('📊 Résultat PDF:', {
@@ -60,16 +60,16 @@ export class EmailService {
         sousLimite: pdfResult.sizeKB <= 50 ? 'Oui' : 'Non'
       });
       
-      // Vérifier si le PDF peut être envoyé via OVH SMTP
+      // Vérifier si le PDF peut être envoyé
       if (pdfResult.sizeKB > 50) {
-        console.warn('⚠️ PDF encore trop volumineux pour OVH SMTP, envoi sans attachement');
+        console.warn('⚠️ PDF encore trop volumineux, envoi sans attachement');
         return await this.sendEmailWithoutPDF(
           invoice, 
           `PDF trop volumineux (${pdfResult.sizeKB} KB > 50 KB) - sera envoyé séparément`
         );
       }
       
-      // Convertir le PDF en base64 pour OVH SMTP
+      // Convertir le PDF en base64
       console.log('🔄 Conversion PDF en base64...');
       const pdfBase64 = await this.blobToBase64(pdfResult.blob);
       
@@ -86,9 +86,9 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Préparer les données pour votre Template avec OVH SMTP
+      // Préparer les données pour le Template
       const templateParams = {
-        // Expéditeur (format de votre exemple)
+        // Expéditeur
         from_name: 'HT Confort',
         
         // Destinataire
@@ -150,7 +150,7 @@ export class EmailService {
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email via OVH SMTP avec NOUVEAUX paramètres...');
+      console.log('📧 Envoi email avec les BONS paramètres...');
       console.log('📊 Données PDF compressé:', {
         filename: templateParams.pdf_filename,
         size: templateParams.pdf_size,
@@ -158,19 +158,19 @@ export class EmailService {
         base64Length: templateParams.pdf_data.length
       });
 
-      // Envoyer via EmailJS avec les NOUVEAUX paramètres
+      // Envoyer via EmailJS avec les BONS paramètres
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-        EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+        EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k
       );
 
-      console.log('✅ Email avec PDF compressé envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
+      console.log('✅ Email avec PDF compressé envoyé avec les BONS paramètres:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec PDF compressé via OVH SMTP:', error);
+      console.error('❌ Erreur lors de l\'envoi avec PDF compressé:', error);
       
       // Fallback : envoyer sans PDF
       console.log('🔄 Tentative d\'envoi sans PDF...');
@@ -181,23 +181,23 @@ export class EmailService {
         );
         
         if (fallbackSuccess) {
-          console.log('✅ Email envoyé sans PDF via OVH SMTP (fallback réussi)');
+          console.log('✅ Email envoyé sans PDF (fallback réussi)');
           return true;
         }
       } catch (fallbackError) {
-        console.error('❌ Échec du fallback OVH SMTP:', fallbackError);
+        console.error('❌ Échec du fallback:', fallbackError);
       }
       
-      throw new Error(`Erreur d'envoi OVH SMTP: ${error.message}`);
+      throw new Error(`Erreur d'envoi: ${error.message}`);
     }
   }
 
   /**
-   * 📧 Envoie l'email sans PDF via OVH SMTP (méthode de fallback)
+   * 📧 Envoie l'email sans PDF (méthode de fallback)
    */
   private static async sendEmailWithoutPDF(invoice: Invoice, pdfNote: string): Promise<boolean> {
     try {
-      console.log('📧 Envoi email sans PDF via OVH SMTP avec NOUVEAUX paramètres:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Envoi email sans PDF avec les BONS paramètres:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -241,43 +241,43 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-        EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+        EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k
       );
 
-      console.log('✅ Email sans PDF envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
+      console.log('✅ Email sans PDF envoyé avec les BONS paramètres:', response);
       return true;
     } catch (error) {
-      console.error('❌ Erreur envoi sans PDF via OVH SMTP:', error);
+      console.error('❌ Erreur envoi sans PDF:', error);
       return false;
     }
   }
 
   /**
-   * 📸 MÉTHODE AMÉLIORÉE - Partage l'aperçu via OVH SMTP avec NOUVEAUX paramètres
+   * 📸 MÉTHODE AMÉLIORÉE - Partage l'aperçu via email avec les BONS paramètres
    */
   static async sharePreviewViaEmail(
     invoice: Invoice, 
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA OVH SMTP AVEC NOUVEAUX PARAMÈTRES');
+      console.log('📸 PARTAGE APERÇU AVEC LES BONS PARAMÈTRES');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
 
-      // Vérifier et optimiser la taille de l'image pour OVH SMTP (limite 50KB)
+      // Vérifier et optimiser la taille de l'image (limite 50KB)
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       let imageSizeKB = Math.round(imageBlob.size / 1024);
       console.log('📊 Taille de l\'image originale:', imageSizeKB, 'KB');
 
       let finalImageDataUrl = imageDataUrl;
 
-      // Compression agressive pour respecter la limite OVH SMTP de 50KB
+      // Compression agressive pour respecter la limite de 50KB
       if (imageSizeKB > 40) { // Limite stricte pour les images
-        console.log('🗜️ Compression agressive de l\'image pour OVH SMTP...');
+        console.log('🗜️ Compression agressive de l\'image...');
         
         const img = new Image();
         img.src = imageDataUrl;
@@ -289,7 +289,7 @@ export class EmailService {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d')!;
         
-        // Réduction drastique de la taille pour OVH SMTP
+        // Réduction drastique de la taille
         const maxWidth = 400;  // Réduit de 600 à 400
         const maxHeight = 600; // Réduit de 800 à 600
         let { width, height } = img;
@@ -308,16 +308,16 @@ export class EmailService {
         canvas.height = height;
         
         ctx.drawImage(img, 0, 0, width, height);
-        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.3); // Compression très forte pour OVH SMTP
+        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.3); // Compression très forte
         
         const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
         imageSizeKB = Math.round(compressedBlob.size / 1024);
-        console.log('📊 Taille après compression pour OVH SMTP:', imageSizeKB, 'KB');
+        console.log('📊 Taille après compression:', imageSizeKB, 'KB');
       }
 
-      // Si encore trop grand pour OVH SMTP, envoyer sans image
+      // Si encore trop grand, envoyer sans image
       if (imageSizeKB > 49) {
-        console.warn('⚠️ Image encore trop volumineuse pour OVH SMTP, envoi sans image');
+        console.warn('⚠️ Image encore trop volumineuse, envoi sans image');
         return await this.sendPreviewWithoutImage(invoice);
       }
 
@@ -327,7 +327,7 @@ export class EmailService {
       previewMessage += `L'image ci-jointe vous montre exactement l'aperçu de votre facture.\n\n`;
       previewMessage += `Cordialement,\n${invoice.advisorName || 'L\'équipe HT Confort'}`;
 
-      // Préparer les données pour votre Template avec OVH SMTP
+      // Préparer les données pour le Template
       const templateParams = {
         from_name: 'HT Confort',
         to_name: invoice.client.name,
@@ -338,7 +338,7 @@ export class EmailService {
         invoice_number: invoice.invoiceNumber,
         invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         
-        // Image compressée pour OVH SMTP
+        // Image compressée
         image_data: finalImageDataUrl.split(',')[1],
         image_filename: `apercu_facture_${invoice.invoiceNumber}.jpg`,
         image_size: `${imageSizeKB} KB`,
@@ -349,7 +349,7 @@ export class EmailService {
         company_name: 'HT Confort'
       };
 
-      console.log('📧 Envoi aperçu compressé via OVH SMTP avec NOUVEAUX paramètres...');
+      console.log('📧 Envoi aperçu compressé avec les BONS paramètres...');
       console.log('📊 Données image compressée:', {
         filename: templateParams.image_filename,
         size: templateParams.image_size,
@@ -358,32 +358,32 @@ export class EmailService {
       });
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-        EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+        EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k
       );
 
-      console.log('✅ Aperçu compressé envoyé avec succès via OVH SMTP avec NOUVEAUX paramètres:', response);
+      console.log('✅ Aperçu compressé envoyé avec succès avec les BONS paramètres:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu compressé via OVH SMTP:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu compressé:', error);
       
       // Fallback sans image
       try {
         return await this.sendPreviewWithoutImage(invoice);
       } catch (fallbackError) {
-        throw new Error(`Erreur d'envoi d'aperçu OVH SMTP: ${error.message}`);
+        throw new Error(`Erreur d'envoi d'aperçu: ${error.message}`);
       }
     }
   }
 
   /**
-   * 📧 Envoie l'aperçu sans image via OVH SMTP (fallback)
+   * 📧 Envoie l'aperçu sans image (fallback)
    */
   private static async sendPreviewWithoutImage(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('📧 Envoi aperçu sans image via OVH SMTP avec NOUVEAUX paramètres:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Envoi aperçu sans image avec les BONS paramètres:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       let previewMessage = `Bonjour ${invoice.client.name},\n\n`;
       previewMessage += `Voici les détails de votre facture n°${invoice.invoiceNumber} :\n\n`;
@@ -419,29 +419,29 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-        EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+        EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k
       );
 
-      console.log('✅ Aperçu sans image envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
+      console.log('✅ Aperçu sans image envoyé avec les BONS paramètres:', response);
       return true;
     } catch (error) {
-      console.error('❌ Erreur envoi aperçu sans image via OVH SMTP:', error);
+      console.error('❌ Erreur envoi aperçu sans image:', error);
       return false;
     }
   }
 
   /**
-   * Test de connexion avec OVH SMTP et NOUVEAUX paramètres
+   * Test de connexion avec les BONS paramètres
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION OVH SMTP AVEC NOUVEAUX PARAMÈTRES');
-      console.log('🔑 NOUVELLE Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 Service OVH SMTP:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('🧪 TEST DE CONNEXION AVEC LES BONS PARAMÈTRES');
+      console.log('🔑 BONNE Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
+      console.log('🎯 BON Service:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('📧 BON Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📬 Email de notification:', 'htconfort@gmail.com');
       
       // Initialiser EmailJS
@@ -449,14 +449,14 @@ export class EmailService {
       
       const startTime = Date.now();
       
-      // Préparer les données de test pour votre Template avec OVH SMTP
+      // Préparer les données de test pour le Template
       const testParams = {
         from_name: 'HT Confort',
         to_name: 'Test HT Confort',
         to_email: 'htconfort@gmail.com', // Email de notification
         reply_to: 'htconfort@gmail.com',
-        subject: 'Test de connexion OVH SMTP HT Confort avec NOUVEAUX paramètres',
-        message: 'Ceci est un test de connexion OVH SMTP depuis HT Confort avec les NOUVEAUX paramètres EmailJS.',
+        subject: 'Test de connexion HT Confort avec les BONS paramètres',
+        message: 'Ceci est un test de connexion depuis HT Confort avec les BONS paramètres EmailJS.',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
@@ -467,35 +467,35 @@ export class EmailService {
         pdf_compressed: 'Non applicable'
       };
 
-      // Envoyer un test via OVH SMTP avec NOUVEAUX paramètres
-      console.log('📧 Test avec Service OVH SMTP:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Test avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      // Envoyer un test avec les BONS paramètres
+      console.log('📧 Test avec BON Service:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('📧 Test avec BON Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
       
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-        EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+        EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
         testParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k
       );
 
       const responseTime = Date.now() - startTime;
 
       return {
         success: true,
-        message: `✅ Connexion OVH SMTP réussie avec NOUVEAUX paramètres ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB) via ssl0.ovh.net. Notifications envoyées à htconfort@gmail.com.`,
+        message: `✅ Connexion réussie avec les BONS paramètres ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB). Notifications envoyées à htconfort@gmail.com.`,
         responseTime
       };
     } catch (error: any) {
-      console.error('❌ Erreur test connexion OVH SMTP avec NOUVEAUX paramètres:', error);
+      console.error('❌ Erreur test connexion avec les BONS paramètres:', error);
       
-      let errorMessage = '❌ Erreur de connexion OVH SMTP: ';
+      let errorMessage = '❌ Erreur de connexion: ';
       
       if (error.status === 401 || error.status === 403) {
-        errorMessage += 'Identifiants OVH incorrects. Vérifiez votre configuration SMTP.';
+        errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
       } else if (error.status === 400) {
         errorMessage += 'Paramètres invalides. Vérifiez votre template ID.';
       } else if (error.status >= 500) {
-        errorMessage += 'Erreur serveur OVH SMTP. Réessayez plus tard.';
+        errorMessage += 'Erreur serveur. Réessayez plus tard.';
       } else {
         errorMessage += error.text || error.message || 'Erreur inconnue';
       }
@@ -508,7 +508,7 @@ export class EmailService {
   }
 
   /**
-   * Génère un message par défaut pour l'email via OVH SMTP
+   * Génère un message par défaut pour l'email
    */
   private static generateDefaultMessage(
     invoice: Invoice, 
@@ -539,7 +539,7 @@ export class EmailService {
       message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
     }
     
-    message += `📎 Le PDF de votre facture est inclus dans cet email (compressé pour optimiser l'envoi via OVH SMTP).\n\n`;
+    message += `📎 Le PDF de votre facture est inclus dans cet email (compressé pour optimiser l'envoi).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.\n\n`;
     message += `Cordialement,\n${invoice.advisorName || 'L\'équipe HT Confort'}\n\n`;
     message += `---\nHT CONFORT\n`;
@@ -570,16 +570,16 @@ export class EmailService {
   }
 
   /**
-   * Obtient les informations de configuration OVH SMTP avec NOUVEAUX paramètres
+   * Obtient les informations de configuration avec les BONS paramètres
    */
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ OVH SMTP configuré avec NOUVEAUX paramètres et compression PDF (max 50KB)',
-      apiKey: EMAILJS_CONFIG.USER_ID, // eqxx9fwyTsoAoF00i
-      privateKey: EMAILJS_CONFIG.PRIVATE_KEY, // MwZ9s8tHaiq8YimGZrF5_
-      serviceId: EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-      templateId: EMAILJS_CONFIG.TEMPLATE_ID // template_ymq4kbs
+      status: '✅ EmailJS configuré avec les BONS paramètres et compression PDF (max 50KB)',
+      apiKey: EMAILJS_CONFIG.USER_ID, // hvgYUCG9j2lURrt5k
+      privateKey: EMAILJS_CONFIG.PRIVATE_KEY, // mh3upHQbKrIViyw4T9-S6
+      serviceId: EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+      templateId: EMAILJS_CONFIG.TEMPLATE_ID // Myconfort
     };
   }
 
@@ -608,10 +608,10 @@ export class EmailService {
   }
 
   /**
-   * Met à jour la configuration OVH SMTP
+   * Met à jour la configuration
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration OVH SMTP mise à jour avec NOUVEAUX paramètres et compression PDF');
+    console.log('ℹ️ Configuration mise à jour avec les BONS paramètres et compression PDF');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
@@ -622,14 +622,14 @@ export class EmailService {
   }
 
   /**
-   * Obtient la configuration actuelle OVH SMTP avec NOUVEAUX paramètres
+   * Obtient la configuration actuelle avec les BONS paramètres
    */
   static getCurrentConfig(): { serviceId: string; templateId: string; userId: string; privateKey: string } {
     return {
-      serviceId: EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
-      templateId: EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
-      userId: EMAILJS_CONFIG.USER_ID, // eqxx9fwyTsoAoF00i
-      privateKey: EMAILJS_CONFIG.PRIVATE_KEY // MwZ9s8tHaiq8YimGZrF5_
+      serviceId: EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme
+      templateId: EMAILJS_CONFIG.TEMPLATE_ID, // Myconfort
+      userId: EMAILJS_CONFIG.USER_ID, // hvgYUCG9j2lURrt5k
+      privateKey: EMAILJS_CONFIG.PRIVATE_KEY // mh3upHQbKrIViyw4T9-S6
     };
   }
 }
