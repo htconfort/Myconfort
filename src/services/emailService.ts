@@ -624,7 +624,7 @@ export class EmailService {
     }
     
     if (invoice.signature) {
-      message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
+      message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
     message += `📎 Le PDF de votre facture est joint à cet email (plan premium - jusqu'à 2MB).\n\n`;
@@ -661,7 +661,7 @@ export class EmailService {
     }
     
     if (invoice.signature) {
-      message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
+      message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
     message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi).\n\n`;
@@ -698,7 +698,7 @@ export class EmailService {
     }
     
     if (invoice.signature) {
-      message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
+      message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
     message += `Pour toute question, n'hésitez pas à nous contacter.`;
