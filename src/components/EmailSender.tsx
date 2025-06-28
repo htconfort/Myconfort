@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Download } from 'lucide-react';
+import React from 'react';
+import { Mail, FileText, Shield, Download } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
@@ -13,12 +13,8 @@ interface EmailSenderProps {
 export const EmailSender: React.FC<EmailSenderProps> = ({
   invoice,
   onSuccess,
-  onError,
-  onShowConfig
+  onError
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<string>('');
-
   // Calculer le total de la facture
   const totalTTC = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -39,12 +35,20 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     errors: []
   };
 
+  const handleGeneratePDF = () => {
+    if (window.generateInvoicePDF) {
+      window.generateInvoicePDF();
+    } else {
+      onError("La fonction de génération PDF n'est pas disponible");
+    }
+  };
+
   return (
     <>
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
         <Mail className="mr-3 text-xl" />
         <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
-          INFORMATIONS FACTURE
+          GÉNÉRATION PDF
         </span>
       </h2>
       
@@ -124,7 +128,6 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
         {!validation.isValid && (
           <div className="bg-red-100 border-2 border-red-400 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5 text-red-600" />
               <div className="text-sm">
                 <div className="font-bold text-red-800">Erreurs de validation :</div>
                 <ul className="list-disc list-inside mt-1 text-xs text-red-700 font-semibold">
@@ -137,20 +140,19 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         )}
 
-        {/* Indicateur de progression */}
-        {loading && step && (
-          <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3 mb-4">
-            <div className="flex items-center space-x-3">
-              <Loader className="w-5 h-5 animate-spin text-blue-600" />
-              <div>
-                <div className="font-bold text-blue-800">
-                  Traitement en cours...
-                </div>
-                <div className="text-sm text-blue-700 font-semibold">{step}</div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Boutons d'action */}
+        <div className="flex flex-col space-y-3">
+          {/* Bouton Générer et télécharger PDF */}
+          <button
+            onClick={handleGeneratePDF}
+            disabled={!validation.isValid}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:bg-gray-400 disabled:text-gray-600 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          >
+            <Download className="w-6 h-6" />
+            {invoice.signature && <Shield className="w-5 h-5" />}
+            <span>Générer et télécharger le PDF</span>
+          </button>
+        </div>
 
         {/* Instructions */}
         <div className="mt-4 text-center text-sm text-black">

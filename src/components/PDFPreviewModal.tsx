@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle } from 'lucide-react';
-import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import html2canvas from 'html2canvas';
