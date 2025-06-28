@@ -3,13 +3,13 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS MISE À JOUR avec vos nouvelles clés API
+// Configuration EmailJS
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6ijh', // ✅ NOUVEAU SERVICE ID
-  TEMPLATE_ID: 'template_yng4k8s', // ✅ TEMPLATE ID CONFIRMÉ
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ NOUVELLE PUBLIC KEY
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ NOUVELLE PRIVATE KEY
-  CONFIGURED: true // ✅ CONFIGURATION 100% MISE À JOUR !
+  SERVICE_ID: 'service_ocsxnme',
+  TEMPLATE_ID: 'template_yng4k8s',
+  USER_ID: 'hvgYUCG9j2lURrt5k',
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6',
+  CONFIGURED: true
 };
 
 export class EmailService {
@@ -21,13 +21,13 @@ export class EmailService {
   }
 
   /**
-   * Initialise EmailJS avec vos nouvelles clés
+   * Initialise EmailJS avec vos clés
    */
   static initializeEmailJS(): void {
     try {
-      // Initialiser EmailJS avec votre nouvelle User ID (Public Key)
+      // Initialiser EmailJS avec votre User ID (Public Key)
       emailjs.init(EMAILJS_CONFIG.USER_ID);
-      console.log('✅ EmailJS initialisé avec votre nouvelle API Key:', EMAILJS_CONFIG.USER_ID);
+      console.log('✅ EmailJS initialisé avec votre API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ Service ID configuré:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
     } catch (error) {
@@ -36,7 +36,7 @@ export class EmailService {
   }
 
   /**
-   * 🗜️ MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ pour EmailJS
+   * 🗜️ NOUVELLE MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ pour EmailJS
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
@@ -152,7 +152,7 @@ export class EmailService {
         base64Length: templateParams.pdf_data.length
       });
 
-      // Envoyer via EmailJS avec les nouvelles clés
+      // Envoyer via EmailJS avec le Template ID correct
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -309,8 +309,8 @@ export class EmailService {
         console.log('📊 Taille après compression pour EmailJS:', imageSizeKB, 'KB');
       }
 
-      // Si encore trop grand pour EmailJS, envoyer sans image
-      if (imageSizeKB > 49) {
+      // Si encore trop grand pour EmailJS, envoyer sans image (updated to 49KB limit)
+      if (imageSizeKB > 49) { // Updated from 45 to 49 KB
         console.warn('⚠️ Image encore trop volumineuse pour EmailJS, envoi sans image');
         return await this.sendPreviewWithoutImage(invoice);
       }
@@ -432,7 +432,7 @@ export class EmailService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC NOUVELLES CLÉS API');
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC COMPRESSION PDF');
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
@@ -448,8 +448,8 @@ export class EmailService {
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
-        subject: 'Test de connexion EmailJS MYCONFORT avec nouvelles clés API',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec les nouvelles clés API.',
+        subject: 'Test de connexion EmailJS MYCONFORT avec compression PDF',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec support de compression PDF pour pièces jointes.',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
@@ -475,7 +475,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec nouvelles clés API ! Service prêt pour l'envoi d'emails.`,
+        message: `✅ Connexion EmailJS réussie avec compression PDF ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB).`,
         responseTime
       };
     } catch (error: any) {
@@ -568,7 +568,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec nouvelles clés API',
+      status: '✅ EmailJS configuré avec compression PDF (max 50KB)',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -604,7 +604,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec nouvelles clés API');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec compression PDF');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);
