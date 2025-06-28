@@ -3,12 +3,12 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS DÉFINITIVE avec vos clés API exactes
+// Configuration EmailJS DÉFINITIVE avec les clés API correctes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jih', // ✅ SERVICE ID CONFIRMÉ PAR LE TEST REÇU
+  SERVICE_ID: 'service_ocsxnme', // ✅ SERVICE ID CORRECT
   TEMPLATE_ID: 'template_yng4k8s', // ✅ Template ID CONFIRMÉ
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY (PUBLIC) DÉFINITIVE EXACTE
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ PRIVATE KEY DÉFINITIVE EXACTE
+  USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ API KEY (PUBLIC) DÉFINITIVE CORRECTE
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ PRIVATE KEY DÉFINITIVE CORRECTE
   CONFIGURED: true, // ✅ CONFIGURATION 100% DÉFINITIVE !
   
   // 🚀 PLAN PREMIUM AVEC CLÉS API DÉFINITIVES
@@ -33,7 +33,7 @@ export class EmailService {
       // Initialiser EmailJS avec votre API Key définitive
       emailjs.init(EMAILJS_CONFIG.USER_ID);
       console.log('✅ EmailJS initialisé avec CLÉS API DÉFINITIVES:', EMAILJS_CONFIG.USER_ID);
-      console.log('✅ SERVICE ID CONFIRMÉ PAR TEST REÇU:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('✅ SERVICE ID CONFIRMÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('✅ PRIVATE KEY DÉFINITIVE:', EMAILJS_CONFIG.PRIVATE_KEY);
       console.log('🚀 Support pièces jointes 2MB activé (clés API définitives)');
@@ -75,7 +75,7 @@ export class EmailService {
       console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC CLÉS API DÉFINITIVES');
       console.log('🔑 API KEY DÉFINITIVE (Public):', EMAILJS_CONFIG.USER_ID);
       console.log('🔐 PRIVATE KEY DÉFINITIVE:', EMAILJS_CONFIG.PRIVATE_KEY);
-      console.log('🎯 SERVICE ID CONFIRMÉ PAR TEST:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 SERVICE ID CORRECT:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Limite pièces jointes: 2MB (plan premium)');
       console.log('🎨 Template HTML: template_yng4k8s CONFIRMÉ et ACTIF');
@@ -205,9 +205,9 @@ export class EmailService {
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6',
         
         // === PRODUITS POUR template_yng4k8s ===
         products_count: invoice.products.length,
@@ -226,15 +226,15 @@ export class EmailService {
         nom: attachmentFilename,
         taille: templateParams.attachment_size,
         type: templateParams.attachment_type,
-        service: 'service_ymw6jih'
+        service: 'service_ocsxnme'
       });
 
       // Envoyer via EmailJS avec CLÉS API DÉFINITIVES
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via CLÉS API DÉFINITIVES:', response);
@@ -311,9 +311,9 @@ export class EmailService {
         has_pdf: 'true',
         pdf_method: 'base64_compressed_cles_api_definitives',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6',
         
         // Pas de pièce jointe dans ce cas pour template_yng4k8s
         attachment_name: '',
@@ -323,10 +323,10 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via CLÉS API DÉFINITIVES:', response);
@@ -388,9 +388,9 @@ export class EmailService {
         has_pdf: 'false',
         pdf_note: pdfNote,
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6',
         
         // Pas de pièce jointe pour template_yng4k8s
         attachment_name: '',
@@ -400,10 +400,10 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via CLÉS API DÉFINITIVES:', response);
@@ -415,7 +415,7 @@ export class EmailService {
   }
 
   /**
-   * 📸 Partage l'aperçu avec clés API définitives
+   * 📸 Partage l'aperçu avec clés API définitives - Compression garantie à 50KB
    */
   static async sharePreviewViaEmail(
     invoice: Invoice, 
@@ -427,22 +427,13 @@ export class EmailService {
       // Initialiser EmailJS
       this.initializeEmailJS();
 
-      // Vérifier la taille de l'image
-      const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
-      let imageSizeKB = Math.round(imageBlob.size / 1024);
-      console.log('📊 Taille de l\'image pour clés API définitives:', imageSizeKB, 'KB');
-
-      let finalImageDataUrl = imageDataUrl;
-
-      // Si l'image est trop grande pour le plan premium (2MB), la compresser
-      if (imageBlob.size > EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE) {
-        console.log('🗜️ Compression de l\'image pour clés API définitives (limite 2MB)...');
-        finalImageDataUrl = await this.compressImageForEmail(imageDataUrl, EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE);
-        
-        const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
-        imageSizeKB = Math.round(compressedBlob.size / 1024);
-        console.log('📊 Taille après compression pour clés API définitives:', imageSizeKB, 'KB');
-      }
+      // Compresser l'image pour respecter la limite de 50KB
+      console.log('🗜️ Compression de l\'image pour EmailJS (limite 50KB)...');
+      const compressedImageDataUrl = await this.compressImageForEmailTemplate(imageDataUrl, EMAILJS_CONFIG.FALLBACK_SIZE);
+      
+      const compressedBlob = await fetch(compressedImageDataUrl).then(res => res.blob());
+      const imageSizeKB = Math.round(compressedBlob.size / 1024);
+      console.log('📊 Taille finale de l\'image pour clés API définitives:', imageSizeKB, 'KB');
 
       // Préparer le message pour l'aperçu avec clés API définitives
       let previewMessage = `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît dans notre système MYCONFORT.\n\nL'image ci-jointe vous montre exactement l'aperçu de votre facture.`;
@@ -467,14 +458,14 @@ export class EmailService {
         
         // Image comme pièce jointe pour template_yng4k8s
         attachment_name: `apercu_facture_${invoice.invoiceNumber}.jpg`,
-        attachment_content: finalImageDataUrl.split(',')[1],
+        attachment_content: compressedImageDataUrl.split(',')[1],
         attachment_type: 'image/jpeg',
         attachment_size: `${imageSizeKB} KB`,
         has_image: 'true',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6',
         
         // Pas de PDF pour l'aperçu avec template_yng4k8s
         has_pdf: 'false'
@@ -483,10 +474,10 @@ export class EmailService {
       console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via CLÉS API DÉFINITIVES...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       console.log('✅ Aperçu avec template template_yng4k8s envoyé via CLÉS API DÉFINITIVES:', response);
@@ -498,18 +489,18 @@ export class EmailService {
   }
 
   /**
-   * 🗜️ Compresse une image pour respecter la limite de taille
+   * 🗜️ Compresse une image pour respecter strictement la limite de 50KB pour EmailJS
    */
-  private static async compressImageForEmail(imageDataUrl: string, maxSize: number): Promise<string> {
+  private static async compressImageForEmailTemplate(imageDataUrl: string, maxSize: number): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d')!;
         
-        // Calculer les nouvelles dimensions
+        // Commencer avec des dimensions réduites pour garantir la limite de taille
         let { width, height } = img;
-        const maxDimension = 1200; // Limite raisonnable
+        const maxDimension = 800; // Dimension plus petite pour garantir 50KB
         
         if (width > maxDimension || height > maxDimension) {
           if (width > height) {
@@ -526,16 +517,29 @@ export class EmailService {
         
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Compression progressive
-        let quality = 0.8;
+        // Compression très agressive pour garantir 50KB
+        let quality = 0.3; // Commencer avec une qualité plus basse
         let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
         
-        // Réduire la qualité jusqu'à respecter la limite
-        while (compressedDataUrl.length * 0.75 > maxSize && quality > 0.1) {
-          quality -= 0.1;
+        // Réduire la qualité et/ou les dimensions jusqu'à respecter la limite
+        while (compressedDataUrl.length * 0.75 > maxSize && quality > 0.05) {
+          quality -= 0.05;
           compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Si même avec la qualité minimale c'est trop gros, réduire les dimensions
+          if (quality <= 0.05 && compressedDataUrl.length * 0.75 > maxSize) {
+            width = Math.floor(width * 0.8);
+            height = Math.floor(height * 0.8);
+            canvas.width = width;
+            canvas.height = height;
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            quality = 0.3; // Repartir avec une qualité raisonnable
+            compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
         }
         
+        console.log(`📊 Image compressée: ${Math.round(compressedDataUrl.length * 0.75 / 1024)}KB, qualité: ${quality}, dimensions: ${width}x${height}`);
         resolve(compressedDataUrl);
       };
       img.src = imageDataUrl;
@@ -550,7 +554,7 @@ export class EmailService {
       console.log('🧪 TEST DE CONNEXION EMAILJS AVEC CLÉS API DÉFINITIVES');
       console.log('🔑 API KEY DÉFINITIVE (Public):', EMAILJS_CONFIG.USER_ID);
       console.log('🔐 PRIVATE KEY DÉFINITIVE:', EMAILJS_CONFIG.PRIVATE_KEY);
-      console.log('🎯 SERVICE ID CONFIRMÉ PAR TEST REÇU:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🎯 SERVICE ID CORRECT:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Support pièces jointes: 2MB (clés API définitives)');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design personnalisé');
@@ -589,16 +593,16 @@ export class EmailService {
         attachment_size: '0 KB',
         pdf_method: 'test_cles_api_definitives',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_'
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6'
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST REÇU
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       const responseTime = Date.now() - startTime;
@@ -617,6 +621,8 @@ export class EmailService {
         errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
       } else if (error.status === 400) {
         errorMessage += 'Paramètres invalides. Vérifiez votre template ID template_yng4k8s.';
+      } else if (error.status === 404) {
+        errorMessage += 'Service ou compte non trouvé. Vérifiez vos identifiants EmailJS.';
       } else if (error.status >= 500) {
         errorMessage += 'Erreur serveur EmailJS. Réessayez plus tard.';
       } else {

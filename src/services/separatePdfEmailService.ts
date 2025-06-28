@@ -3,12 +3,12 @@ import emailjs from 'emailjs-com';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration EmailJS DÉFINITIVE avec clés API exactes
+// Configuration EmailJS DÉFINITIVE avec clés API correctes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jih', // ✅ SERVICE ID CONFIRMÉ PAR TEST REÇU
+  SERVICE_ID: 'service_ocsxnme', // ✅ SERVICE ID CORRECT
   TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY DÉFINITIVE (PUBLIC) EXACTE
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_' // ✅ PRIVATE KEY DÉFINITIVE EXACTE
+  USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ API KEY DÉFINITIVE (PUBLIC) CORRECTE
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6' // ✅ PRIVATE KEY DÉFINITIVE CORRECTE
 };
 
 export class SeparatePdfEmailService {
@@ -188,9 +188,9 @@ export class SeparatePdfEmailService {
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jih',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
+        service_used: 'service_ocsxnme',
+        user_id_used: 'hvgYUCG9j2lURrt5k',
+        private_key_used: 'mh3upHQbKrIViyw4T9-S6',
         
         // Produits
         products_count: invoice.products.length,
@@ -200,10 +200,10 @@ export class SeparatePdfEmailService {
       console.log('📧 Envoi email de notification (sans PDF) avec CLÉS API DÉFINITIVES...');
       
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST REÇU
+        EMAILJS_CONFIG.SERVICE_ID, // service_ocsxnme CORRECT
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k API KEY DÉFINITIVE
       );
 
       console.log('✅ Email de notification envoyé avec succès via CLÉS API DÉFINITIVES:', response);

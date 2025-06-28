@@ -86,7 +86,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
-  // 🚀 PARTAGE APERÇU AVEC EMAILJS
+  // 🚀 PARTAGE APERÇU AVEC EMAILJS - Version simplifiée
   const handleSharePreviewViaEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
@@ -111,9 +111,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         throw new Error('Élément aperçu non trouvé');
       }
 
-      setShareStep('🖼️ Conversion en image optimisée...');
+      setShareStep('🖼️ Conversion en image...');
       const canvas = await html2canvas(element, {
-        scale: 1, // Reduced from 2 to 1 to decrease file size
+        scale: 1,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -124,101 +124,27 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         logging: false
       });
 
-      // Convert to JPEG with compression instead of PNG
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8); // JPEG format with 80% quality
-      const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
-      const imageSizeKB = Math.round(imageBlob.size / 1024);
+      // Convert to JPEG with basic quality
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-      console.log(`📊 Taille de l'image: ${imageSizeKB} KB`);
+      setShareStep('🚀 Envoi via EmailJS...');
+      
+      // Laisser EmailService gérer la compression finale
+      const success = await EmailService.sharePreviewViaEmail(
+        invoice,
+        imageDataUrl
+      );
 
-      // Check if image is still too large (updated to 49KB limit)
-      if (imageSizeKB > 49) {
-        setShareStep('🔧 Optimisation supplémentaire...');
-        // Further reduce quality if still too large
-        const optimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.4); // Changed from 0.6 to 0.4 for more aggressive compression
-        const optimizedBlob = await fetch(optimizedImageDataUrl).then(res => res.blob());
-        const optimizedSizeKB = Math.round(optimizedBlob.size / 1024);
+      if (success) {
+        setShareStep('✅ Aperçu partagé !');
         
-        console.log(`📊 Taille optimisée: ${optimizedSizeKB} KB`);
+        const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
+          `📸 Image envoyée à ${invoice.client.email}\n` +
+          `🚀 Envoyé via EmailJS`;
         
-        if (optimizedSizeKB <= 49) {
-          setShareStep('🚀 Envoi via EmailJS...');
-          
-          // Envoyer via EmailJS avec l'image optimisée
-          const success = await EmailService.sharePreviewViaEmail(
-            invoice,
-            optimizedImageDataUrl
-          );
-
-          if (success) {
-            setShareStep('✅ Aperçu partagé !');
-            
-            const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
-              `📸 Image optimisée envoyée à ${invoice.client.email}\n` +
-              `🎯 Format JPEG optimisé pour EmailJS\n\n` +
-              `🚀 Envoyé via EmailJS\n` +
-              `📊 Taille: ${optimizedSizeKB} KB • Format: JPEG optimisé`;
-            
-            alert(successMessage);
-          } else {
-            throw new Error('Échec de l\'envoi via EmailJS');
-          }
-        } else {
-          // If still too large, try even more aggressive compression
-          setShareStep('🔧 Compression maximale...');
-          const maxOptimizedImageDataUrl = canvas.toDataURL('image/jpeg', 0.2); // Even more aggressive compression
-          const maxOptimizedBlob = await fetch(maxOptimizedImageDataUrl).then(res => res.blob());
-          const maxOptimizedSizeKB = Math.round(maxOptimizedBlob.size / 1024);
-          
-          console.log(`📊 Taille compression maximale: ${maxOptimizedSizeKB} KB`);
-          
-          if (maxOptimizedSizeKB <= 49) {
-            setShareStep('🚀 Envoi via EmailJS...');
-            
-            const success = await EmailService.sharePreviewViaEmail(
-              invoice,
-              maxOptimizedImageDataUrl
-            );
-
-            if (success) {
-              setShareStep('✅ Aperçu partagé !');
-              
-              const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
-                `📸 Image fortement compressée envoyée à ${invoice.client.email}\n` +
-                `🎯 Format JPEG compression maximale pour EmailJS\n\n` +
-                `🚀 Envoyé via EmailJS\n` +
-                `📊 Taille: ${maxOptimizedSizeKB} KB • Format: JPEG compression maximale`;
-              
-              alert(successMessage);
-            } else {
-              throw new Error('Échec de l\'envoi via EmailJS');
-            }
-          } else {
-            throw new Error(`Image trop volumineuse même avec compression maximale (${maxOptimizedSizeKB} KB). Limite EmailJS: 50 KB`);
-          }
-        }
+        alert(successMessage);
       } else {
-        setShareStep('🚀 Envoi via EmailJS...');
-        
-        // Envoyer via EmailJS
-        const success = await EmailService.sharePreviewViaEmail(
-          invoice,
-          imageDataUrl
-        );
-
-        if (success) {
-          setShareStep('✅ Aperçu partagé !');
-          
-          const successMessage = `✅ Aperçu partagé avec succès !\n\n` +
-            `📸 Image optimisée envoyée à ${invoice.client.email}\n` +
-            `🎯 Format JPEG optimisé pour EmailJS\n\n` +
-            `🚀 Envoyé via EmailJS\n` +
-            `📊 Taille: ${imageSizeKB} KB • Format: JPEG optimisé`;
-          
-          alert(successMessage);
-        } else {
-          throw new Error('Échec de l\'envoi via EmailJS');
-        }
+        throw new Error('Échec de l\'envoi via EmailJS');
       }
 
     } catch (error) {
