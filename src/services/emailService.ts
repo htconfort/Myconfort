@@ -30,7 +30,7 @@ export class EmailService {
       console.log('✅ EmailJS initialisé avec votre NOUVELLE API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ Service OVH SMTP configuré:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('✅ Email de notification configuré: bgx226700465.002@htconfort.com');
+      console.log('✅ Email de notification configuré: htconfort@gmail.com');
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
@@ -45,7 +45,7 @@ export class EmailService {
       console.log('🔑 Nouvelle API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service OVH SMTP:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('📬 Email de notification: bgx226700465.002@htconfort.com');
+      console.log('📬 Email de notification: htconfort@gmail.com');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -99,7 +99,7 @@ export class EmailService {
         message: this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant),
         
         // Email de réponse
-        reply_to: 'bgx226700465.002@htconfort.com',
+        reply_to: 'htconfort@gmail.com',
         
         // Sujet
         subject: `Facture HT Confort n°${invoice.invoiceNumber}`,
@@ -124,7 +124,7 @@ export class EmailService {
         company_name: 'HT Confort',
         company_address: '88 Avenue des Ternes, 75017 Paris',
         company_phone: '04 68 50 41 45',
-        company_email: 'bgx226700465.002@htconfort.com',
+        company_email: 'htconfort@gmail.com',
         company_siret: '824 313 530 00027',
         company_website: 'https://www.htconfort.com',
         
@@ -163,9 +163,7 @@ export class EmailService {
         EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
         EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
         templateParams,
-        {
-          publicKey: EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
-        }
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
       );
 
       console.log('✅ Email avec PDF compressé envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
@@ -217,13 +215,13 @@ export class EmailService {
       // Message modifié pour expliquer l'absence du PDF
       let message = this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant);
       message += `\n\n📎 Note importante: ${pdfNote}`;
-      message += `\n\nPour recevoir votre facture PDF, contactez-nous à bgx226700465.002@htconfort.com ou au 04 68 50 41 45.`;
+      message += `\n\nPour recevoir votre facture PDF, contactez-nous à htconfort@gmail.com ou au 04 68 50 41 45.`;
 
       const templateParams = {
         from_name: 'HT Confort',
         to_name: invoice.client.name,
         to_email: invoice.client.email,
-        reply_to: 'bgx226700465.002@htconfort.com',
+        reply_to: 'htconfort@gmail.com',
         subject: `Facture HT Confort n°${invoice.invoiceNumber}`,
         message: message,
         invoice_number: invoice.invoiceNumber,
@@ -236,7 +234,7 @@ export class EmailService {
         company_name: 'HT Confort',
         company_address: '88 Avenue des Ternes, 75017 Paris',
         company_phone: '04 68 50 41 45',
-        company_email: 'bgx226700465.002@htconfort.com',
+        company_email: 'htconfort@gmail.com',
         company_siret: '824 313 530 00027',
         has_pdf: 'false',
         pdf_note: pdfNote
@@ -246,9 +244,7 @@ export class EmailService {
         EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
         EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
         templateParams,
-        {
-          publicKey: EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
-        }
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
       );
 
       console.log('✅ Email sans PDF envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
@@ -336,7 +332,7 @@ export class EmailService {
         from_name: 'HT Confort',
         to_name: invoice.client.name,
         to_email: invoice.client.email,
-        reply_to: 'bgx226700465.002@htconfort.com',
+        reply_to: 'htconfort@gmail.com',
         subject: `Aperçu facture HT Confort n°${invoice.invoiceNumber}`,
         message: previewMessage,
         invoice_number: invoice.invoiceNumber,
@@ -365,9 +361,7 @@ export class EmailService {
         EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
         EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
         templateParams,
-        {
-          publicKey: EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
-        }
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
       );
 
       console.log('✅ Aperçu compressé envoyé avec succès via OVH SMTP avec NOUVEAUX paramètres:', response);
@@ -414,7 +408,7 @@ export class EmailService {
         from_name: 'HT Confort',
         to_name: invoice.client.name,
         to_email: invoice.client.email,
-        reply_to: 'bgx226700465.002@htconfort.com',
+        reply_to: 'htconfort@gmail.com',
         subject: `Détails facture HT Confort n°${invoice.invoiceNumber}`,
         message: previewMessage,
         invoice_number: invoice.invoiceNumber,
@@ -428,9 +422,7 @@ export class EmailService {
         EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
         EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
         templateParams,
-        {
-          publicKey: EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
-        }
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
       );
 
       console.log('✅ Aperçu sans image envoyé via OVH SMTP avec NOUVEAUX paramètres:', response);
@@ -450,7 +442,7 @@ export class EmailService {
       console.log('🔑 NOUVELLE Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service OVH SMTP:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('📬 Email de notification:', 'bgx226700465.002@htconfort.com');
+      console.log('📬 Email de notification:', 'htconfort@gmail.com');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -461,8 +453,8 @@ export class EmailService {
       const testParams = {
         from_name: 'HT Confort',
         to_name: 'Test HT Confort',
-        to_email: 'bgx226700465.002@htconfort.com', // Email de notification
-        reply_to: 'bgx226700465.002@htconfort.com',
+        to_email: 'htconfort@gmail.com', // Email de notification
+        reply_to: 'htconfort@gmail.com',
         subject: 'Test de connexion OVH SMTP HT Confort avec NOUVEAUX paramètres',
         message: 'Ceci est un test de connexion OVH SMTP depuis HT Confort avec les NOUVEAUX paramètres EmailJS.',
         invoice_number: 'TEST-001',
@@ -483,16 +475,14 @@ export class EmailService {
         EMAILJS_CONFIG.SERVICE_ID, // ovh_smtp_htconfort
         EMAILJS_CONFIG.TEMPLATE_ID, // template_ymq4kbs
         testParams,
-        {
-          publicKey: EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
-        }
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i
       );
 
       const responseTime = Date.now() - startTime;
 
       return {
         success: true,
-        message: `✅ Connexion OVH SMTP réussie avec NOUVEAUX paramètres ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB) via ssl0.ovh.net. Notifications envoyées à bgx226700465.002@htconfort.com.`,
+        message: `✅ Connexion OVH SMTP réussie avec NOUVEAUX paramètres ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB) via ssl0.ovh.net. Notifications envoyées à htconfort@gmail.com.`,
         responseTime
       };
     } catch (error: any) {
@@ -555,7 +545,7 @@ export class EmailService {
     message += `---\nHT CONFORT\n`;
     message += `88 Avenue des Ternes, 75017 Paris\n`;
     message += `Tél: 04 68 50 41 45\n`;
-    message += `Email: bgx226700465.002@htconfort.com\n`;
+    message += `Email: htconfort@gmail.com\n`;
     message += `SIRET: 824 313 530 00027`;
 
     return message;
