@@ -42,274 +42,222 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   return (
     <div 
       id="facture-apercu" 
-      className={`facture-apercu bg-white max-w-3xl mx-auto p-6 rounded-xl shadow ${className}`}
-      style={{ color: '#080F0F' }}
+      className={`facture-apercu ${className}`}
     >
-      {/* En-tête avec logo */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center">
-          <div className="bg-[#477A0C] rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl mr-4">
-            🌸
-          </div>
+      <div className="invoice-container">
+        {/* Header */}
+        <header className="header">
           <div>
-            <h1 className="text-2xl font-bold text-[#477A0C]">MYCONFORT</h1>
-            <p className="text-sm" style={{ color: '#080F0F' }}>Facturation professionnelle</p>
+            <h1>MYCONFORT</h1>
+            <p className="subtitle">Facturation professionnelle avec signature électronique</p>
           </div>
-        </div>
-        <div className="text-right">
-          <p className="text-sm" style={{ color: '#080F0F' }}>
-            Facture n° : <strong className="text-[#477A0C]">{invoice.invoiceNumber}</strong>
-          </p>
-          <p className="text-sm" style={{ color: '#080F0F' }}>Date : {new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</p>
-          {invoice.eventLocation && (
-            <p className="text-sm" style={{ color: '#080F0F' }}>Lieu : {invoice.eventLocation}</p>
+          {invoice.signature && (
+            <div className="signed-badge">✓ SIGNÉE</div>
           )}
-        </div>
-      </div>
+        </header>
 
-      {/* Statut signature */}
-      <div className="flex justify-end mb-4">
-        {invoice.signature ? (
-          <div className="bg-green-100 border border-green-300 rounded-lg px-3 py-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-green-600">🔒</span>
-              <span className="font-semibold text-green-800 text-sm">FACTURE SIGNÉE</span>
-            </div>
+        {/* Main Information */}
+        <section className="main-info">
+          <div className="company-details">
+            <h3>MYCONFORT</h3>
+            <p>88 Avenue des Ternes</p>
+            <p>75017 Paris, France</p>
+            <p>SIRET: 824 313 530 00027</p>
+            <p>Tél: 04 68 50 41 45</p>
+            <p>Email: myconfort@gmail.com</p>
+            <p>Site web: https://www.htconfort.com</p>
           </div>
-        ) : (
-          <div className="bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-yellow-600">⏳</span>
-              <span className="font-semibold text-yellow-800 text-sm">EN ATTENTE DE SIGNATURE</span>
+          <div className="invoice-meta">
+            <div className="meta-item">
+              <span className="meta-label">N° Facture:</span>
+              <span className="meta-value">{invoice.invoiceNumber}</span>
             </div>
+            <div className="meta-item">
+              <span className="meta-label">Date:</span>
+              <span className="meta-value">{new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</span>
+            </div>
+            {invoice.eventLocation && (
+              <div className="meta-item">
+                <span className="meta-label">Lieu:</span>
+                <span className="meta-value">{invoice.eventLocation}</span>
+              </div>
+            )}
           </div>
+        </section>
+
+        {/* Client Information */}
+        <div className="section-header">INFORMATIONS CLIENT</div>
+        <div className="client-grid">
+          <div className="client-field">
+            <span className="label">Nom complet</span>
+            <span className="value">{invoice.client.name}</span>
+          </div>
+          <div className="client-field">
+            <span className="label">Adresse</span>
+            <span className="value">{invoice.client.address}</span>
+          </div>
+          <div className="client-field">
+            <span className="label">Code postal</span>
+            <span className="value">{invoice.client.postalCode}</span>
+          </div>
+          <div className="client-field">
+            <span className="label">Ville</span>
+            <span className="value">{invoice.client.city}</span>
+          </div>
+          <div className="client-field">
+            <span className="label">Email</span>
+            <span className="value">{invoice.client.email}</span>
+          </div>
+          <div className="client-field">
+            <span className="label">Téléphone</span>
+            <span className="value">{invoice.client.phone}</span>
+          </div>
+        </div>
+
+        {/* Logistics Information */}
+        {invoice.delivery.method && (
+          <section className="info-section">
+            <div className="info-header">INFORMATIONS LOGISTIQUES</div>
+            <div className="info-row">
+              <span className="info-label">Mode de livraison:</span>
+              <span className="info-value">{invoice.delivery.method}</span>
+            </div>
+          </section>
         )}
-      </div>
 
-      <hr className="my-4 border-gray-300" />
-
-      {/* Informations client et entreprise */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <h2 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
-            FACTURER À
-          </h2>
-          <div className="space-y-1">
-            <p className="font-bold" style={{ color: '#080F0F' }}>{invoice.client.name}</p>
-            <p style={{ color: '#080F0F' }}>{invoice.client.address}</p>
-            <p style={{ color: '#080F0F' }}>{invoice.client.postalCode} {invoice.client.city}</p>
-            <p style={{ color: '#080F0F' }}>Tél: {invoice.client.phone}</p>
-            <p style={{ color: '#080F0F' }}>Email: {invoice.client.email}</p>
-            {invoice.client.siret && (
-              <p style={{ color: '#080F0F' }}>SIRET: {invoice.client.siret}</p>
-            )}
+        {/* Payment Information */}
+        <section className="info-section">
+          <div className="info-header payment">MODE DE RÈGLEMENT</div>
+          <div className="info-row">
+            <span className="info-label">Méthode de paiement:</span>
+            <span className="info-value">{invoice.payment.method || 'Non spécifié'}</span>
           </div>
-        </div>
-        
-        <div>
-          <h2 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
-            INFORMATIONS COMPLÉMENTAIRES
-          </h2>
-          <div className="space-y-1">
-            {invoice.advisorName && (
-              <p style={{ color: '#080F0F' }}>
-                <span className="font-medium">Conseiller:</span> {invoice.advisorName}
-              </p>
-            )}
-            {invoice.client.housingType && (
-              <p style={{ color: '#080F0F' }}>
-                <span className="font-medium">Type logement:</span> {invoice.client.housingType}
-              </p>
-            )}
-            {invoice.client.doorCode && (
-              <p style={{ color: '#080F0F' }}>
-                <span className="font-medium">Code d'accès:</span> {invoice.client.doorCode}
-              </p>
-            )}
-            {invoice.delivery.method && (
-              <p style={{ color: '#080F0F' }}>
-                <span className="font-medium">Livraison:</span> {invoice.delivery.method}
-              </p>
-            )}
-            {invoice.payment.method && (
-              <p style={{ color: '#080F0F' }}>
-                <span className="font-medium">Paiement:</span> {invoice.payment.method}
-              </p>
-            )}
+          <div className="info-row">
+            <span className="info-label">Signature client MYCONFORT:</span>
+            <span className="signature-status">
+              {invoice.signature ? '✓ Signature électronique enregistrée' : 'En attente de signature'}
+            </span>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Tableau des produits */}
-      <div className="mb-6">
-        <h3 className="font-semibold text-[#477A0C] mb-3 border-b border-[#477A0C] pb-1">
-          DÉTAIL DES PRODUITS
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border border-gray-300 rounded-lg overflow-hidden">
+        {/* Products Section */}
+        <section className="products-section">
+          <div className="products-title">Produits & Tarification</div>
+          
+          {/* Signature Box */}
+          {invoice.signature && (
+            <div className="signature-box">
+              <div className="signature-label">SIGNATURE CLIENT</div>
+              <div className="signature-placeholder">
+                <img src={invoice.signature} alt="Signature électronique" style={{ maxHeight: '60px' }} />
+              </div>
+            </div>
+          )}
+
+          <table className="products-table">
             <thead>
-              <tr className="bg-[#477A0C] text-white">
-                <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Désignation</th>
-                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Qté</th>
-                <th className="border border-gray-300 px-2 py-2 text-right font-semibold">PU TTC</th>
-                <th className="border border-gray-300 px-2 py-2 text-center font-semibold">Remise</th>
-                <th className="border border-gray-300 px-2 py-2 text-right font-semibold">Total TTC</th>
+              <tr>
+                <th>Quantité</th>
+                <th>PU HT</th>
+                <th>PU TTC</th>
+                <th>Remise</th>
+                <th>Total TTC</th>
               </tr>
             </thead>
             <tbody>
-              {invoice.products.map((item, i) => {
+              {invoice.products.map((product, index) => {
+                const unitPriceHT = product.priceTTC / (1 + (invoice.taxRate / 100));
                 const totalProduct = calculateProductTotal(
-                  item.quantity,
-                  item.priceTTC,
-                  item.discount,
-                  item.discountType
+                  product.quantity,
+                  product.priceTTC,
+                  product.discount,
+                  product.discountType
                 );
                 
                 return (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border border-gray-300 px-3 py-2">
-                      <div className="font-medium" style={{ color: '#080F0F' }}>{item.name}</div>
-                      {item.category && (
-                        <div className="text-xs" style={{ color: '#080F0F' }}>{item.category}</div>
-                      )}
+                  <tr key={index}>
+                    <td>{product.quantity}</td>
+                    <td>{formatCurrency(unitPriceHT)}</td>
+                    <td>{formatCurrency(product.priceTTC)}</td>
+                    <td>
+                      {product.discount > 0 ? (
+                        product.discountType === 'percent' ? 
+                          `${product.discount}%` : 
+                          formatCurrency(product.discount)
+                      ) : '-'}
                     </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center font-semibold" style={{ color: '#080F0F' }}>
-                      {item.quantity}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-right" style={{ color: '#080F0F' }}>
-                      {formatCurrency(item.priceTTC)}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.discount > 0 ? (
-                        <span className="text-red-600 font-medium">
-                          -{item.discountType === 'percent' 
-                            ? `${item.discount}%` 
-                            : formatCurrency(item.discount)
-                          }
-                        </span>
-                      ) : (
-                        <span style={{ color: '#080F0F' }}>-</span>
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-right font-bold" style={{ color: '#080F0F' }}>
-                      {formatCurrency(totalProduct)}
-                    </td>
+                    <td>{formatCurrency(totalProduct)}</td>
                   </tr>
                 );
               })}
               {invoice.products.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="border border-gray-300 px-3 py-6 text-center" style={{ color: '#080F0F' }}>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '20px' }}>
                     Aucun produit ajouté
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-        </div>
-      </div>
 
-      {/* Totaux avec gestion acompte */}
-      <div className="flex justify-end mb-6">
-        <div className="w-full max-w-md">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium" style={{ color: '#080F0F' }}>Total HT:</span>
-                <span className="font-medium" style={{ color: '#080F0F' }}>{formatCurrency(totalHT)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="font-medium" style={{ color: '#080F0F' }}>TVA ({invoice.taxRate}%):</span>
-                <span className="font-medium" style={{ color: '#080F0F' }}>{formatCurrency(totalTVA)}</span>
-              </div>
-              {totalDiscount > 0 && (
-                <div className="flex justify-between text-sm text-red-600">
-                  <span className="font-medium">Remise totale:</span>
-                  <span className="font-medium">-{formatCurrency(totalDiscount)}</span>
-                </div>
-              )}
-              <div className="border-t border-gray-300 pt-2">
-                <div className="flex justify-between text-lg font-bold">
-                  <span style={{ color: '#080F0F' }}>TOTAL TTC:</span>
-                  <span className="text-[#477A0C]">{formatCurrency(totalTTC)}</span>
-                </div>
-              </div>
-              
-              {/* Gestion acompte */}
-              {acompteAmount > 0 && (
-                <>
-                  <div className="border-t border-gray-300 pt-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium" style={{ color: '#080F0F' }}>Acompte versé:</span>
-                      <span className="font-medium text-blue-600">
-                        {formatCurrency(acompteAmount)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-orange-100 border border-orange-200 rounded p-2">
-                    <div className="flex justify-between text-lg font-bold text-orange-600">
-                      <span>RESTE À PAYER:</span>
-                      <span>{formatCurrency(montantRestant)}</span>
-                    </div>
-                  </div>
-                </>
-              )}
+          <div className="totals">
+            <div className="total-row">
+              <span className="total-label">Total HT:</span>
+              <span className="total-value">{formatCurrency(totalHT)}</span>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Signature client */}
-      {invoice.signature && (
-        <div className="mb-6">
-          <div className="flex justify-end">
-            <div className="border border-gray-300 rounded-lg p-4 w-64">
-              <h4 className="text-[#477A0C] font-bold text-sm mb-2 text-center">
-                SIGNATURE CLIENT
-              </h4>
-              <div className="flex items-center justify-center h-16 bg-gray-50 rounded">
-                <img 
-                  src={invoice.signature} 
-                  alt="Signature client" 
-                  className="max-h-full max-w-full"
-                />
-              </div>
-              <p className="text-xs text-center mt-2" style={{ color: '#080F0F' }}>
-                Signé électroniquement le {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </p>
+            <div className="total-row">
+              <span className="total-label">TVA ({invoice.taxRate}%):</span>
+              <span className="total-value">{formatCurrency(totalTVA)}</span>
             </div>
+            {totalDiscount > 0 && (
+              <div className="total-row" style={{ color: '#e53e3e' }}>
+                <span className="total-label">Remise totale:</span>
+                <span className="total-value">-{formatCurrency(totalDiscount)}</span>
+              </div>
+            )}
+            <div className="total-row final-total">
+              <span className="total-label">TOTAL TTC:</span>
+              <span className="total-value">{formatCurrency(totalTTC)}</span>
+            </div>
+            
+            {/* Acompte si applicable */}
+            {acompteAmount > 0 && (
+              <>
+                <div className="total-row" style={{ marginTop: '10px' }}>
+                  <span className="total-label">Acompte versé:</span>
+                  <span className="total-value" style={{ color: '#3182ce' }}>{formatCurrency(acompteAmount)}</span>
+                </div>
+                <div className="total-row" style={{ 
+                  backgroundColor: '#fff3cd', 
+                  padding: '8px', 
+                  borderRadius: '4px',
+                  marginTop: '5px',
+                  color: '#ff8c00'
+                }}>
+                  <span className="total-label" style={{ fontWeight: 'bold' }}>RESTE À PAYER:</span>
+                  <span className="total-value" style={{ fontWeight: 'bold' }}>{formatCurrency(montantRestant)}</span>
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      )}
+        </section>
 
-      {/* Notes si présentes */}
-      {invoice.invoiceNotes && (
-        <div className="mb-6">
-          <h3 className="font-semibold text-[#477A0C] mb-2 border-b border-[#477A0C] pb-1">
-            REMARQUES
-          </h3>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p className="text-sm" style={{ color: '#080F0F' }}>{invoice.invoiceNotes}</p>
-          </div>
-        </div>
-      )}
+        {/* Notes if present */}
+        {invoice.invoiceNotes && (
+          <section className="info-section">
+            <div className="info-header">REMARQUES</div>
+            <p style={{ padding: '10px', fontSize: '13px' }}>{invoice.invoiceNotes}</p>
+          </section>
+        )}
 
-      {/* Pied de page */}
-      <div className="text-center mt-8 pt-6 border-t border-gray-300">
-        <div className="flex items-center justify-center mb-2">
-          <span className="text-2xl mr-2">🌸</span>
-          <span className="text-xl font-bold text-[#477A0C]">MYCONFORT</span>
-        </div>
-        <p className="text-lg font-semibold text-[#477A0C] mb-2">
-          Merci pour votre confiance !
-        </p>
-        <p className="text-sm" style={{ color: '#080F0F' }}>
-          Votre spécialiste en matelas et literie de qualité
-        </p>
-        <div className="mt-3 text-xs" style={{ color: '#080F0F' }}>
+        {/* Footer */}
+        <footer className="footer">
+          <h3>🌸 MYCONFORT</h3>
+          <p>Merci pour votre confiance !</p>
+          <p>Votre spécialiste en matelas et literie de qualité</p>
           <p>88 Avenue des Ternes, 75017 Paris - Tél: 04 68 50 41 45</p>
           <p>Email: myconfort@gmail.com - SIRET: 824 313 530 00027</p>
-        </div>
+        </footer>
       </div>
     </div>
   );

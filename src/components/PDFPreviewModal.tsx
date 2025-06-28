@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Mail, Camera, Zap, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';

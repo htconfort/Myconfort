@@ -44,8 +44,8 @@ export interface InvoiceData {
 export class AdvancedPDFService {
   private static readonly COLORS = {
     // Couleurs exactes de l'aperçu HTML fourni
-    primary: [124, 179, 66],     // #7cb342 - Vert principal de l'exemple
-    primaryDark: [139, 195, 74], // #8bc34a - Vert dégradé
+    primary: [104, 159, 56],     // #689f38 - Vert principal de l'exemple
+    primaryDark: [124, 179, 66], // #7cb342 - Vert dégradé
     cream: [242, 239, 226],      // #F2EFE2 - Beige clair
     dark: [51, 51, 51],          // #333333 - Texte foncé
     white: [255, 255, 255],      // Blanc pur
@@ -108,7 +108,6 @@ export class AdvancedPDFService {
     
     // Bouton signature (coin droit)
     if (data.signature) {
-      doc.setFillColor(...this.COLORS.white);
       doc.setFillColor(255, 255, 255, 0.2); // Blanc transparent
       doc.roundedRect(160, 12, 35, 10, 2, 2, 'F');
       doc.setTextColor(...this.COLORS.white);
@@ -277,19 +276,34 @@ export class AdvancedPDFService {
     
     // Section signature si présente
     if (data.signature) {
-      doc.setTextColor(...this.COLORS.primary);
+      doc.setTextColor(...this.COLORS.dark);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text('SIGNATURE CLIENT', 20, currentY);
+      doc.text('SIGNATURE CLIENT', 105, currentY, { align: 'center' });
       
       // Cadre pour signature
       doc.setDrawColor(...this.COLORS.grayBorder);
       doc.setFillColor(...this.COLORS.grayLight);
       doc.roundedRect(20, currentY + 3, 170, 15, 1, 1, 'FD');
       
-      doc.setTextColor(153, 153, 153);
-      doc.setFontSize(8);
-      doc.text('[Signature électronique]', 105, currentY + 11, { align: 'center' });
+      try {
+        // Ajouter l'image de signature
+        doc.addImage(
+          data.signature,
+          'PNG',
+          85,
+          currentY + 5,
+          40,
+          10,
+          undefined,
+          'FAST'
+        );
+      } catch (error) {
+        console.warn('Erreur ajout signature:', error);
+        doc.setTextColor(153, 153, 153);
+        doc.setFontSize(8);
+        doc.text('[Signature électronique validée]', 105, currentY + 11, { align: 'center' });
+      }
       
       currentY += 25;
     }
@@ -351,7 +365,7 @@ export class AdvancedPDFService {
     // Total TTC
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.setTextColor(...this.COLORS.dark);
+    doc.setTextColor(...this.COLORS.primary);
     doc.text('TOTAL TTC:', 130, yPos);
     doc.text(formatCurrency(data.totalTTC), 180, yPos, { align: 'right' });
     
@@ -360,6 +374,7 @@ export class AdvancedPDFService {
       yPos += 12;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
+      doc.setTextColor(...this.COLORS.dark);
       doc.text('Acompte versé:', 130, yPos);
       doc.setTextColor(...this.COLORS.blue);
       doc.text(formatCurrency(data.depositAmount), 180, yPos, { align: 'right' });

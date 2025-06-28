@@ -294,10 +294,8 @@ export class PDFService {
             body { 
               font-family: 'Inter', sans-serif; 
               margin: 0; 
-              padding: 20px; 
-              background: white;
-              color: black;
-              line-height: 1.5;
+              padding: 0; 
+              background: white; 
             }
             
             /* Styles pour l'impression */
@@ -318,14 +316,6 @@ export class PDFService {
                 size: A4;
               }
             }
-            
-            /* Préservation des couleurs MYCONFORT */
-            .bg-\\[\\#477A0C\\] { background-color: #477A0C !important; }
-            .text-\\[\\#F2EFE2\\] { color: #F2EFE2 !important; }
-            .text-\\[\\#477A0C\\] { color: #477A0C !important; }
-            .text-black { color: black !important; }
-            .font-bold { font-weight: bold !important; }
-            .font-semibold { font-weight: 600 !important; }
             
             /* Styles récupérés de la page */
             ${allStyles}
@@ -349,51 +339,6 @@ export class PDFService {
         }, 1000);
       }, 500);
     };
-  }
-
-  // 🎯 MÉTHODE POUR TESTER VOTRE SCRIPT EXACT
-  static async testYourScript(invoice: Invoice): Promise<void> {
-    console.log('🧪 TEST DE VOTRE SCRIPT EXACT - COHÉRENCE GARANTIE');
-    
-    // Chercher l'élément .facture-apercu
-    const element = document.querySelector('.facture-apercu') as HTMLElement;
-    
-    if (!element) {
-      console.error('❌ Élément .facture-apercu non trouvé pour le test');
-      alert('❌ Élément .facture-apercu non trouvé. Assurez-vous que l\'aperçu est affiché.');
-      return;
-    }
-    
-    // VOTRE CONFIGURATION EXACTE
-    const opt = {
-      margin: 0,
-      filename: `facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true,
-        letterRendering: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true
-      }
-    };
-    
-    try {
-      console.log('🔄 Test de votre script avec l\'élément .facture-apercu...');
-      console.log('📐 Configuration de test:', opt);
-      await html2pdf().set(opt).from(element).save();
-      console.log('✅ Test réussi ! PDF généré avec votre script exact - COHÉRENCE GARANTIE');
-      alert('✅ Test réussi ! Le PDF a été généré avec votre script exact et est cohérent avec l\'aperçu.');
-    } catch (error) {
-      console.error('❌ Erreur lors du test de votre script:', error);
-      alert('❌ Erreur lors du test. Vérifiez la console pour plus de détails.');
-    }
   }
 
   // 🚀 MÉTHODE GLOBALE POUR UTILISER VOTRE SCRIPT EXACT
