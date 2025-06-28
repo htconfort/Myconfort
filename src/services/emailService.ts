@@ -5,10 +5,10 @@ import { AdvancedPDFService } from './advancedPdfService';
 
 // Configuration EmailJS DÉFINITIVE avec vos clés API exactes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CONFIRMÉ PAR LE TEST REÇU
+  SERVICE_ID: 'service_ymw6jih', // ✅ SERVICE ID CONFIRMÉ PAR LE TEST REÇU
   TEMPLATE_ID: 'template_yng4k8s', // ✅ Template ID CONFIRMÉ
-  USER_ID: 'eqxx9fwyTsoAoF00i', // ✅ NOUVELLE API KEY (PUBLIC) EXACTE
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ NOUVELLE PRIVATE KEY EXACTE
+  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY (PUBLIC) DÉFINITIVE EXACTE
+  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ PRIVATE KEY DÉFINITIVE EXACTE
   CONFIGURED: true, // ✅ CONFIGURATION 100% DÉFINITIVE !
   
   // 🚀 PLAN PREMIUM AVEC CLÉS API DÉFINITIVES
@@ -30,7 +30,7 @@ export class EmailService {
    */
   static initializeEmailJS(): void {
     try {
-      // Initialiser EmailJS avec votre nouvelle API Key
+      // Initialiser EmailJS avec votre API Key définitive
       emailjs.init(EMAILJS_CONFIG.USER_ID);
       console.log('✅ EmailJS initialisé avec CLÉS API DÉFINITIVES:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ SERVICE ID CONFIRMÉ PAR TEST REÇU:', EMAILJS_CONFIG.SERVICE_ID);
@@ -205,8 +205,8 @@ export class EmailService {
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqxx9fwyTsoAoF00i',
+        service_used: 'service_ymw6jih',
+        user_id_used: 'eqzx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // === PRODUITS POUR template_yng4k8s ===
@@ -226,15 +226,15 @@ export class EmailService {
         nom: attachmentFilename,
         taille: templateParams.attachment_size,
         type: templateParams.attachment_type,
-        service: 'service_ymw6jjh'
+        service: 'service_ymw6jih'
       });
 
       // Envoyer via EmailJS avec CLÉS API DÉFINITIVES
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via CLÉS API DÉFINITIVES:', response);
@@ -311,8 +311,8 @@ export class EmailService {
         has_pdf: 'true',
         pdf_method: 'base64_compressed_cles_api_definitives',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqxx9fwyTsoAoF00i',
+        service_used: 'service_ymw6jih',
+        user_id_used: 'eqzx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de pièce jointe dans ce cas pour template_yng4k8s
@@ -323,10 +323,10 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via CLÉS API DÉFINITIVES:', response);
@@ -388,8 +388,8 @@ export class EmailService {
         has_pdf: 'false',
         pdf_note: pdfNote,
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqxx9fwyTsoAoF00i',
+        service_used: 'service_ymw6jih',
+        user_id_used: 'eqzx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de pièce jointe pour template_yng4k8s
@@ -400,10 +400,10 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via CLÉS API DÉFINITIVES:', response);
@@ -472,8 +472,8 @@ export class EmailService {
         attachment_size: `${imageSizeKB} KB`,
         has_image: 'true',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqxx9fwyTsoAoF00i',
+        service_used: 'service_ymw6jih',
+        user_id_used: 'eqzx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de PDF pour l'aperçu avec template_yng4k8s
@@ -483,10 +483,10 @@ export class EmailService {
       console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via CLÉS API DÉFINITIVES...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Aperçu avec template template_yng4k8s envoyé via CLÉS API DÉFINITIVES:', response);
@@ -589,16 +589,16 @@ export class EmailService {
         attachment_size: '0 KB',
         pdf_method: 'test_cles_api_definitives',
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqxx9fwyTsoAoF00i',
+        service_used: 'service_ymw6jih',
+        user_id_used: 'eqzx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_'
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST REÇU
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jih CONFIRMÉ PAR TEST REÇU
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
-        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       const responseTime = Date.now() - startTime;

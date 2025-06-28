@@ -87,7 +87,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           </div>
           
           <p className="mt-2 text-sm text-green-100">
-            Félicitations ! Vos clés API définitives <strong>eqxx9fwyTsoAoF00i</strong> et <strong>MwZ9s8tHaiq8YimGZrF5_</strong> sont opérationnelles et le service <strong>service_ymw6jjh</strong> a été confirmé par le test reçu !
+            Félicitations ! Vos clés API définitives <strong>eqzx9fwyTsoAoF00i</strong> et <strong>MwZ9s8tHaiq8YimGZrF5_</strong> sont opérationnelles et le service <strong>service_ymw6jih</strong> a été confirmé par le test reçu !
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               🎉 CLÉS API DÉFINITIVES OPÉRATIONNELLES !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Vos clés API définitives eqxx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées et le service service_ymw6jjh a été confirmé par le test EmailJS reçu !
+              Vos clés API définitives eqzx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées et le service service_ymw6jih a été confirmé par le test EmailJS reçu !
             </p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           <div className="text-sm text-blue-700">
             <p className="font-semibold">✅ Email de test reçu avec succès :</p>
             <ul className="mt-2 ml-4 list-disc space-y-1">
-              <li><strong>Service testé :</strong> Gmail (service_ymw6jjh)</li>
+              <li><strong>Service testé :</strong> Gmail (service_ymw6jih)</li>
               <li><strong>Statut :</strong> Service configuré avec succès</li>
               <li><strong>Confirmation :</strong> "This test email was sent to you from the EmailJS dashboard"</li>
               <li><strong>Résultat :</strong> Configuration opérationnelle</li>
@@ -181,7 +181,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               />
             </div>
             <p className="text-xs text-green-600 mt-1">
-              ✅ Votre Service ID service_ymw6jjh a été confirmé par le test EmailJS reçu
+              ✅ Votre Service ID service_ymw6jih a été confirmé par le test EmailJS reçu
             </p>
           </div>
           
@@ -276,7 +276,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           <div className="space-y-1 text-sm">
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">API Key (Public) définitive : eqxx9fwyTsoAoF00i</span>
+              <span className="text-green-700 font-bold">API Key (Public) définitive : eqzx9fwyTsoAoF00i</span>
             </div>
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
@@ -284,7 +284,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               <Trophy className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">Service ID confirmé par test : service_ymw6jjh</span>
+              <span className="text-green-700 font-bold">Service ID confirmé par test : service_ymw6jih</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
@@ -297,7 +297,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               🎉 FÉLICITATIONS ! Clés API définitives opérationnelles !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Vos clés API définitives eqxx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées, le service service_ymw6jjh a été confirmé par le test reçu, et votre système est prêt pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
+              Vos clés API définitives eqzx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont configurées, le service service_ymw6jih a été confirmé par le test reçu, et votre système est prêt pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
             </p>
           </div>
         </div>
