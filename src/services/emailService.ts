@@ -3,13 +3,18 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS MISE À JOUR avec votre Template ID correct
+// Configuration EmailJS MISE À JOUR avec support 2MB (plan premium)
 const EMAILJS_CONFIG = {
   SERVICE_ID: 'service_ocsxnme', // ✅ VOTRE SERVICE ID
-  TEMPLATE_ID: 'template_yng4k8s', // ✅ TEMPLATE ID CORRIGÉ (était 'Myconfort')
+  TEMPLATE_ID: 'template_yng4k8s', // ✅ TEMPLATE ID
   USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ Votre API Key (Public Key)
   PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Votre Private Key
-  CONFIGURED: true // ✅ CONFIGURATION 100% COMPLÈTE !
+  CONFIGURED: true, // ✅ CONFIGURATION 100% COMPLÈTE !
+  
+  // 🚀 NOUVELLES LIMITES PLAN PREMIUM
+  MAX_ATTACHMENT_SIZE: 2 * 1024 * 1024, // 2MB en bytes
+  SUPPORTED_FORMATS: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xlsx'],
+  FALLBACK_SIZE: 50 * 1024 // 50KB pour fallback base64
 };
 
 export class EmailService {
@@ -30,46 +35,101 @@ export class EmailService {
       console.log('✅ EmailJS initialisé avec votre API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('✅ Service ID configuré:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID configuré:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('🚀 Support pièces jointes 2MB activé (plan premium)');
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
   }
 
   /**
-   * 🗜️ NOUVELLE MÉTHODE AMÉLIORÉE - Envoie la facture avec PDF COMPRESSÉ pour EmailJS
+   * 📎 NOUVELLE MÉTHODE - Valide les pièces jointes (2MB max)
+   */
+  static validateAttachment(file: Blob, filename: string): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
+    // Vérifier la taille (2MB max pour plan premium)
+    if (file.size > EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE) {
+      errors.push(`Le fichier est trop volumineux. Taille maximum autorisée: 2MB. Taille actuelle: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+    }
+    
+    // Vérifier le format
+    const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+    if (!EMAILJS_CONFIG.SUPPORTED_FORMATS.includes(fileExtension)) {
+      errors.push(`Format de fichier non supporté: ${fileExtension}. Formats autorisés: ${EMAILJS_CONFIG.SUPPORTED_FORMATS.join(', ')}`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * 🚀 MÉTHODE PRINCIPALE AMÉLIORÉE - Envoie la facture avec PDF 2MB
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC PDF COMPRESSÉ (MAX 50KB)');
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC SUPPORT 2MB (PLAN PREMIUM)');
       console.log('🔑 API Key:', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📎 Limite pièces jointes: 2MB');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
-      // 🗜️ GÉNÉRER LE PDF COMPRESSÉ POUR EMAILJS
-      console.log('🗜️ Génération du PDF compressé pour EmailJS...');
-      const pdfResult = await AdvancedPDFService.getCompressedPDFForEmail(invoice);
+      // 📄 GÉNÉRER LE PDF COMPLET (sans compression agressive)
+      console.log('📄 Génération du PDF complet pour plan premium...');
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      const pdfSizeKB = Math.round(pdfBlob.size / 1024);
+      const pdfSizeMB = (pdfBlob.size / 1024 / 1024).toFixed(2);
       
-      console.log('📊 Résultat PDF:', {
-        taille: `${pdfResult.sizeKB} KB`,
-        compressé: pdfResult.compressed ? 'Oui' : 'Non',
-        sousLimite: pdfResult.sizeKB <= 50 ? 'Oui' : 'Non'
+      console.log('📊 Taille PDF:', {
+        bytes: pdfBlob.size,
+        KB: pdfSizeKB,
+        MB: pdfSizeMB
       });
       
-      // Vérifier si le PDF peut être envoyé via EmailJS
-      if (pdfResult.sizeKB > 50) {
-        console.warn('⚠️ PDF encore trop volumineux pour EmailJS, envoi sans attachement');
-        return await this.sendEmailWithoutPDF(
-          invoice, 
-          `PDF trop volumineux (${pdfResult.sizeKB} KB > 50 KB) - sera envoyé séparément`
-        );
+      // Créer le nom de fichier
+      const pdfFilename = `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`;
+      
+      // 📎 VALIDER LA PIÈCE JOINTE
+      const validation = this.validateAttachment(pdfBlob, pdfFilename);
+      
+      if (!validation.isValid) {
+        console.warn('⚠️ PDF trop volumineux pour plan premium, tentative avec compression...');
+        return await this.sendWithCompressedPDF(invoice);
       }
       
-      // Convertir le PDF en base64 pour EmailJS
-      console.log('🔄 Conversion PDF en base64...');
-      const pdfBase64 = await this.blobToBase64(pdfResult.blob);
+      // 🚀 ENVOYER AVEC PIÈCE JOINTE 2MB
+      console.log('🚀 Envoi avec pièce jointe 2MB...');
+      return await this.sendEmailWithAttachment(invoice, pdfBlob, pdfFilename);
+      
+    } catch (error: any) {
+      console.error('❌ Erreur lors de l\'envoi avec pièce jointe 2MB:', error);
+      
+      // Fallback vers méthode compressée
+      console.log('🔄 Tentative avec PDF compressé...');
+      try {
+        return await this.sendWithCompressedPDF(invoice);
+      } catch (fallbackError) {
+        console.error('❌ Échec du fallback:', fallbackError);
+        throw new Error(`Erreur d'envoi: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * 📎 NOUVELLE MÉTHODE - Envoie email avec pièce jointe 2MB
+   */
+  private static async sendEmailWithAttachment(
+    invoice: Invoice, 
+    attachmentBlob: Blob, 
+    attachmentFilename: string
+  ): Promise<boolean> {
+    try {
+      // Convertir la pièce jointe en base64
+      const attachmentBase64 = await this.blobToBase64(attachmentBlob);
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -84,7 +144,7 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Préparer les données pour votre Template
+      // Préparer les données pour votre Template avec pièce jointe
       const templateParams = {
         // Destinataire
         to_email: invoice.client.email,
@@ -96,7 +156,7 @@ export class EmailService {
         
         // Sujet et message
         subject: `Facture MYCONFORT n°${invoice.invoiceNumber}`,
-        message: this.generateDefaultMessage(invoice, totalAmount, acompteAmount, montantRestant),
+        message: this.generatePremiumMessage(invoice, totalAmount, acompteAmount, montantRestant),
         
         // Informations facture
         invoice_number: invoice.invoiceNumber,
@@ -128,31 +188,107 @@ export class EmailService {
         // Mode de paiement
         payment_method: invoice.payment.method || 'Non spécifié',
         
-        // 🗜️ PDF COMPRESSÉ EN BASE64
-        pdf_data: pdfBase64.split(',')[1], // Enlever le préfixe data:application/pdf;base64,
-        pdf_filename: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
-        pdf_size: `${pdfResult.sizeKB} KB`,
-        pdf_compressed: pdfResult.compressed ? 'Oui' : 'Non',
+        // 📎 PIÈCE JOINTE 2MB (PLAN PREMIUM)
+        attachment_name: attachmentFilename,
+        attachment_content: attachmentBase64.split(',')[1], // Enlever le préfixe
+        attachment_type: 'application/pdf',
+        attachment_size: `${(attachmentBlob.size / 1024 / 1024).toFixed(2)}MB`,
         has_pdf: 'true',
+        pdf_method: 'attachment_2mb',
         
         // Métadonnées
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         
-        // Produits (résumé)
+        // Produits
         products_count: invoice.products.length,
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email avec PDF compressé en base64...');
-      console.log('📊 Données PDF compressé:', {
-        filename: templateParams.pdf_filename,
-        size: templateParams.pdf_size,
-        compressed: templateParams.pdf_compressed,
-        base64Length: templateParams.pdf_data.length
+      console.log('📧 Envoi email avec pièce jointe 2MB...');
+      console.log('📎 Pièce jointe:', {
+        nom: attachmentFilename,
+        taille: templateParams.attachment_size,
+        type: templateParams.attachment_type
       });
 
-      // Envoyer via EmailJS avec le Template ID correct
+      // Envoyer via EmailJS avec pièce jointe
+      const response = await emailjs.send(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATE_ID,
+        templateParams,
+        EMAILJS_CONFIG.USER_ID
+      );
+
+      console.log('✅ Email avec pièce jointe 2MB envoyé avec succès:', response);
+      return true;
+
+    } catch (error: any) {
+      console.error('❌ Erreur lors de l\'envoi avec pièce jointe:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🗜️ MÉTHODE DE FALLBACK - PDF compressé en base64
+   */
+  private static async sendWithCompressedPDF(invoice: Invoice): Promise<boolean> {
+    try {
+      console.log('🗜️ Envoi avec PDF compressé (fallback)...');
+      
+      // Générer PDF compressé
+      const pdfResult = await AdvancedPDFService.getCompressedPDFForEmail(invoice);
+      
+      if (pdfResult.sizeKB > 50) {
+        console.warn('⚠️ PDF encore trop volumineux même compressé, envoi sans PDF');
+        return await this.sendEmailWithoutPDF(
+          invoice, 
+          `PDF trop volumineux (${pdfResult.sizeKB} KB) - sera envoyé séparément`
+        );
+      }
+      
+      // Convertir en base64
+      const pdfBase64 = await this.blobToBase64(pdfResult.blob);
+      
+      // Calculer les montants
+      const totalAmount = invoice.products.reduce((sum, product) => {
+        return sum + calculateProductTotal(
+          product.quantity,
+          product.priceTTC,
+          product.discount,
+          product.discountType
+        );
+      }, 0);
+
+      const acompteAmount = invoice.payment.depositAmount || 0;
+      const montantRestant = totalAmount - acompteAmount;
+
+      // Paramètres avec PDF compressé en base64
+      const templateParams = {
+        to_email: invoice.client.email,
+        to_name: invoice.client.name,
+        from_name: 'MYCONFORT',
+        reply_to: 'myconfort@gmail.com',
+        subject: `Facture MYCONFORT n°${invoice.invoiceNumber}`,
+        message: this.generateCompressedMessage(invoice, totalAmount, acompteAmount, montantRestant),
+        invoice_number: invoice.invoiceNumber,
+        invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
+        total_amount: formatCurrency(totalAmount),
+        deposit_amount: acompteAmount > 0 ? formatCurrency(acompteAmount) : '',
+        remaining_amount: acompteAmount > 0 ? formatCurrency(montantRestant) : '',
+        has_signature: invoice.signature ? 'Oui' : 'Non',
+        advisor_name: invoice.advisorName || 'MYCONFORT',
+        company_name: 'MYCONFORT',
+        
+        // PDF compressé en base64
+        pdf_data: pdfBase64.split(',')[1],
+        pdf_filename: `Facture_MYCONFORT_${invoice.invoiceNumber}.pdf`,
+        pdf_size: `${pdfResult.sizeKB} KB`,
+        pdf_compressed: pdfResult.compressed ? 'Oui' : 'Non',
+        has_pdf: 'true',
+        pdf_method: 'base64_compressed'
+      };
+
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -164,25 +300,8 @@ export class EmailService {
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec PDF compressé:', error);
-      
-      // Fallback : envoyer sans PDF
-      console.log('🔄 Tentative d\'envoi sans PDF...');
-      try {
-        const fallbackSuccess = await this.sendEmailWithoutPDF(
-          invoice, 
-          'Le PDF de votre facture sera envoyé séparément en raison de contraintes techniques.'
-        );
-        
-        if (fallbackSuccess) {
-          console.log('✅ Email envoyé sans PDF (fallback réussi)');
-          return true;
-        }
-      } catch (fallbackError) {
-        console.error('❌ Échec du fallback:', fallbackError);
-      }
-      
-      throw new Error(`Erreur d'envoi: ${error.message}`);
+      console.error('❌ Erreur envoi PDF compressé:', error);
+      throw error;
     }
   }
 
@@ -191,7 +310,7 @@ export class EmailService {
    */
   private static async sendEmailWithoutPDF(invoice: Invoice, pdfNote: string): Promise<boolean> {
     try {
-      console.log('📧 Envoi email sans PDF avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📧 Envoi email sans PDF');
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -226,10 +345,6 @@ export class EmailService {
         advisor_name: invoice.advisorName || 'MYCONFORT',
         message: message,
         company_name: 'MYCONFORT',
-        company_address: '88 Avenue des Ternes, 75017 Paris',
-        company_phone: '04 68 50 41 45',
-        company_email: 'myconfort@gmail.com',
-        company_siret: '824 313 530 00027',
         has_pdf: 'false',
         pdf_note: pdfNote
       };
@@ -241,7 +356,7 @@ export class EmailService {
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Email sans PDF envoyé via Template ID:', response);
+      console.log('✅ Email sans PDF envoyé:', response);
       return true;
     } catch (error) {
       console.error('❌ Erreur envoi sans PDF:', error);
@@ -257,62 +372,26 @@ export class EmailService {
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA TEMPLATE ID AVEC COMPRESSION OPTIMISÉE');
+      console.log('📸 PARTAGE APERÇU VIA EMAILJS AVEC SUPPORT 2MB');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
 
-      // Vérifier et optimiser la taille de l'image pour EmailJS (limite 50KB)
+      // Vérifier la taille de l'image
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       let imageSizeKB = Math.round(imageBlob.size / 1024);
-      console.log('📊 Taille de l\'image originale:', imageSizeKB, 'KB');
+      console.log('📊 Taille de l\'image:', imageSizeKB, 'KB');
 
       let finalImageDataUrl = imageDataUrl;
 
-      // Compression agressive pour respecter la limite EmailJS de 50KB
-      if (imageSizeKB > 40) { // Limite stricte pour les images
-        console.log('🗜️ Compression agressive de l\'image pour EmailJS...');
-        
-        const img = new Image();
-        img.src = imageDataUrl;
-        
-        await new Promise((resolve) => {
-          img.onload = resolve;
-        });
-
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d')!;
-        
-        // Réduction drastique de la taille pour EmailJS
-        const maxWidth = 400;  // Réduit de 600 à 400
-        const maxHeight = 600; // Réduit de 800 à 600
-        let { width, height } = img;
-        
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-        
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        finalImageDataUrl = canvas.toDataURL('image/jpeg', 0.3); // Compression très forte pour EmailJS
+      // Si l'image est trop grande pour le plan premium (2MB), la compresser
+      if (imageBlob.size > EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE) {
+        console.log('🗜️ Compression de l\'image pour respecter la limite 2MB...');
+        finalImageDataUrl = await this.compressImageForEmail(imageDataUrl, EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE);
         
         const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
         imageSizeKB = Math.round(compressedBlob.size / 1024);
-        console.log('📊 Taille après compression pour EmailJS:', imageSizeKB, 'KB');
-      }
-
-      // Si encore trop grand pour EmailJS, envoyer sans image (updated to 49KB limit)
-      if (imageSizeKB > 49) { // Updated from 45 to 49 KB
-        console.warn('⚠️ Image encore trop volumineuse pour EmailJS, envoi sans image');
-        return await this.sendPreviewWithoutImage(invoice);
+        console.log('📊 Taille après compression:', imageSizeKB, 'KB');
       }
 
       // Préparer le message pour l'aperçu
@@ -332,24 +411,18 @@ export class EmailService {
         invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
         message: previewMessage,
         
-        // Image compressée pour EmailJS
-        image_data: finalImageDataUrl.split(',')[1],
-        image_filename: `apercu_facture_${invoice.invoiceNumber}.jpg`,
-        image_size: `${imageSizeKB} KB`,
-        image_compressed: imageSizeKB < 40 ? 'Non' : 'Oui',
+        // Image comme pièce jointe
+        attachment_name: `apercu_facture_${invoice.invoiceNumber}.jpg`,
+        attachment_content: finalImageDataUrl.split(',')[1],
+        attachment_type: 'image/jpeg',
+        attachment_size: `${imageSizeKB} KB`,
         has_image: 'true',
         
         advisor_name: invoice.advisorName || 'MYCONFORT',
         company_name: 'MYCONFORT'
       };
 
-      console.log('📧 Envoi aperçu compressé via EmailJS...');
-      console.log('📊 Données image compressée:', {
-        filename: templateParams.image_filename,
-        size: templateParams.image_size,
-        compressed: templateParams.image_compressed,
-        base64Length: templateParams.image_data.length
-      });
+      console.log('📧 Envoi aperçu avec pièce jointe image...');
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
@@ -358,73 +431,57 @@ export class EmailService {
         EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Aperçu compressé envoyé avec succès via EmailJS:', response);
+      console.log('✅ Aperçu envoyé avec succès:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu compressé:', error);
-      
-      // Fallback sans image
-      try {
-        return await this.sendPreviewWithoutImage(invoice);
-      } catch (fallbackError) {
-        throw new Error(`Erreur d'envoi d'aperçu: ${error.message}`);
-      }
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu:', error);
+      throw new Error(`Erreur d'envoi d'aperçu: ${error.message}`);
     }
   }
 
   /**
-   * 📧 Envoie l'aperçu sans image (fallback)
+   * 🗜️ Compresse une image pour respecter la limite de taille
    */
-  private static async sendPreviewWithoutImage(invoice: Invoice): Promise<boolean> {
-    try {
-      console.log('📧 Envoi aperçu sans image avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      
-      let previewMessage = `Bonjour ${invoice.client.name},\n\n`;
-      previewMessage += `Voici les détails de votre facture n°${invoice.invoiceNumber} :\n\n`;
-      previewMessage += `📋 RÉSUMÉ :\n`;
-      previewMessage += `• Numéro: ${invoice.invoiceNumber}\n`;
-      previewMessage += `• Date: ${new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}\n`;
-      
-      const totalAmount = invoice.products.reduce((sum, product) => {
-        return sum + calculateProductTotal(
-          product.quantity,
-          product.priceTTC,
-          product.discount,
-          product.discountType
-        );
-      }, 0);
-      
-      previewMessage += `• Montant total: ${formatCurrency(totalAmount)}\n\n`;
-      previewMessage += `L'aperçu visuel sera envoyé séparément.\n\n`;
-      previewMessage += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}`;
-
-      const templateParams = {
-        to_email: invoice.client.email,
-        to_name: invoice.client.name,
-        from_name: 'MYCONFORT',
-        reply_to: 'myconfort@gmail.com',
-        subject: `Détails facture MYCONFORT n°${invoice.invoiceNumber}`,
-        invoice_number: invoice.invoiceNumber,
-        invoice_date: new Date(invoice.invoiceDate).toLocaleDateString('fr-FR'),
-        message: previewMessage,
-        has_image: 'false',
-        advisor_name: invoice.advisorName || 'MYCONFORT',
-        company_name: 'MYCONFORT'
+  private static async compressImageForEmail(imageDataUrl: string, maxSize: number): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d')!;
+        
+        // Calculer les nouvelles dimensions
+        let { width, height } = img;
+        const maxDimension = 1200; // Limite raisonnable
+        
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height * maxDimension) / width;
+            width = maxDimension;
+          } else {
+            width = (width * maxDimension) / height;
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compression progressive
+        let quality = 0.8;
+        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Réduire la qualité jusqu'à respecter la limite
+        while (compressedDataUrl.length * 0.75 > maxSize && quality > 0.1) {
+          quality -= 0.1;
+          compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        
+        resolve(compressedDataUrl);
       };
-
-      const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID,
-        templateParams,
-        EMAILJS_CONFIG.USER_ID
-      );
-
-      console.log('✅ Aperçu sans image envoyé via Template ID:', response);
-      return true;
-    } catch (error) {
-      console.error('❌ Erreur envoi aperçu sans image:', error);
-      return false;
-    }
+      img.src = imageDataUrl;
+    });
   }
 
   /**
@@ -432,24 +489,25 @@ export class EmailService {
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC COMPRESSION PDF');
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC SUPPORT 2MB');
       console.log('🔑 Public Key (User ID):', EMAILJS_CONFIG.USER_ID);
       console.log('🎯 Service ID:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
+      console.log('📎 Support pièces jointes: 2MB (plan premium)');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
       const startTime = Date.now();
       
-      // Préparer les données de test pour votre Template
+      // Préparer les données de test
       const testParams = {
-        to_email: 'test@myconfort.com', // Email de test
+        to_email: 'test@myconfort.com',
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
-        subject: 'Test de connexion EmailJS MYCONFORT avec compression PDF',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec support de compression PDF pour pièces jointes.',
+        subject: 'Test de connexion EmailJS MYCONFORT avec support 2MB',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec support des pièces jointes 2MB (plan premium).',
         invoice_number: 'TEST-001',
         invoice_date: new Date().toLocaleDateString('fr-FR'),
         total_amount: '100,00 €',
@@ -457,13 +515,10 @@ export class EmailService {
         advisor_name: 'Test',
         has_pdf: 'false',
         has_image: 'false',
-        pdf_compressed: 'Non applicable'
+        attachment_size: '0 KB',
+        pdf_method: 'test'
       };
 
-      // Envoyer un test via EmailJS
-      console.log('📧 Test avec Service ID:', EMAILJS_CONFIG.SERVICE_ID);
-      console.log('📧 Test avec Template ID:', EMAILJS_CONFIG.TEMPLATE_ID);
-      
       const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
@@ -475,7 +530,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec compression PDF ! Service prêt pour l'envoi d'emails avec PDF compressés (max 50KB).`,
+        message: `✅ Connexion EmailJS réussie avec support 2MB ! Service prêt pour l'envoi d'emails avec pièces jointes jusqu'à 2MB.`,
         responseTime
       };
     } catch (error: any) {
@@ -498,6 +553,94 @@ export class EmailService {
         message: errorMessage
       };
     }
+  }
+
+  /**
+   * 📧 NOUVEAU - Génère un message pour plan premium
+   */
+  private static generatePremiumMessage(
+    invoice: Invoice, 
+    totalAmount: number, 
+    acompteAmount: number, 
+    montantRestant: number
+  ): string {
+    let message = `Bonjour ${invoice.client.name},\n\n`;
+    message += `Veuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec notre système MYCONFORT.\n\n`;
+    
+    message += `📋 DÉTAILS DE LA FACTURE :\n`;
+    message += `• Numéro: ${invoice.invoiceNumber}\n`;
+    message += `• Date: ${new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}\n`;
+    
+    if (acompteAmount > 0) {
+      message += `• Total TTC: ${formatCurrency(totalAmount)}\n`;
+      message += `• Acompte versé: ${formatCurrency(acompteAmount)}\n`;
+      message += `• Montant restant à payer: ${formatCurrency(montantRestant)}\n\n`;
+    } else {
+      message += `• Montant total: ${formatCurrency(totalAmount)}\n\n`;
+    }
+    
+    if (invoice.payment.method) {
+      message += `💳 Mode de paiement: ${invoice.payment.method}\n\n`;
+    }
+    
+    if (invoice.signature) {
+      message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
+    }
+    
+    message += `📎 Le PDF de votre facture est joint à cet email (plan premium - jusqu'à 2MB).\n\n`;
+    message += `Pour toute question, n'hésitez pas à nous contacter.\n\n`;
+    message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n`;
+    message += `---\nMYCONFORT\n`;
+    message += `88 Avenue des Ternes, 75017 Paris\n`;
+    message += `Tél: 04 68 50 41 45\n`;
+    message += `Email: myconfort@gmail.com\n`;
+    message += `SIRET: 824 313 530 00027`;
+
+    return message;
+  }
+
+  /**
+   * 📧 Génère un message pour PDF compressé
+   */
+  private static generateCompressedMessage(
+    invoice: Invoice, 
+    totalAmount: number, 
+    acompteAmount: number, 
+    montantRestant: number
+  ): string {
+    let message = `Bonjour ${invoice.client.name},\n\n`;
+    message += `Veuillez trouver ci-joint votre facture n°${invoice.invoiceNumber} générée avec notre système MYCONFORT.\n\n`;
+    
+    message += `📋 DÉTAILS DE LA FACTURE :\n`;
+    message += `• Numéro: ${invoice.invoiceNumber}\n`;
+    message += `• Date: ${new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}\n`;
+    
+    if (acompteAmount > 0) {
+      message += `• Total TTC: ${formatCurrency(totalAmount)}\n`;
+      message += `• Acompte versé: ${formatCurrency(acompteAmount)}\n`;
+      message += `• Montant restant à payer: ${formatCurrency(montantRestant)}\n\n`;
+    } else {
+      message += `• Montant total: ${formatCurrency(totalAmount)}\n\n`;
+    }
+    
+    if (invoice.payment.method) {
+      message += `💳 Mode de paiement: ${invoice.payment.method}\n\n`;
+    }
+    
+    if (invoice.signature) {
+      message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
+    }
+    
+    message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi).\n\n`;
+    message += `Pour toute question, n'hésitez pas à nous contacter.\n\n`;
+    message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n`;
+    message += `---\nMYCONFORT\n`;
+    message += `88 Avenue des Ternes, 75017 Paris\n`;
+    message += `Tél: 04 68 50 41 45\n`;
+    message += `Email: myconfort@gmail.com\n`;
+    message += `SIRET: 824 313 530 00027`;
+
+    return message;
   }
 
   /**
@@ -532,7 +675,6 @@ export class EmailService {
       message += '✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n';
     }
     
-    message += `📎 Le PDF de votre facture est inclus dans cet email (compressé pour optimiser l'envoi).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.\n\n`;
     message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}\n\n`;
     message += `---\nMYCONFORT\n`;
@@ -568,7 +710,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec compression PDF (max 50KB)',
+      status: '✅ EmailJS configuré avec support pièces jointes 2MB (plan premium)',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -604,7 +746,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec compression PDF');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec support 2MB');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);

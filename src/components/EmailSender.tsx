@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap, Download, TestTube } from 'lucide-react';
+import { Mail, Loader, CheckCircle, AlertCircle, FileText, Shield, Send, Settings, Zap, Download, TestTube, Attachment } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { EmailService } from '../services/emailService';
@@ -42,8 +42,8 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
   // Validation des données
   const validation = EmailService.validateEmailData(invoice);
 
-  // 🗜️ ENVOI AUTOMATIQUE AVEC PDF COMPRESSÉ (méthode originale)
-  const sendEmailWithCompressedPDF = async () => {
+  // 🚀 ENVOI AUTOMATIQUE AVEC PIÈCES JOINTES 2MB (plan premium)
+  const sendEmailWithPremiumAttachment = async () => {
     if (!validation.isValid) {
       onError(`Erreurs de validation: ${validation.errors.join(', ')}`);
       return;
@@ -52,15 +52,15 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     setLoading(true);
 
     try {
-      setStep('🗜️ Génération PDF compressé pour EmailJS (max 50KB)...');
+      setStep('🚀 Génération PDF complet pour plan premium (2MB max)...');
       
       const success = await EmailService.sendInvoiceWithPDF(invoice);
 
       if (success) {
-        setStep('✅ Envoi réussi avec PDF compressé !');
+        setStep('✅ Envoi réussi avec pièce jointe premium !');
         
-        let successMessage = `✅ Facture envoyée avec succès via EmailJS ! `;
-        successMessage += `PDF compressé (≤50KB) livré automatiquement à ${invoice.client.email}`;
+        let successMessage = `✅ Facture envoyée avec succès via EmailJS (Plan Premium) ! `;
+        successMessage += `PDF joint automatiquement à ${invoice.client.email}`;
         
         if (acompteAmount > 0) {
           successMessage += `\n💰 Acompte: ${formatCurrency(acompteAmount)} | 💳 Reste: ${formatCurrency(montantRestant)}`;
@@ -70,14 +70,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           successMessage += `\n🔒 Signature électronique incluse`;
         }
         
-        successMessage += `\n🗜️ PDF automatiquement compressé pour respecter les limites EmailJS`;
+        successMessage += `\n📎 PDF joint comme pièce jointe (jusqu'à 2MB supporté)`;
         
         onSuccess(successMessage);
       } else {
         onError('❌ Erreur lors de l\'envoi via EmailJS. Vérifiez votre configuration et réessayez.');
       }
     } catch (error: any) {
-      console.error('❌ Erreur envoi EmailJS avec compression:', error);
+      console.error('❌ Erreur envoi EmailJS avec pièce jointe premium:', error);
       onError(`Erreur lors de l'envoi via EmailJS: ${error.message}`);
     } finally {
       setLoading(false);
@@ -166,7 +166,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
             </div>
             <div>
               <h3 className="text-xl font-bold text-black">Service d'emails professionnel</h3>
-              <p className="text-black font-semibold">🗜️ PDF compressé • 📧 Max 50KB • 📎 Template personnalisé</p>
+              <p className="text-black font-semibold">📎 Plan Premium • 🚀 Pièces jointes 2MB • 📧 Template personnalisé</p>
             </div>
           </div>
           
@@ -185,12 +185,12 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         </div>
 
-        {/* Configuration EmailJS avec compression */}
+        {/* Configuration EmailJS avec support 2MB */}
         <div className="bg-white rounded-lg p-4 mb-4 border-2 border-[#477A0C]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <Zap className="w-5 h-5 text-[#477A0C]" />
-              <h4 className="font-bold text-black">Configuration EmailJS avec Compression PDF</h4>
+              <Attachment className="w-5 h-5 text-[#477A0C]" />
+              <h4 className="font-bold text-black">Configuration EmailJS Plan Premium (2MB)</h4>
             </div>
             <button
               onClick={onShowConfig}
@@ -213,14 +213,14 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
             {emailConfig.configured && (
               <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
                 <div className="flex items-center space-x-1">
-                  <Zap className="w-3 h-3" />
-                  <span className="font-bold">Compression PDF activée :</span>
+                  <Attachment className="w-3 h-3" />
+                  <span className="font-bold">Plan Premium activé :</span>
                 </div>
                 <ul className="mt-1 ml-4 list-disc text-xs">
-                  <li>PDF automatiquement compressé si &gt; 50KB</li>
-                  <li>Optimisation intelligente pour EmailJS</li>
-                  <li>Qualité préservée avec taille réduite</li>
-                  <li>Fallback sans PDF si compression insuffisante</li>
+                  <li>Pièces jointes jusqu'à 2MB supportées</li>
+                  <li>PDF complet sans compression agressive</li>
+                  <li>Qualité maximale préservée</li>
+                  <li>Fallback automatique si nécessaire</li>
                 </ul>
               </div>
             )}
@@ -232,7 +232,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <Download className="w-5 h-5 text-purple-600" />
-              <h4 className="font-bold text-purple-800">🚀 **CRÉATION DE PDF** (Recommandée)</h4>
+              <h4 className="font-bold text-purple-800">🚀 **CRÉATION DE PDF** (Alternative)</h4>
             </div>
             <button
               onClick={testSeparateMethod}
@@ -350,7 +350,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
               <Loader className="w-5 h-5 animate-spin text-blue-600" />
               <div>
                 <div className="font-bold text-blue-800">
-                  {separateLoading ? 'Création de PDF en cours...' : 'EmailJS avec compression PDF en action...'}
+                  {separateLoading ? 'Création de PDF en cours...' : 'EmailJS Plan Premium en action...'}
                 </div>
                 <div className="text-sm text-blue-700 font-semibold">{step}</div>
               </div>
@@ -360,7 +360,29 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
 
         {/* Boutons d'action */}
         <div className="flex flex-col space-y-3">
-          {/* Bouton création de PDF (recommandée) */}
+          {/* Bouton plan premium (recommandé) */}
+          <button
+            onClick={sendEmailWithPremiumAttachment}
+            disabled={loading || !validation.isValid}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:bg-gray-400 disabled:text-gray-600 text-white px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          >
+            {loading ? (
+              <>
+                <Loader className="w-6 h-6 animate-spin" />
+                <span>Envoi en cours...</span>
+              </>
+            ) : (
+              <>
+                <Attachment className="w-6 h-6" />
+                <FileText className="w-6 h-6" />
+                <Mail className="w-5 h-5" />
+                {invoice.signature && <Shield className="w-5 h-5" />}
+                <span>📎 Envoyer via EmailJS (Plan Premium 2MB)</span>
+              </>
+            )}
+          </button>
+
+          {/* Bouton création de PDF (alternative) */}
           <button
             onClick={sendWithSeparateMethod}
             disabled={separateLoading || !validation.isValid}
@@ -376,29 +398,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                 <Download className="w-6 h-6" />
                 <Mail className="w-5 h-5" />
                 {invoice.signature && <Shield className="w-5 h-5" />}
-                <span>🚀 **CRÉATION DE PDF** (Recommandée)</span>
-              </>
-            )}
-          </button>
-
-          {/* Bouton méthode originale */}
-          <button
-            onClick={sendEmailWithCompressedPDF}
-            disabled={loading || !validation.isValid}
-            className="bg-[#477A0C] hover:bg-[#3A6A0A] disabled:bg-gray-400 disabled:text-gray-600 text-[#F2EFE2] px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
-          >
-            {loading ? (
-              <>
-                <Loader className="w-6 h-6 animate-spin" />
-                <span>Compression et envoi...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-6 h-6" />
-                <FileText className="w-6 h-6" />
-                <Mail className="w-5 h-5" />
-                {invoice.signature && <Shield className="w-5 h-5" />}
-                <span>Envoyer via EmailJS (Compressé)</span>
+                <span>🚀 **CRÉATION DE PDF** (Alternative)</span>
               </>
             )}
           </button>
@@ -418,11 +418,11 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
             </p>
           )}
           <div className="mt-2 text-xs space-y-1">
-            <p className="text-purple-700 font-bold">
-              🚀 **CRÉATION DE PDF** : PDF local complet + Email de notification (Recommandée)
+            <p className="text-green-700 font-bold">
+              📎 **PLAN PREMIUM** : Pièces jointes jusqu'à 2MB (Recommandé)
             </p>
-            <p className="text-blue-700 font-bold">
-              🗜️ MÉTHODE CLASSIQUE : PDF compressé dans l'email (max 50KB)
+            <p className="text-purple-700 font-bold">
+              🚀 **CRÉATION DE PDF** : PDF local complet + Email de notification (Alternative)
             </p>
           </div>
         </div>
