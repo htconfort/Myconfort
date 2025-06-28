@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Package, Building2, Archive } from 'lucide-react';
+import { Send, Users, Package, Building2, Archive } from 'lucide-react';
 
 interface HeaderProps {
   onGeneratePDF: () => void;
@@ -60,6 +60,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Users size={18} />
             <span className="hidden md:inline">Clients</span>
+          </button>
+          
+          <button
+            onClick={onSendEmail}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            title="Configurer EmailJS"
+          >
+            <Send size={18} />
+            <span className="hidden md:inline">EmailJS</span>
           </button>
         </div>
       </div>

@@ -3,12 +3,12 @@ import emailjs from 'emailjs-com';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration EmailJS DÉFINITIVE avec clés API exactes
+// Configuration EmailJS
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CONFIRMÉ PAR TEST REÇU
+  SERVICE_ID: 'service_ocsxnme',
   TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY DÉFINITIVE (PUBLIC) EXACTE
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_' // ✅ PRIVATE KEY DÉFINITIVE EXACTE
+  USER_ID: 'hvgYUCG9j2lURrt5k',
+  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6'
 };
 
 export class SeparatePdfEmailService {
@@ -18,7 +18,7 @@ export class SeparatePdfEmailService {
   static initializeEmailJS(): void {
     try {
       emailjs.init(EMAILJS_CONFIG.USER_ID);
-      console.log('✅ EmailJS initialisé pour méthode séparée avec CLÉS API DÉFINITIVES');
+      console.log('✅ EmailJS initialisé pour méthode séparée');
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
@@ -86,11 +86,11 @@ export class SeparatePdfEmailService {
   }
 
   /**
-   * 📧 ENVOIE L'EMAIL SÉPARÉMENT (sans PDF) avec CLÉS API DÉFINITIVES
+   * 📧 ENVOIE L'EMAIL SÉPARÉMENT (sans PDF)
    */
   static async sendEmailSeparately(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('📧 ENVOI EMAIL SÉPARÉ (sans PDF dans le payload) avec CLÉS API DÉFINITIVES');
+      console.log('📧 ENVOI EMAIL SÉPARÉ (sans PDF dans le payload)');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -137,7 +137,7 @@ export class SeparatePdfEmailService {
       message += `• Email: myconfort@gmail.com\n\n`;
       message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}`;
 
-      // Paramètres pour le template (SANS PDF) avec CLÉS API DÉFINITIVES
+      // Paramètres pour le template (SANS PDF)
       const templateParams = {
         // Destinataire
         to_email: invoice.client.email,
@@ -184,43 +184,39 @@ export class SeparatePdfEmailService {
         has_pdf: 'false', // Pas de PDF dans l'email
         pdf_note: 'PDF généré et téléchargé localement',
         
-        // Métadonnées avec CLÉS API DÉFINITIVES
+        // Métadonnées
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
-        template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
-        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
-        // Produits
+        // Produits (résumé)
         products_count: invoice.products.length,
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email de notification (sans PDF) avec CLÉS API DÉFINITIVES...');
+      console.log('📧 Envoi email de notification (sans PDF)...');
       
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST REÇU
+        EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID
       );
 
-      console.log('✅ Email de notification envoyé avec succès via CLÉS API DÉFINITIVES:', response);
+      console.log('✅ Email de notification envoyé avec succès:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'email séparé avec CLÉS API DÉFINITIVES:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'email séparé:', error);
       throw new Error(`Erreur d'envoi email: ${error.message}`);
     }
   }
 
   /**
-   * 🚀 MÉTHODE PRINCIPALE : Génère le PDF ET envoie l'email séparément avec CLÉS API DÉFINITIVES
+   * 🚀 MÉTHODE PRINCIPALE : Génère le PDF ET envoie l'email séparément
    */
   static async generatePDFAndSendEmail(invoice: Invoice): Promise<{ pdfGenerated: boolean; emailSent: boolean; message: string }> {
     try {
-      console.log('🚀 PROCESSUS SÉPARÉ : PDF LOCAL + EMAIL SANS PAYLOAD avec CLÉS API DÉFINITIVES');
+      console.log('🚀 PROCESSUS SÉPARÉ : PDF LOCAL + EMAIL SANS PAYLOAD');
       
       let pdfGenerated = false;
       let emailSent = false;
@@ -237,13 +233,13 @@ export class SeparatePdfEmailService {
         message += '❌ Erreur lors de la génération du PDF\n';
       }
 
-      // Étape 2: Envoyer l'email de notification avec CLÉS API DÉFINITIVES
+      // Étape 2: Envoyer l'email de notification
       try {
-        console.log('📧 Étape 2: Envoi email de notification avec CLÉS API DÉFINITIVES...');
+        console.log('📧 Étape 2: Envoi email de notification...');
         emailSent = await this.sendEmailSeparately(invoice);
-        message += '✅ Email de notification envoyé avec succès via CLÉS API DÉFINITIVES\n';
+        message += '✅ Email de notification envoyé avec succès\n';
       } catch (error) {
-        console.error('❌ Erreur envoi email avec CLÉS API DÉFINITIVES:', error);
+        console.error('❌ Erreur envoi email:', error);
         message += '❌ Erreur lors de l\'envoi de l\'email\n';
       }
 
@@ -251,7 +247,7 @@ export class SeparatePdfEmailService {
       if (pdfGenerated && emailSent) {
         message += '\n🎉 Processus terminé avec succès !\n';
         message += `📎 PDF téléchargé: facture-myconfort-${invoice.invoiceNumber}.pdf\n`;
-        message += `📧 Email envoyé à: ${invoice.client.email} via CLÉS API DÉFINITIVES`;
+        message += `📧 Email envoyé à: ${invoice.client.email}`;
       } else if (pdfGenerated && !emailSent) {
         message += '\n⚠️ PDF généré mais email non envoyé';
       } else if (!pdfGenerated && emailSent) {
@@ -267,7 +263,7 @@ export class SeparatePdfEmailService {
       };
 
     } catch (error: any) {
-      console.error('❌ Erreur processus séparé avec CLÉS API DÉFINITIVES:', error);
+      console.error('❌ Erreur processus séparé:', error);
       return {
         pdfGenerated: false,
         emailSent: false,
@@ -310,19 +306,19 @@ export class SeparatePdfEmailService {
   }
 
   /**
-   * 🧪 TEST DE LA MÉTHODE SÉPARÉE avec CLÉS API DÉFINITIVES
+   * 🧪 TEST DE LA MÉTHODE SÉPARÉE
    */
   static async testSeparateMethod(invoice: Invoice): Promise<void> {
-    console.log('🧪 TEST DE LA MÉTHODE SÉPARÉE : PDF LOCAL + EMAIL SANS PAYLOAD avec CLÉS API DÉFINITIVES');
+    console.log('🧪 TEST DE LA MÉTHODE SÉPARÉE : PDF LOCAL + EMAIL SANS PAYLOAD');
     
     try {
       const result = await this.generatePDFAndSendEmail(invoice);
       
-      let alertMessage = '🧪 TEST DE LA MÉTHODE SÉPARÉE TERMINÉ avec CLÉS API DÉFINITIVES\n\n';
+      let alertMessage = '🧪 TEST DE LA MÉTHODE SÉPARÉE TERMINÉ\n\n';
       alertMessage += result.message;
       
       if (result.pdfGenerated && result.emailSent) {
-        alertMessage += '\n\n✅ Test réussi ! Méthode séparée fonctionnelle avec CLÉS API DÉFINITIVES.';
+        alertMessage += '\n\n✅ Test réussi ! Méthode séparée fonctionnelle.';
       } else {
         alertMessage += '\n\n⚠️ Test partiellement réussi. Vérifiez les détails ci-dessus.';
       }
@@ -330,7 +326,7 @@ export class SeparatePdfEmailService {
       alert(alertMessage);
       
     } catch (error) {
-      console.error('❌ Erreur test méthode séparée avec CLÉS API DÉFINITIVES:', error);
+      console.error('❌ Erreur test méthode séparée:', error);
       alert('❌ Erreur lors du test de la méthode séparée. Vérifiez la console pour plus de détails.');
     }
   }
