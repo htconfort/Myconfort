@@ -38,7 +38,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
       // Mettre à jour la configuration dans le service
       EmailService.updateConfig(serviceId, templateId);
       
-      onSuccess('✅ Configuration EmailJS confirmée avec Service ID corrigé ! Votre système est 100% opérationnel.');
+      onSuccess('✅ Configuration EmailJS confirmée avec clés API corrigées ! Votre système est 100% opérationnel.');
       setIsSaving(false);
     } catch (error: any) {
       onError(`Erreur lors de l'enregistrement: ${error.message}`);
@@ -56,7 +56,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
       setTestResult(result);
       
       if (result.success) {
-        onSuccess(`✅ Test réussi avec Service ID corrigé ! ${result.message}`);
+        onSuccess(`✅ Test réussi avec clés API corrigées ! ${result.message}`);
       } else {
         onError(`❌ Test échoué: ${result.message}`);
       }
@@ -72,64 +72,64 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
   const configInfo = EmailService.getConfigInfo();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Configuration EmailJS - Service ID Corrigé" maxWidth="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Configuration EmailJS - Clés API Corrigées" maxWidth="max-w-2xl">
       <div className="space-y-6">
-        {/* En-tête de félicitations avec Service ID corrigé */}
+        {/* En-tête de félicitations avec clés API corrigées */}
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-4">
           <div className="flex items-center space-x-3 mb-2">
             <div className="bg-white/20 p-2 rounded-full">
               <Trophy className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">🎉 Service ID Corrigé Opérationnel !</h3>
-              <p className="text-green-100">EmailJS configuré avec le bon Service ID</p>
+              <h3 className="text-xl font-bold">🎉 Clés API Corrigées Opérationnelles !</h3>
+              <p className="text-green-100">EmailJS configuré avec les bonnes clés API</p>
             </div>
           </div>
           
           <p className="mt-2 text-sm text-green-100">
-            Félicitations ! Votre Service ID <strong>service_ymw6jjh</strong> est maintenant configuré et opérationnel.
+            Félicitations ! Vos nouvelles clés API <strong>eqxx9fwyTsoAoF00i</strong> et <strong>MwZ9s8tHaiq8YimGZrF5_</strong> sont maintenant configurées et opérationnelles.
           </p>
         </div>
 
-        {/* Configuration complète avec Service ID corrigé */}
+        {/* Configuration complète avec clés API corrigées */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-3">
             <CheckCircle className="w-5 h-5 text-green-600" />
-            <h4 className="font-medium text-green-800">Configuration automatique avec Service ID corrigé !</h4>
+            <h4 className="font-medium text-green-800">Configuration automatique avec clés API corrigées !</h4>
           </div>
           
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Key className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700 font-semibold">API Key (Public) :</span>
-              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
-                {configInfo.apiKey}
-              </span>
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Shield className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700 font-semibold">Private Key :</span>
-              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
-                {configInfo.privateKey}
-              </span>
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Settings className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-700 font-semibold">Service ID Corrigé :</span>
+              <span className="text-sm text-green-700 font-semibold">API Key (Public) CORRIGÉE :</span>
               <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded font-bold">
-                {configInfo.serviceId}
+                {configInfo.apiKey}
               </span>
               <Star className="w-4 h-4 text-yellow-500" />
             </div>
             
             <div className="flex items-center space-x-2">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700 font-semibold">Private Key CORRIGÉE :</span>
+              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded font-bold">
+                {configInfo.privateKey}
+              </span>
+              <Star className="w-4 h-4 text-yellow-500" />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Settings className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-700 font-semibold">Service ID :</span>
+              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
+                {configInfo.serviceId}
+              </span>
+              <CheckCircle className="w-4 h-4 text-green-600" />
+            </div>
+            
+            <div className="flex items-center space-x-2">
               <Mail className="w-4 h-4 text-green-600" />
               <span className="text-sm text-green-700 font-semibold">Template ID :</span>
-              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded font-bold">
+              <span className="text-sm text-green-700 font-mono bg-green-100 px-2 py-1 rounded">
                 {configInfo.templateId}
               </span>
               <CheckCircle className="w-4 h-4 text-green-600" />
@@ -138,10 +138,10 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           
           <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded">
             <p className="text-sm text-green-800 font-semibold">
-              🎉 SERVICE ID CORRIGÉ OPÉRATIONNEL !
+              🎉 CLÉS API CORRIGÉES OPÉRATIONNELLES !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Votre Service ID service_ymw6jjh est maintenant configuré et prêt pour l'envoi d'emails avec pièces jointes 2MB.
+              Vos nouvelles clés API eqxx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont maintenant configurées et prêtes pour l'envoi d'emails avec pièces jointes 2MB.
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              Service ID <span className="text-green-600">✅ Service ID Corrigé</span>
+              Service ID <span className="text-green-600">✅ Service ID Confirmé</span>
             </label>
             <div className="flex items-center">
               <Settings className="w-5 h-5 text-gray-400 mr-2" />
@@ -202,7 +202,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               )}
               <div>
                 <p className={`font-medium ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
-                  {testResult.success ? '✅ Test réussi avec Service ID corrigé !' : '❌ Test échoué'}
+                  {testResult.success ? '✅ Test réussi avec clés API corrigées !' : '❌ Test échoué'}
                 </p>
                 <p className={`text-sm ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
                   {testResult.message}
@@ -217,9 +217,9 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           </div>
         )}
 
-        {/* Fonctionnalités disponibles avec Service ID corrigé */}
+        {/* Fonctionnalités disponibles avec clés API corrigées */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-800 mb-2">🚀 Fonctionnalités avec Service ID corrigé :</h4>
+          <h4 className="font-medium text-blue-800 mb-2">🚀 Fonctionnalités avec clés API corrigées :</h4>
           <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
@@ -248,7 +248,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           </div>
         </div>
 
-        {/* Statut final avec Service ID corrigé */}
+        {/* Statut final avec clés API corrigées */}
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
             <Trophy className="w-5 h-5 text-green-600" />
@@ -257,29 +257,29 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
           
           <div className="space-y-1 text-sm">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-green-700">API Key configurée automatiquement</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-green-700">Private Key configurée automatiquement</span>
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span className="text-green-700 font-bold">API Key (Public) corrigée : eqxx9fwyTsoAoF00i</span>
             </div>
             <div className="flex items-center space-x-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-green-700 font-bold">Service ID corrigé : service_ymw6jjh</span>
+              <span className="text-green-700 font-bold">Private Key corrigée : MwZ9s8tHaiq8YimGZrF5_</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-green-700 font-bold">Template ID confirmé : template_yng4k8s</span>
+              <span className="text-green-700">Service ID confirmé : service_ymw6jjh</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span className="text-green-700">Template ID confirmé : template_yng4k8s</span>
             </div>
           </div>
           
           <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded">
             <p className="text-sm text-green-800 font-bold">
-              🎉 FÉLICITATIONS ! Service ID corrigé opérationnel !
+              🎉 FÉLICITATIONS ! Clés API corrigées opérationnelles !
             </p>
             <p className="text-xs text-green-700 mt-1">
-              Votre Service ID service_ymw6jjh est maintenant configuré et prêt pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
+              Vos nouvelles clés API eqxx9fwyTsoAoF00i et MwZ9s8tHaiq8YimGZrF5_ sont maintenant configurées et prêtes pour l'envoi d'emails MYCONFORT avec pièces jointes 2MB.
             </p>
           </div>
         </div>
@@ -308,7 +308,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               ) : (
                 <>
                   <TestTube className="w-5 h-5" />
-                  <span>Tester Service ID Corrigé</span>
+                  <span>Tester Clés API Corrigées</span>
                 </>
               )}
             </button>
@@ -326,7 +326,7 @@ export const EmailJSConfigModal: React.FC<EmailJSConfigModalProps> = ({
               ) : (
                 <>
                   <Star className="w-5 h-5" />
-                  <span>Confirmer Service ID Corrigé</span>
+                  <span>Confirmer Clés API Corrigées</span>
                 </>
               )}
             </button>

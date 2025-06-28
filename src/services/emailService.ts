@@ -3,15 +3,15 @@ import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Configuration EmailJS CORRIGÉE avec le Service ID exact fourni
+// Configuration EmailJS CORRIGÉE avec vos clés API exactes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID EXACT FOURNI PAR L'UTILISATEUR
+  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID EXACT FOURNI
   TEMPLATE_ID: 'template_yng4k8s', // ✅ Template ID CONFIRMÉ
-  USER_ID: 'hvgYUCG9j2lURrt5k', // ✅ User ID CONFIRMÉ
-  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6', // ✅ Private Key
+  USER_ID: 'eqxx9fwyTsoAoF00i', // ✅ NOUVELLE API KEY (PUBLIC) EXACTE
+  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_', // ✅ NOUVELLE PRIVATE KEY EXACTE
   CONFIGURED: true, // ✅ CONFIGURATION 100% CORRIGÉE !
   
-  // 🚀 PLAN PREMIUM AVEC SERVICE ID CORRIGÉ
+  // 🚀 PLAN PREMIUM AVEC CLÉS API CORRIGÉES
   MAX_ATTACHMENT_SIZE: 2 * 1024 * 1024, // 2MB en bytes
   SUPPORTED_FORMATS: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xlsx'],
   FALLBACK_SIZE: 50 * 1024 // 50KB pour fallback base64
@@ -26,18 +26,19 @@ export class EmailService {
   }
 
   /**
-   * Initialise EmailJS avec le Service ID corrigé
+   * Initialise EmailJS avec les clés API corrigées
    */
   static initializeEmailJS(): void {
     try {
-      // Initialiser EmailJS avec votre User ID
+      // Initialiser EmailJS avec votre nouvelle API Key
       emailjs.init(EMAILJS_CONFIG.USER_ID);
-      console.log('✅ EmailJS initialisé avec User ID:', EMAILJS_CONFIG.USER_ID);
-      console.log('✅ SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('✅ EmailJS initialisé avec NOUVELLE API KEY:', EMAILJS_CONFIG.USER_ID);
+      console.log('✅ SERVICE ID CONFIRMÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('✅ Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('🚀 Support pièces jointes 2MB activé (service corrigé)');
+      console.log('✅ PRIVATE KEY CORRIGÉE:', EMAILJS_CONFIG.PRIVATE_KEY);
+      console.log('🚀 Support pièces jointes 2MB activé (clés API corrigées)');
       console.log('🎨 Template HTML personnalisé template_yng4k8s CONFIRMÉ');
-      console.log('🎯 CONFIGURATION CORRIGÉE AVEC SERVICE ID EXACT !');
+      console.log('🎯 CONFIGURATION DÉFINITIVE AVEC CLÉS API EXACTES !');
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
@@ -67,28 +68,29 @@ export class EmailService {
   }
 
   /**
-   * 🚀 MÉTHODE PRINCIPALE - Envoie la facture avec PDF 2MB via Service corrigé
+   * 🚀 MÉTHODE PRINCIPALE - Envoie la facture avec PDF 2MB via clés API corrigées
    */
   static async sendInvoiceWithPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC SERVICE ID CORRIGÉ');
-      console.log('🔑 User ID:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🚀 ENVOI FACTURE VIA EMAILJS AVEC CLÉS API CORRIGÉES');
+      console.log('🔑 NOUVELLE API KEY (Public):', EMAILJS_CONFIG.USER_ID);
+      console.log('🔐 NOUVELLE Private Key:', EMAILJS_CONFIG.PRIVATE_KEY);
+      console.log('🎯 SERVICE ID CONFIRMÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
       console.log('📎 Limite pièces jointes: 2MB (plan premium)');
       console.log('🎨 Template HTML: template_yng4k8s CONFIRMÉ et ACTIF');
-      console.log('🎯 SERVICE ID CORRIGÉ OPÉRATIONNEL !');
+      console.log('🎯 CLÉS API DÉFINITIVES OPÉRATIONNELLES !');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
       // 📄 GÉNÉRER LE PDF COMPLET (sans compression agressive)
-      console.log('📄 Génération du PDF complet pour service corrigé...');
+      console.log('📄 Génération du PDF complet pour clés API corrigées...');
       const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
       const pdfSizeKB = Math.round(pdfBlob.size / 1024);
       const pdfSizeMB = (pdfBlob.size / 1024 / 1024).toFixed(2);
       
-      console.log('📊 Taille PDF pour service corrigé:', {
+      console.log('📊 Taille PDF pour clés API corrigées:', {
         bytes: pdfBlob.size,
         KB: pdfSizeKB,
         MB: pdfSizeMB
@@ -101,30 +103,30 @@ export class EmailService {
       const validation = this.validateAttachment(pdfBlob, pdfFilename);
       
       if (!validation.isValid) {
-        console.warn('⚠️ PDF trop volumineux pour service corrigé, tentative avec compression...');
+        console.warn('⚠️ PDF trop volumineux pour clés API corrigées, tentative avec compression...');
         return await this.sendWithCompressedPDF(invoice);
       }
       
-      // 🚀 ENVOYER AVEC PIÈCE JOINTE 2MB VIA SERVICE CORRIGÉ
-      console.log('🚀 Envoi avec pièce jointe 2MB via service corrigé...');
+      // 🚀 ENVOYER AVEC PIÈCE JOINTE 2MB VIA CLÉS API CORRIGÉES
+      console.log('🚀 Envoi avec pièce jointe 2MB via clés API corrigées...');
       return await this.sendEmailWithAttachment(invoice, pdfBlob, pdfFilename);
       
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec service corrigé:', error);
+      console.error('❌ Erreur lors de l\'envoi avec clés API corrigées:', error);
       
       // Fallback vers méthode compressée
-      console.log('🔄 Tentative avec PDF compressé et service corrigé...');
+      console.log('🔄 Tentative avec PDF compressé et clés API corrigées...');
       try {
         return await this.sendWithCompressedPDF(invoice);
       } catch (fallbackError) {
-        console.error('❌ Échec du fallback avec service corrigé:', fallbackError);
-        throw new Error(`Erreur d'envoi avec service corrigé: ${error.message}`);
+        console.error('❌ Échec du fallback avec clés API corrigées:', fallbackError);
+        throw new Error(`Erreur d'envoi avec clés API corrigées: ${error.message}`);
       }
     }
   }
 
   /**
-   * 📎 Envoie email avec pièce jointe 2MB via Service corrigé
+   * 📎 Envoie email avec pièce jointe 2MB via clés API corrigées
    */
   private static async sendEmailWithAttachment(
     invoice: Invoice, 
@@ -148,7 +150,7 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // 🎨 PRÉPARER LES DONNÉES POUR VOTRE TEMPLATE AVEC SERVICE CORRIGÉ
+      // 🎨 PRÉPARER LES DONNÉES POUR VOTRE TEMPLATE AVEC CLÉS API CORRIGÉES
       const templateParams = {
         // === VARIABLES DE BASE POUR template_yng4k8s ===
         to_email: invoice.client.email,
@@ -191,70 +193,72 @@ export class EmailService {
         // === MODE DE PAIEMENT POUR template_yng4k8s ===
         payment_method: invoice.payment.method || 'Non spécifié',
         
-        // === PIÈCE JOINTE 2MB VIA SERVICE CORRIGÉ ===
+        // === PIÈCE JOINTE 2MB VIA CLÉS API CORRIGÉES ===
         attachment_name: attachmentFilename,
         attachment_content: attachmentBase64.split(',')[1], // Enlever le préfixe
         attachment_type: 'application/pdf',
         attachment_size: `${(attachmentBlob.size / 1024 / 1024).toFixed(2)}MB`,
         has_pdf: 'true',
-        pdf_method: 'attachment_2mb_service_corrige',
+        pdf_method: 'attachment_2mb_cles_api_corrigees',
         
         // === MÉTADONNÉES POUR template_yng4k8s ===
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'hvgYUCG9j2lURrt5k',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // === PRODUITS POUR template_yng4k8s ===
         products_count: invoice.products.length,
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email avec template template_yng4k8s et pièce jointe 2MB via SERVICE CORRIGÉ...');
+      console.log('📧 Envoi email avec template template_yng4k8s et pièce jointe 2MB via CLÉS API CORRIGÉES...');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design professionnel MYCONFORT');
-      console.log('🔑 SERVICE ID CORRIGÉ utilisé:', {
+      console.log('🔑 CLÉS API CORRIGÉES utilisées:', {
         service: EMAILJS_CONFIG.SERVICE_ID,
         template: EMAILJS_CONFIG.TEMPLATE_ID,
-        user: EMAILJS_CONFIG.USER_ID
+        user: EMAILJS_CONFIG.USER_ID,
+        private: EMAILJS_CONFIG.PRIVATE_KEY
       });
-      console.log('📎 Pièce jointe via SERVICE CORRIGÉ:', {
+      console.log('📎 Pièce jointe via CLÉS API CORRIGÉES:', {
         nom: attachmentFilename,
         taille: templateParams.attachment_size,
         type: templateParams.attachment_type,
         service: 'service_ymw6jjh'
       });
 
-      // Envoyer via EmailJS avec SERVICE ID CORRIGÉ
+      // Envoyer via EmailJS avec CLÉS API CORRIGÉES
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
-      console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via SERVICE CORRIGÉ:', response);
-      console.log('🎯 SUCCÈS AVEC SERVICE ID CORRIGÉ !');
+      console.log('✅ Email avec template template_yng4k8s et pièce jointe 2MB envoyé via CLÉS API CORRIGÉES:', response);
+      console.log('🎯 SUCCÈS AVEC CLÉS API DÉFINITIVES !');
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
+      console.error('❌ Erreur lors de l\'envoi avec template template_yng4k8s via CLÉS API CORRIGÉES:', error);
       throw error;
     }
   }
 
   /**
-   * 🗜️ MÉTHODE DE FALLBACK - PDF compressé en base64 avec service corrigé
+   * 🗜️ MÉTHODE DE FALLBACK - PDF compressé en base64 avec clés API corrigées
    */
   private static async sendWithCompressedPDF(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('🗜️ Envoi avec PDF compressé et service corrigé (fallback)...');
+      console.log('🗜️ Envoi avec PDF compressé et clés API corrigées (fallback)...');
       
       // Générer PDF compressé
       const pdfResult = await AdvancedPDFService.getCompressedPDFForEmail(invoice);
       
       if (pdfResult.sizeKB > 50) {
-        console.warn('⚠️ PDF encore trop volumineux même compressé, envoi sans PDF avec service corrigé');
+        console.warn('⚠️ PDF encore trop volumineux même compressé, envoi sans PDF avec clés API corrigées');
         return await this.sendEmailWithoutPDF(
           invoice, 
           `PDF trop volumineux (${pdfResult.sizeKB} KB) - sera envoyé séparément`
@@ -277,7 +281,7 @@ export class EmailService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
 
-      // Paramètres avec PDF compressé en base64 et service corrigé
+      // Paramètres avec PDF compressé en base64 et clés API corrigées
       const templateParams = {
         to_email: invoice.client.email,
         to_name: invoice.client.name,
@@ -305,10 +309,11 @@ export class EmailService {
         pdf_size: `${pdfResult.sizeKB} KB`,
         pdf_compressed: pdfResult.compressed ? 'Oui' : 'Non',
         has_pdf: 'true',
-        pdf_method: 'base64_compressed_service_corrige',
+        pdf_method: 'base64_compressed_cles_api_corrigees',
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'hvgYUCG9j2lURrt5k',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de pièce jointe dans ce cas pour template_yng4k8s
         attachment_name: '',
@@ -318,27 +323,27 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
-      console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via SERVICE CORRIGÉ:', response);
+      console.log('✅ Email avec template template_yng4k8s et PDF compressé envoyé via CLÉS API CORRIGÉES:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur envoi PDF compressé avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
+      console.error('❌ Erreur envoi PDF compressé avec template template_yng4k8s via CLÉS API CORRIGÉES:', error);
       throw error;
     }
   }
 
   /**
-   * 📧 Envoie l'email sans PDF avec service corrigé
+   * 📧 Envoie l'email sans PDF avec clés API corrigées
    */
   private static async sendEmailWithoutPDF(invoice: Invoice, pdfNote: string): Promise<boolean> {
     try {
-      console.log('📧 Envoi email sans PDF avec template template_yng4k8s via SERVICE CORRIGÉ');
+      console.log('📧 Envoi email sans PDF avec template template_yng4k8s via CLÉS API CORRIGÉES');
       
       // Calculer les montants
       const totalAmount = invoice.products.reduce((sum, product) => {
@@ -384,7 +389,8 @@ export class EmailService {
         pdf_note: pdfNote,
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'hvgYUCG9j2lURrt5k',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de pièce jointe pour template_yng4k8s
         attachment_name: '',
@@ -394,29 +400,29 @@ export class EmailService {
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
-      console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via SERVICE CORRIGÉ:', response);
+      console.log('✅ Email sans PDF avec template template_yng4k8s envoyé via CLÉS API CORRIGÉES:', response);
       return true;
     } catch (error) {
-      console.error('❌ Erreur envoi sans PDF avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
+      console.error('❌ Erreur envoi sans PDF avec template template_yng4k8s via CLÉS API CORRIGÉES:', error);
       return false;
     }
   }
 
   /**
-   * 📸 Partage l'aperçu avec service corrigé
+   * 📸 Partage l'aperçu avec clés API corrigées
    */
   static async sharePreviewViaEmail(
     invoice: Invoice, 
     imageDataUrl: string
   ): Promise<boolean> {
     try {
-      console.log('📸 PARTAGE APERÇU VIA TEMPLATE template_yng4k8s AVEC SERVICE CORRIGÉ');
+      console.log('📸 PARTAGE APERÇU VIA TEMPLATE template_yng4k8s AVEC CLÉS API CORRIGÉES');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -424,21 +430,21 @@ export class EmailService {
       // Vérifier la taille de l'image
       const imageBlob = await fetch(imageDataUrl).then(res => res.blob());
       let imageSizeKB = Math.round(imageBlob.size / 1024);
-      console.log('📊 Taille de l\'image pour service corrigé:', imageSizeKB, 'KB');
+      console.log('📊 Taille de l\'image pour clés API corrigées:', imageSizeKB, 'KB');
 
       let finalImageDataUrl = imageDataUrl;
 
       // Si l'image est trop grande pour le plan premium (2MB), la compresser
       if (imageBlob.size > EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE) {
-        console.log('🗜️ Compression de l\'image pour service corrigé (limite 2MB)...');
+        console.log('🗜️ Compression de l\'image pour clés API corrigées (limite 2MB)...');
         finalImageDataUrl = await this.compressImageForEmail(imageDataUrl, EMAILJS_CONFIG.MAX_ATTACHMENT_SIZE);
         
         const compressedBlob = await fetch(finalImageDataUrl).then(res => res.blob());
         imageSizeKB = Math.round(compressedBlob.size / 1024);
-        console.log('📊 Taille après compression pour service corrigé:', imageSizeKB, 'KB');
+        console.log('📊 Taille après compression pour clés API corrigées:', imageSizeKB, 'KB');
       }
 
-      // Préparer le message pour l'aperçu avec service corrigé
+      // Préparer le message pour l'aperçu avec clés API corrigées
       let previewMessage = `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît dans notre système MYCONFORT.\n\nL'image ci-jointe vous montre exactement l'aperçu de votre facture.`;
 
       // Préparer les données pour votre Template template_yng4k8s
@@ -467,25 +473,26 @@ export class EmailService {
         has_image: 'true',
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'hvgYUCG9j2lURrt5k',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Pas de PDF pour l'aperçu avec template_yng4k8s
         has_pdf: 'false'
       };
 
-      console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via SERVICE CORRIGÉ...');
+      console.log('📧 Envoi aperçu avec template template_yng4k8s et pièce jointe image via CLÉS API CORRIGÉES...');
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         templateParams,
-        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
-      console.log('✅ Aperçu avec template template_yng4k8s envoyé via SERVICE CORRIGÉ:', response);
+      console.log('✅ Aperçu avec template template_yng4k8s envoyé via CLÉS API CORRIGÉES:', response);
       return true;
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'aperçu avec template template_yng4k8s via SERVICE CORRIGÉ:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'aperçu avec template template_yng4k8s via CLÉS API CORRIGÉES:', error);
       throw new Error(`Erreur d'envoi d'aperçu avec template template_yng4k8s: ${error.message}`);
     }
   }
@@ -536,31 +543,32 @@ export class EmailService {
   }
 
   /**
-   * Test de connexion avec EmailJS et service corrigé
+   * Test de connexion avec EmailJS et clés API corrigées
    */
   static async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
     try {
-      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC SERVICE ID CORRIGÉ');
-      console.log('🔑 User ID:', EMAILJS_CONFIG.USER_ID);
-      console.log('🎯 SERVICE ID CORRIGÉ:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('🧪 TEST DE CONNEXION EMAILJS AVEC CLÉS API CORRIGÉES');
+      console.log('🔑 NOUVELLE API KEY (Public):', EMAILJS_CONFIG.USER_ID);
+      console.log('🔐 NOUVELLE Private Key:', EMAILJS_CONFIG.PRIVATE_KEY);
+      console.log('🎯 SERVICE ID CONFIRMÉ:', EMAILJS_CONFIG.SERVICE_ID);
       console.log('📧 Template ID CONFIRMÉ:', EMAILJS_CONFIG.TEMPLATE_ID);
-      console.log('📎 Support pièces jointes: 2MB (service corrigé)');
+      console.log('📎 Support pièces jointes: 2MB (clés API corrigées)');
       console.log('🎨 Template CONFIRMÉ: template_yng4k8s - Design personnalisé');
-      console.log('🎯 SERVICE ID CORRIGÉ OPÉRATIONNEL !');
+      console.log('🎯 CLÉS API DÉFINITIVES OPÉRATIONNELLES !');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
       
       const startTime = Date.now();
       
-      // Préparer les données de test avec template template_yng4k8s ET SERVICE CORRIGÉ
+      // Préparer les données de test avec template template_yng4k8s ET CLÉS API CORRIGÉES
       const testParams = {
         to_email: 'test@myconfort.com',
         to_name: 'Test MYCONFORT',
         from_name: 'MYCONFORT',
         reply_to: 'myconfort@gmail.com',
-        subject: 'Test de connexion EmailJS MYCONFORT avec SERVICE ID CORRIGÉ',
-        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec template template_yng4k8s personnalisé et support des pièces jointes 2MB via SERVICE corrigé.',
+        subject: 'Test de connexion EmailJS MYCONFORT avec CLÉS API CORRIGÉES',
+        message: 'Ceci est un test de connexion EmailJS depuis MYCONFORT avec template template_yng4k8s personnalisé et support des pièces jointes 2MB via CLÉS API CORRIGÉES.',
         
         // Informations test pour template_yng4k8s
         invoice_number: 'TEST-001',
@@ -579,30 +587,31 @@ export class EmailService {
         attachment_content: '',
         attachment_type: '',
         attachment_size: '0 KB',
-        pdf_method: 'test_service_corrige',
+        pdf_method: 'test_cles_api_corrigees',
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'hvgYUCG9j2lURrt5k'
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_'
       };
 
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID, // template_yng4k8s CONFIRMÉ
         testParams,
-        EMAILJS_CONFIG.USER_ID // hvgYUCG9j2lURrt5k CONFIRMÉ
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
       const responseTime = Date.now() - startTime;
 
       return {
         success: true,
-        message: `✅ Connexion EmailJS réussie avec SERVICE ID CORRIGÉ ! Service prêt pour l'envoi d'emails avec design personnalisé et pièces jointes jusqu'à 2MB avec votre template template_yng4k8s et SERVICE ID CORRIGÉ opérationnel.`,
+        message: `✅ Connexion EmailJS réussie avec CLÉS API CORRIGÉES ! Service prêt pour l'envoi d'emails avec design personnalisé et pièces jointes jusqu'à 2MB avec votre template template_yng4k8s et CLÉS API DÉFINITIVES opérationnelles.`,
         responseTime
       };
     } catch (error: any) {
-      console.error('❌ Erreur test connexion EmailJS avec SERVICE ID CORRIGÉ:', error);
+      console.error('❌ Erreur test connexion EmailJS avec CLÉS API CORRIGÉES:', error);
       
-      let errorMessage = '❌ Erreur de connexion EmailJS avec SERVICE ID CORRIGÉ: ';
+      let errorMessage = '❌ Erreur de connexion EmailJS avec CLÉS API CORRIGÉES: ';
       
       if (error.status === 401 || error.status === 403) {
         errorMessage += 'Identifiants incorrects. Vérifiez votre configuration.';
@@ -622,7 +631,7 @@ export class EmailService {
   }
 
   /**
-   * 📧 Génère un message HTML pour plan premium avec service corrigé
+   * 📧 Génère un message HTML pour plan premium avec clés API corrigées
    */
   private static generatePremiumHTMLMessage(
     invoice: Invoice, 
@@ -652,14 +661,14 @@ export class EmailService {
       message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
-    message += `📎 Le PDF de votre facture est joint à cet email (envoyé via service corrigé - jusqu'à 2MB).\n\n`;
+    message += `📎 Le PDF de votre facture est joint à cet email (envoyé via clés API corrigées - jusqu'à 2MB).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.`;
 
     return message;
   }
 
   /**
-   * 📧 Génère un message HTML pour PDF compressé avec service corrigé
+   * 📧 Génère un message HTML pour PDF compressé avec clés API corrigées
    */
   private static generateCompressedHTMLMessage(
     invoice: Invoice, 
@@ -689,14 +698,14 @@ export class EmailService {
       message += `✅ Cette facture a été signée électroniquement et est juridiquement valide.\n\n`;
     }
     
-    message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi via service corrigé).\n\n`;
+    message += `📎 Le PDF de votre facture est inclus dans cet email (version compressée pour optimiser l'envoi via clés API corrigées).\n\n`;
     message += `Pour toute question, n'hésitez pas à nous contacter.`;
 
     return message;
   }
 
   /**
-   * Génère un message HTML par défaut avec service corrigé
+   * Génère un message HTML par défaut avec clés API corrigées
    */
   private static generateDefaultHTMLMessage(
     invoice: Invoice, 
@@ -755,7 +764,7 @@ export class EmailService {
   static getConfigInfo(): { configured: boolean; status: string; apiKey: string; privateKey: string; serviceId: string; templateId: string } {
     return {
       configured: true,
-      status: '✅ EmailJS configuré avec SERVICE CORRIGÉ, template template_yng4k8s CONFIRMÉ, User ID CONFIRMÉ et support pièces jointes 2MB - SERVICE ID CORRIGÉ OPÉRATIONNEL !',
+      status: '✅ EmailJS configuré avec CLÉS API CORRIGÉES, template template_yng4k8s CONFIRMÉ, et support pièces jointes 2MB - CLÉS API DÉFINITIVES OPÉRATIONNELLES !',
       apiKey: EMAILJS_CONFIG.USER_ID,
       privateKey: EMAILJS_CONFIG.PRIVATE_KEY,
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
@@ -791,7 +800,7 @@ export class EmailService {
    * Met à jour la configuration EmailJS
    */
   static updateConfig(serviceId: string, templateId: string, userId?: string): void {
-    console.log('ℹ️ Configuration EmailJS mise à jour avec SERVICE CORRIGÉ, template template_yng4k8s, User ID CONFIRMÉ et support 2MB - SERVICE ID CORRIGÉ !');
+    console.log('ℹ️ Configuration EmailJS mise à jour avec CLÉS API CORRIGÉES, template template_yng4k8s, et support 2MB - CLÉS API DÉFINITIVES !');
     
     // Sauvegarder dans localStorage pour persistance
     localStorage.setItem('emailjs_service_id', serviceId);

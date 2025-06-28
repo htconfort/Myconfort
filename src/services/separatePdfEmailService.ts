@@ -3,12 +3,12 @@ import emailjs from 'emailjs-com';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration EmailJS CORRIGÉE
+// Configuration EmailJS CORRIGÉE avec nouvelles clés API
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CORRIGÉ
+  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CONFIRMÉ
   TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'hvgYUCG9j2lURrt5k',
-  PRIVATE_KEY: 'mh3upHQbKrIViyw4T9-S6'
+  USER_ID: 'eqxx9fwyTsoAoF00i', // ✅ NOUVELLE API KEY (PUBLIC) EXACTE
+  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_' // ✅ NOUVELLE PRIVATE KEY EXACTE
 };
 
 export class SeparatePdfEmailService {
@@ -18,7 +18,7 @@ export class SeparatePdfEmailService {
   static initializeEmailJS(): void {
     try {
       emailjs.init(EMAILJS_CONFIG.USER_ID);
-      console.log('✅ EmailJS initialisé pour méthode séparée avec SERVICE ID CORRIGÉ');
+      console.log('✅ EmailJS initialisé pour méthode séparée avec CLÉS API CORRIGÉES');
     } catch (error) {
       console.error('❌ Erreur initialisation EmailJS:', error);
     }
@@ -86,11 +86,11 @@ export class SeparatePdfEmailService {
   }
 
   /**
-   * 📧 ENVOIE L'EMAIL SÉPARÉMENT (sans PDF) avec SERVICE ID CORRIGÉ
+   * 📧 ENVOIE L'EMAIL SÉPARÉMENT (sans PDF) avec CLÉS API CORRIGÉES
    */
   static async sendEmailSeparately(invoice: Invoice): Promise<boolean> {
     try {
-      console.log('📧 ENVOI EMAIL SÉPARÉ (sans PDF dans le payload) avec SERVICE ID CORRIGÉ');
+      console.log('📧 ENVOI EMAIL SÉPARÉ (sans PDF dans le payload) avec CLÉS API CORRIGÉES');
       
       // Initialiser EmailJS
       this.initializeEmailJS();
@@ -137,7 +137,7 @@ export class SeparatePdfEmailService {
       message += `• Email: myconfort@gmail.com\n\n`;
       message += `Cordialement,\n${invoice.advisorName || 'L\'équipe MYCONFORT'}`;
 
-      // Paramètres pour le template (SANS PDF) avec SERVICE ID CORRIGÉ
+      // Paramètres pour le template (SANS PDF) avec CLÉS API CORRIGÉES
       const templateParams = {
         // Destinataire
         to_email: invoice.client.email,
@@ -184,42 +184,43 @@ export class SeparatePdfEmailService {
         has_pdf: 'false', // Pas de PDF dans l'email
         pdf_note: 'PDF généré et téléchargé localement',
         
-        // Métadonnées avec SERVICE ID CORRIGÉ
+        // Métadonnées avec CLÉS API CORRIGÉES
         generated_date: new Date().toLocaleDateString('fr-FR'),
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
-        service_used: 'service_ymw6jjh', // SERVICE ID CORRIGÉ
-        user_id_used: 'hvgYUCG9j2lURrt5k',
+        service_used: 'service_ymw6jjh',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
+        private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Produits
         products_count: invoice.products.length,
         products_summary: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', ')
       };
 
-      console.log('📧 Envoi email de notification (sans PDF) avec SERVICE ID CORRIGÉ...');
+      console.log('📧 Envoi email de notification (sans PDF) avec CLÉS API CORRIGÉES...');
       
       const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CORRIGÉ
+        EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
-        EMAILJS_CONFIG.USER_ID
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i NOUVELLE API KEY
       );
 
-      console.log('✅ Email de notification envoyé avec succès via SERVICE ID CORRIGÉ:', response);
+      console.log('✅ Email de notification envoyé avec succès via CLÉS API CORRIGÉES:', response);
       return true;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de l\'envoi de l\'email séparé avec SERVICE ID CORRIGÉ:', error);
+      console.error('❌ Erreur lors de l\'envoi de l\'email séparé avec CLÉS API CORRIGÉES:', error);
       throw new Error(`Erreur d'envoi email: ${error.message}`);
     }
   }
 
   /**
-   * 🚀 MÉTHODE PRINCIPALE : Génère le PDF ET envoie l'email séparément avec SERVICE ID CORRIGÉ
+   * 🚀 MÉTHODE PRINCIPALE : Génère le PDF ET envoie l'email séparément avec CLÉS API CORRIGÉES
    */
   static async generatePDFAndSendEmail(invoice: Invoice): Promise<{ pdfGenerated: boolean; emailSent: boolean; message: string }> {
     try {
-      console.log('🚀 PROCESSUS SÉPARÉ : PDF LOCAL + EMAIL SANS PAYLOAD avec SERVICE ID CORRIGÉ');
+      console.log('🚀 PROCESSUS SÉPARÉ : PDF LOCAL + EMAIL SANS PAYLOAD avec CLÉS API CORRIGÉES');
       
       let pdfGenerated = false;
       let emailSent = false;
@@ -236,13 +237,13 @@ export class SeparatePdfEmailService {
         message += '❌ Erreur lors de la génération du PDF\n';
       }
 
-      // Étape 2: Envoyer l'email de notification avec SERVICE ID CORRIGÉ
+      // Étape 2: Envoyer l'email de notification avec CLÉS API CORRIGÉES
       try {
-        console.log('📧 Étape 2: Envoi email de notification avec SERVICE ID CORRIGÉ...');
+        console.log('📧 Étape 2: Envoi email de notification avec CLÉS API CORRIGÉES...');
         emailSent = await this.sendEmailSeparately(invoice);
-        message += '✅ Email de notification envoyé avec succès via SERVICE ID CORRIGÉ\n';
+        message += '✅ Email de notification envoyé avec succès via CLÉS API CORRIGÉES\n';
       } catch (error) {
-        console.error('❌ Erreur envoi email avec SERVICE ID CORRIGÉ:', error);
+        console.error('❌ Erreur envoi email avec CLÉS API CORRIGÉES:', error);
         message += '❌ Erreur lors de l\'envoi de l\'email\n';
       }
 
@@ -250,7 +251,7 @@ export class SeparatePdfEmailService {
       if (pdfGenerated && emailSent) {
         message += '\n🎉 Processus terminé avec succès !\n';
         message += `📎 PDF téléchargé: facture-myconfort-${invoice.invoiceNumber}.pdf\n`;
-        message += `📧 Email envoyé à: ${invoice.client.email} via SERVICE ID CORRIGÉ`;
+        message += `📧 Email envoyé à: ${invoice.client.email} via CLÉS API CORRIGÉES`;
       } else if (pdfGenerated && !emailSent) {
         message += '\n⚠️ PDF généré mais email non envoyé';
       } else if (!pdfGenerated && emailSent) {
@@ -266,7 +267,7 @@ export class SeparatePdfEmailService {
       };
 
     } catch (error: any) {
-      console.error('❌ Erreur processus séparé avec SERVICE ID CORRIGÉ:', error);
+      console.error('❌ Erreur processus séparé avec CLÉS API CORRIGÉES:', error);
       return {
         pdfGenerated: false,
         emailSent: false,
@@ -309,19 +310,19 @@ export class SeparatePdfEmailService {
   }
 
   /**
-   * 🧪 TEST DE LA MÉTHODE SÉPARÉE avec SERVICE ID CORRIGÉ
+   * 🧪 TEST DE LA MÉTHODE SÉPARÉE avec CLÉS API CORRIGÉES
    */
   static async testSeparateMethod(invoice: Invoice): Promise<void> {
-    console.log('🧪 TEST DE LA MÉTHODE SÉPARÉE : PDF LOCAL + EMAIL SANS PAYLOAD avec SERVICE ID CORRIGÉ');
+    console.log('🧪 TEST DE LA MÉTHODE SÉPARÉE : PDF LOCAL + EMAIL SANS PAYLOAD avec CLÉS API CORRIGÉES');
     
     try {
       const result = await this.generatePDFAndSendEmail(invoice);
       
-      let alertMessage = '🧪 TEST DE LA MÉTHODE SÉPARÉE TERMINÉ avec SERVICE ID CORRIGÉ\n\n';
+      let alertMessage = '🧪 TEST DE LA MÉTHODE SÉPARÉE TERMINÉ avec CLÉS API CORRIGÉES\n\n';
       alertMessage += result.message;
       
       if (result.pdfGenerated && result.emailSent) {
-        alertMessage += '\n\n✅ Test réussi ! Méthode séparée fonctionnelle avec SERVICE ID CORRIGÉ.';
+        alertMessage += '\n\n✅ Test réussi ! Méthode séparée fonctionnelle avec CLÉS API CORRIGÉES.';
       } else {
         alertMessage += '\n\n⚠️ Test partiellement réussi. Vérifiez les détails ci-dessus.';
       }
@@ -329,7 +330,7 @@ export class SeparatePdfEmailService {
       alert(alertMessage);
       
     } catch (error) {
-      console.error('❌ Erreur test méthode séparée avec SERVICE ID CORRIGÉ:', error);
+      console.error('❌ Erreur test méthode séparée avec CLÉS API CORRIGÉES:', error);
       alert('❌ Erreur lors du test de la méthode séparée. Vérifiez la console pour plus de détails.');
     }
   }
