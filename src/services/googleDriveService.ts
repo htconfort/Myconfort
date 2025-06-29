@@ -4,7 +4,7 @@ import { AdvancedPDFService } from './advancedPdfService';
 // Google Drive API configuration
 const GOOGLE_DRIVE_CONFIG = {
   CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
-  API_KEY: 'AIzaSyDQZLXXQvV9ZdgkTcTow5YDU0vxCkC-lFY', // Clé API générée à partir du client ID
+  API_KEY: '', // API key will be set dynamically or left empty to avoid initialization errors
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
   FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
@@ -42,18 +42,26 @@ export class GoogleDriveService {
         return false;
       }
 
-      // Initialize gapi client
-      await new Promise<void>((resolve) => {
+      // Initialize gapi client without API key to avoid discovery errors
+      await new Promise<void>((resolve, reject) => {
         window.gapi.load('client', async () => {
           try {
-            await window.gapi.client.init({
-              apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
-              discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
-            });
+            // Initialize without discovery docs if API key is not available
+            if (GOOGLE_DRIVE_CONFIG.API_KEY) {
+              await window.gapi.client.init({
+                apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
+                discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
+              });
+            } else {
+              // Initialize without API key - we'll use OAuth token for all requests
+              await window.gapi.client.init({});
+              console.log('⚠️ Google Drive API initialized without API key - using OAuth token only');
+            }
             resolve();
           } catch (error) {
             console.error('Error initializing gapi client:', error);
-            resolve(); // Resolve anyway to continue
+            // Don't fail completely - we can still try to use OAuth
+            resolve();
           }
         });
       });
