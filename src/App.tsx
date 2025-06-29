@@ -127,11 +127,6 @@ function App() {
         const result = await GoogleDriveService.uploadInvoicePDF(invoice);
         
         if (result.success) {
-          // Save the link for future reference
-          if (result.webViewLink) {
-            localStorage.setItem('lastGoogleDriveUploadLink', result.webViewLink);
-          }
-          
           showToast(`✅ Facture ${invoice.invoiceNumber} sauvegardée localement et dans Google Drive !`, 'success');
         } else {
           showToast(`⚠️ Facture ${invoice.invoiceNumber} sauvegardée localement. Google Drive: ${result.message}`, 'error');
@@ -610,11 +605,11 @@ function App() {
                   <span>NOUVELLE FACTURE</span>
                 </button>
                 <button
-                  onClick={() => setShowGoogleDriveConfig(true)}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                  onClick={() => setShowEmailJSConfig(true)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
                 >
-                  <span>☁️</span>
-                  <span>GOOGLE DRIVE</span>
+                  <span>📧</span>
+                  <span>CONFIGURER EMAIL</span>
                 </button>
               </div>
             </div>
