@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, TestTube, Loader, CheckCircle, AlertCircle, Cloud, Key, Settings, User, LogOut } from 'lucide-react';
+import { X, TestTube, Loader, CheckCircle, AlertCircle, Cloud, Key, Settings, User, LogOut, Link } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { GoogleDriveService } from '../services/googleDriveService';
 
@@ -21,10 +21,17 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUploadLink, setLastUploadLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       checkSignInStatus();
+      
+      // Retrieve last upload link from localStorage
+      const savedLink = localStorage.getItem('lastGoogleDriveUploadLink');
+      if (savedLink) {
+        setLastUploadLink(savedLink);
+      }
     }
   }, [isOpen]);
 
@@ -175,6 +182,30 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Dernier fichier uploadé */}
+        {lastUploadLink && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <Link className="w-5 h-5 text-green-600" />
+              <h4 className="font-medium text-green-800">Dernier fichier sauvegardé</h4>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <a 
+                href={lastUploadLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline flex items-center space-x-1"
+              >
+                <span>Voir la dernière facture sauvegardée</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Instructions de configuration */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

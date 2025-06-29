@@ -3,12 +3,12 @@ import { AdvancedPDFService } from './advancedPdfService';
 
 // Google Drive API configuration
 const GOOGLE_DRIVE_CONFIG = {
-  API_KEY: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
   CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyDQZLXXQvV9ZdgkTcTow5YDU0vxCkC-lFY', // Clé API générée à partir du client ID
   CLIENT_SECRET: 'GOCSPX-ZOW9e7kkPBSO\\WW2WFhPWgentiW2',
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
-  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Votre dossier Google Drive
+  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
 };
 
 declare global {
@@ -161,7 +161,7 @@ export class GoogleDriveService {
   /**
    * Upload invoice PDF to Google Drive
    */
-  static async uploadInvoicePDF(invoice: Invoice): Promise<{ success: boolean; fileId?: string; message: string }> {
+  static async uploadInvoicePDF(invoice: Invoice): Promise<{ success: boolean; fileId?: string; webViewLink?: string; message: string }> {
     try {
       console.log('📤 Uploading invoice to Google Drive...');
 
@@ -235,7 +235,8 @@ export class GoogleDriveService {
         return {
           success: true,
           fileId: result.id,
-          message: `✅ Facture ${invoice.invoiceNumber} sauvegardée dans Google Drive avec succès !${shareResult.webViewLink ? ` Lien: ${shareResult.webViewLink}` : ''}`
+          webViewLink: shareResult.webViewLink,
+          message: `✅ Facture ${invoice.invoiceNumber} sauvegardée dans Google Drive avec succès !`
         };
       } else {
         console.error('❌ Error uploading file:', result);
