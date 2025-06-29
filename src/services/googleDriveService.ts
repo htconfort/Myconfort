@@ -1,4 +1,3 @@
-import { GoogleFile, GoogleDriveResponse } from '../types/google';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
@@ -24,6 +23,11 @@ export class GoogleDriveService {
   static async uploadPDFToGoogleDrive(invoice: Invoice, pdfBlob: Blob): Promise<boolean> {
     try {
       console.log('🚀 UPLOAD PDF VERS GOOGLE DRIVE VIA n8n');
+      
+      // Check internet connection first
+      if (!navigator.onLine) {
+        throw new Error('Vous êtes hors ligne. Veuillez vérifier votre connexion internet.');
+      }
       
       // Convert PDF blob to base64
       const pdfBase64 = await this.blobToBase64(pdfBlob);
@@ -79,9 +83,7 @@ export class GoogleDriveService {
       
       // Set up fetch with timeout and proper error handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       try {
         // Send data to n8n webhook with proper error handling
@@ -132,7 +134,7 @@ export class GoogleDriveService {
         }
         
         if (fetchError.message.includes('Failed to fetch')) {
-          throw new Error('Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau');
+          throw new Error('Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau ou de pare-feu\n• Le serveur n8n accepte les requêtes HTTPS');
         }
         
         if (fetchError.message.includes('CORS')) {
@@ -172,6 +174,14 @@ export class GoogleDriveService {
   static async testGoogleDriveIntegration(): Promise<{ success: boolean; message: string }> {
     try {
       console.log('🧪 TEST DE L\'INTÉGRATION GOOGLE DRIVE VIA n8n');
+      
+      // Check internet connection first
+      if (!navigator.onLine) {
+        return {
+          success: false,
+          message: '❌ Vous êtes hors ligne. Veuillez vérifier votre connexion internet.'
+        };
+      }
       
       // Get current configuration
       const config = this.getConfig();
@@ -220,9 +230,7 @@ export class GoogleDriveService {
       
       // Set up fetch with timeout and proper error handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       try {
         // Send test data to n8n webhook
