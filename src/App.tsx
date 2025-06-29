@@ -8,7 +8,6 @@ import { InvoicesListModal } from './components/InvoicesListModal';
 import { ProductsListModal } from './components/ProductsListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailJSConfigModal } from './components/EmailJSConfigModal';
-import { GoogleDriveConfigModal } from './components/GoogleDriveConfigModal';
 import { SignaturePad } from './components/SignaturePad';
 import { EmailSender } from './components/EmailSender';
 import { InvoicePreview } from './components/InvoicePreview';
@@ -16,9 +15,7 @@ import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
-import { PDFService } from './services/pdfService';
 import { AdvancedPDFService } from './services/advancedPdfService';
-import { GoogleDriveService } from './services/googleDriveService';
 
 function App() {
   const [invoice, setInvoice] = useState<Invoice>({
@@ -58,7 +55,6 @@ function App() {
   const [showProductsList, setShowProductsList] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
-  const [showGoogleDriveConfig, setShowGoogleDriveConfig] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [showInvoicePreview, setShowInvoicePreview] = useState(true);
   const [toast, setToast] = useState({
@@ -105,31 +101,16 @@ function App() {
     }
   };
 
-  const handleSaveInvoice = async () => {
+  const handleSaveInvoice = () => {
     try {
       if (!invoice.client.name || !invoice.client.email || invoice.products.length === 0) {
         showToast('Veuillez compléter les informations client et ajouter au moins un produit', 'error');
         return;
       }
 
-      // Save invoice locally first
       saveInvoice(invoice);
       setInvoices(loadInvoices());
-      
-      // Try to save to Google Drive
-      try {
-        showToast('Sauvegarde en cours vers Google Drive...', 'success');
-        const result = await GoogleDriveService.uploadInvoicePDF(invoice);
-        
-        if (result.success) {
-          showToast(`✅ Facture ${invoice.invoiceNumber} sauvegardée localement et dans Google Drive !`, 'success');
-        } else {
-          showToast(`⚠️ Facture ${invoice.invoiceNumber} sauvegardée localement. Google Drive: ${result.message}`, 'error');
-        }
-      } catch (driveError) {
-        console.warn('Google Drive save failed:', driveError);
-        showToast(`✅ Facture ${invoice.invoiceNumber} sauvegardée localement (Google Drive non disponible)`, 'success');
-      }
+      showToast(`Facture ${invoice.invoiceNumber} enregistrée avec succès`, 'success');
     } catch (error) {
       showToast('Erreur lors de l\'enregistrement de la facture', 'error');
     }
@@ -231,25 +212,11 @@ function App() {
     } catch (error) {
       console.error('PDF generation error:', error);
       showToast('Erreur lors de la génération du PDF', 'error');
-      
-      // Fallback vers l'ancienne méthode
-      try {
-        await PDFService.downloadPDF(invoice, 'pdf-preview-content');
-        showToast('PDF téléchargé avec succès (méthode alternative)', 'success');
-      } catch (fallbackError) {
-        console.error('Fallback PDF error:', fallbackError);
-        handlePrint();
-      }
     }
   };
 
   const handlePrint = () => {
-    try {
-      PDFService.printInvoice('pdf-preview-content', invoice.invoiceNumber);
-      showToast('Impression lancée', 'success');
-    } catch (error) {
-      showToast('Erreur lors de l\'impression', 'error');
-    }
+    window.print();
   };
 
   const handleEmailJSSuccess = (message: string) => {
@@ -258,14 +225,6 @@ function App() {
   };
 
   const handleEmailJSError = (message: string) => {
-    showToast(message, 'error');
-  };
-
-  const handleGoogleDriveSuccess = (message: string) => {
-    showToast(message, 'success');
-  };
-
-  const handleGoogleDriveError = (message: string) => {
     showToast(message, 'error');
   };
 
@@ -373,7 +332,6 @@ function App() {
         onShowInvoices={() => setShowInvoicesList(true)}
         onShowProducts={() => setShowProductsList(true)}
         onSendEmail={() => setShowEmailJSConfig(true)}
-        onShowGoogleDrive={() => setShowGoogleDriveConfig(true)}
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
@@ -508,7 +466,7 @@ function App() {
           </div>
         </div>
 
-        {/* EmailJS Sender - UNIFORMISÉ */}
+        {/* PDF Generation Section */}
         <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
           <EmailSender
             invoice={invoice}
@@ -518,7 +476,7 @@ function App() {
           />
         </div>
 
-        {/* Aperçu de la facture - UNIFORMISÉ */}
+        {/* Aperçu de la facture - UNIFORMISÉ SANS BOUTON TÉLÉCHARGER PDF */}
         {showInvoicePreview && (
           <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
             <div className="flex items-center justify-between mb-4">
@@ -542,7 +500,7 @@ function App() {
               
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
                 <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
-                <p>Cet aperçu sera converti en PDF et envoyé par email via EmailJS avec votre Template "Myconfort".</p>
+                <p>Cet aperçu sera converti en PDF lorsque vous cliquerez sur le bouton "Générer et télécharger le PDF".</p>
               </div>
             </div>
           </div>
@@ -599,13 +557,6 @@ function App() {
                   <span>✨</span>
                   <span>NOUVELLE FACTURE</span>
                 </button>
-                <button
-                  onClick={() => setShowEmailJSConfig(true)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-                >
-                  <span>📧</span>
-                  <span>CONFIGURER EMAIL</span>
-                </button>
               </div>
             </div>
           </div>
@@ -645,13 +596,6 @@ function App() {
         onClose={() => setShowEmailJSConfig(false)}
         onSuccess={handleEmailJSSuccess}
         onError={handleEmailJSError}
-      />
-
-      <GoogleDriveConfigModal
-        isOpen={showGoogleDriveConfig}
-        onClose={() => setShowGoogleDriveConfig(false)}
-        onSuccess={handleGoogleDriveSuccess}
-        onError={handleGoogleDriveError}
       />
 
       <SignaturePad
