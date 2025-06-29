@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, TestTube, Loader, CheckCircle, AlertCircle, Cloud, Key, Settings, User, LogOut } from 'lucide-react';
+import { X, TestTube, Loader, CheckCircle, AlertCircle, Cloud, Key, Settings, User, LogOut } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { GoogleDriveService } from '../services/googleDriveService';
 
@@ -20,6 +20,7 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
   const [testResult, setTestResult] = useState<any>(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -27,11 +28,21 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
     }
   }, [isOpen]);
 
-  const checkSignInStatus = () => {
-    const signedIn = GoogleDriveService.isUserSignedIn();
-    setIsSignedIn(signedIn);
-    if (signedIn) {
-      setCurrentUser(GoogleDriveService.getCurrentUser());
+  const checkSignInStatus = async () => {
+    setIsLoading(true);
+    try {
+      await GoogleDriveService.initialize();
+      const signedIn = GoogleDriveService.isUserSignedIn();
+      setIsSignedIn(signedIn);
+      
+      if (signedIn) {
+        const user = await GoogleDriveService.getCurrentUser();
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error('Error checking sign-in status:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,7 +52,8 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
       const success = await GoogleDriveService.signIn();
       if (success) {
         setIsSignedIn(true);
-        setCurrentUser(GoogleDriveService.getCurrentUser());
+        const user = await GoogleDriveService.getCurrentUser();
+        setCurrentUser(user);
         onSuccess('✅ Connexion à Google Drive réussie !');
       } else {
         onError('❌ Échec de la connexion à Google Drive');
@@ -101,37 +113,48 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
               <p className="text-blue-100">Sauvegarde automatique des factures dans votre Drive</p>
             </div>
           </div>
+          
+          <p className="mt-2 text-sm text-blue-100">
+            Connectez-vous à Google Drive pour sauvegarder automatiquement vos factures dans le dossier spécifié.
+          </p>
         </div>
 
         {/* Statut de connexion */}
-        <div className={`p-4 rounded-lg border-2 ${
-          isSignedIn ? 'bg-green-50 border-green-300' : 'bg-yellow-50 border-yellow-300'
-        }`}>
-          <div className="flex items-center space-x-2 mb-2">
-            {isSignedIn ? (
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-            )}
-            <h4 className={`font-medium ${
-              isSignedIn ? 'text-green-800' : 'text-yellow-800'
-            }`}>
-              {isSignedIn ? 'Connecté à Google Drive' : 'Non connecté à Google Drive'}
-            </h4>
+        {isLoading ? (
+          <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4 flex items-center justify-center">
+            <Loader className="w-5 h-5 animate-spin text-blue-600 mr-2" />
+            <span className="text-gray-700">Vérification de la connexion...</span>
           </div>
-          
-          {isSignedIn && currentUser && (
-            <div className="space-y-1 text-sm text-green-700">
-              <div className="flex items-center space-x-2">
-                <User className="w-4 h-4" />
-                <span>Connecté en tant que: <strong>{currentUser.getName()}</strong></span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span>Email: <strong>{currentUser.getEmail()}</strong></span>
-              </div>
+        ) : (
+          <div className={`p-4 rounded-lg border-2 ${
+            isSignedIn ? 'bg-green-50 border-green-300' : 'bg-yellow-50 border-yellow-300'
+          }`}>
+            <div className="flex items-center space-x-2 mb-2">
+              {isSignedIn ? (
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              )}
+              <h4 className={`font-medium ${
+                isSignedIn ? 'text-green-800' : 'text-yellow-800'
+              }`}>
+                {isSignedIn ? 'Connecté à Google Drive' : 'Non connecté à Google Drive'}
+              </h4>
             </div>
-          )}
-        </div>
+            
+            {isSignedIn && currentUser && (
+              <div className="space-y-1 text-sm text-green-700">
+                <div className="flex items-center space-x-2">
+                  <User className="w-4 h-4" />
+                  <span>Connecté en tant que: <strong>{currentUser.name}</strong></span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>Email: <strong>{currentUser.email}</strong></span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Configuration du dossier */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -155,27 +178,27 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
 
         {/* Instructions de configuration */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-medium text-gray-800 mb-2">📋 Configuration requise :</h4>
+          <h4 className="font-medium text-gray-800 mb-2">📋 Comment ça marche :</h4>
           <div className="space-y-2 text-sm text-gray-700">
             <div className="flex items-start space-x-2">
               <Key className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
-                <p className="font-semibold">1. API Key Google Drive</p>
-                <p>Vous devez configurer une API Key dans la Google Cloud Console</p>
+                <p className="font-semibold">1. Connectez-vous à Google Drive</p>
+                <p>Cliquez sur le bouton "Se connecter à Google Drive" ci-dessous</p>
               </div>
             </div>
             <div className="flex items-start space-x-2">
               <Settings className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
-                <p className="font-semibold">2. Client ID OAuth 2.0</p>
-                <p>Créez des identifiants OAuth 2.0 pour l'authentification</p>
+                <p className="font-semibold">2. Autorisez l'accès</p>
+                <p>Suivez les instructions pour autoriser l'application à accéder à votre Drive</p>
               </div>
             </div>
             <div className="flex items-start space-x-2">
               <Cloud className="w-4 h-4 text-gray-500 mt-0.5" />
               <div>
-                <p className="font-semibold">3. Activer l'API Google Drive</p>
-                <p>Activez l'API Google Drive dans votre projet Google Cloud</p>
+                <p className="font-semibold">3. Sauvegardez vos factures</p>
+                <p>Chaque fois que vous cliquerez sur "Enregistrer", la facture sera sauvegardée dans Google Drive</p>
               </div>
             </div>
           </div>
@@ -235,7 +258,7 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
         <div className="flex justify-between items-center pt-4 border-t">
           <button
             onClick={onClose}
-            disabled={isTesting}
+            disabled={isTesting || isLoading}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50"
           >
             Fermer
@@ -246,7 +269,7 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
               <>
                 <button
                   onClick={handleTestConnection}
-                  disabled={isTesting}
+                  disabled={isTesting || isLoading}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
                 >
                   {isTesting ? (
@@ -264,7 +287,8 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
                 
                 <button
                   onClick={handleSignOut}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2"
+                  disabled={isLoading}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Déconnecter</span>
@@ -273,7 +297,7 @@ export const GoogleDriveConfigModal: React.FC<GoogleDriveConfigModalProps> = ({
             ) : (
               <button
                 onClick={handleSignIn}
-                disabled={isTesting}
+                disabled={isTesting || isLoading}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
               >
                 {isTesting ? (

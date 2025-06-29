@@ -81,6 +81,11 @@ function App() {
       handleSave();
     }, 60000);
 
+    // Initialize Google Drive
+    GoogleDriveService.initialize().then(isSignedIn => {
+      console.log('Google Drive initialized, signed in:', isSignedIn);
+    });
+
     return () => clearInterval(interval);
   }, []);
 
