@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Package, Building2, Archive, CloudUpload } from 'lucide-react';
+import { Users, Package, Building2, Archive, UploadCloud as CloudUpload } from 'lucide-react';
 
 interface HeaderProps {
   onGeneratePDF: () => void;

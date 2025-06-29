@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle, CloudUpload } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle, UploadCloud as CloudUpload } from 'lucide-react';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import html2canvas from 'html2canvas';
