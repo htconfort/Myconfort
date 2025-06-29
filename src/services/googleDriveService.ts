@@ -1,3 +1,4 @@
+import { GoogleFile, GoogleDriveResponse } from '../types/google';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
@@ -8,6 +9,15 @@ const MAKE_CONFIG = {
 };
 
 export class GoogleDriveService {
+  private static instance: GoogleDriveService;
+
+  static getInstance(): GoogleDriveService {
+    if (!GoogleDriveService.instance) {
+      GoogleDriveService.instance = new GoogleDriveService();
+    }
+    return GoogleDriveService.instance;
+  }
+
   /**
    * Uploads a PDF to Google Drive via n8n webhook
    */
@@ -107,7 +117,68 @@ export class GoogleDriveService {
       reader.readAsDataURL(blob);
     });
   }
-  
+
+  async testGoogleDriveIntegration(): Promise<GoogleDriveResponse> {
+    try {
+      // Vérifier si GAPI est initialisé
+      if (!window.gapi || !window.gapi.client || !window.gapi.client.drive) {
+        throw new Error('Google API non initialisé');
+      }
+
+      // Vérifier la connexion
+      const authInstance = window.gapi.auth2.getAuthInstance();
+      if (!authInstance.isSignedIn.get()) {
+        throw new Error('Utilisateur non connecté à Google');
+      }
+
+      console.log('🔍 Test de connexion Google Drive...');
+
+      // Lister les fichiers
+      const response = await window.gapi.client.drive.files.list({
+        pageSize: 10,
+        fields: 'nextPageToken, files(id, name, mimeType, size, modifiedTime)',
+        orderBy: 'modifiedTime desc'
+      });
+
+      console.log('✅ Connexion Google Drive réussie:', response.result);
+      return response.result;
+
+    } catch (error) {
+      console.error('❌ Erreur test Google Drive:', error);
+      throw error;
+    }
+  }
+
+  async uploadFile(file: File, parentFolderId?: string): Promise<GoogleFile> {
+    try {
+      const metadata = {
+        name: file.name,
+        parents: parentFolderId ? [parentFolderId] : undefined,
+      };
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${window.gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token}`,
+        },
+        body: form,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur upload: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur upload fichier:', error);
+      throw error;
+    }
+  }
+
   /**
    * Tests the Google Drive integration
    */

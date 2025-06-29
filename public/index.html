@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MYCONFORT - Facturation Professionnelle</title>
+    <meta name="description" content="MYCONFORT - Système de facturation professionnelle avec signature électronique et génération de PDF">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Google API Scripts -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://apis.google.com/js/platform.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- html2pdf.js script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      // 🎯 FONCTION GLOBALE POUR GÉNÉRER LE PDF - CONFIGURATION EXACTE
+      function generateInvoicePDF() {
+        console.log('🎯 GÉNÉRATION PDF AVEC CONFIGURATION EXACTE');
+        
+        const element = document.querySelector('.facture-apercu') || document.getElementById('pdf-preview-content');
+        if (!element) {
+          alert('❌ Élément facture non trouvé. Assurez-vous qu\'une facture est affichée.');
+          return;
+        }
+        
+        // 📋 CONFIGURATION EXACTE - IDENTIQUE À VOTRE SCRIPT
+        const opt = {
+          margin: 0,
+          filename: 'facture-myconfort.pdf',
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            compress: true
+          }
+        };
+        
+        console.log('🔄 Génération PDF avec configuration exacte...');
+        console.log('📐 Configuration utilisée:', opt);
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+          console.log('✅ PDF généré avec succès - COHÉRENCE GARANTIE !');
+          alert('✅ PDF téléchargé avec succès ! Le fichier est cohérent avec l\'aperçu.');
+        }).catch((error) => {
+          console.error('❌ Erreur génération PDF:', error);
+          alert('❌ Erreur lors de la génération du PDF');
+        });
+      }
+      
+      // Rendre la fonction disponible globalement
+      window.generateInvoicePDF = generateInvoicePDF;
+    </script>
+  </body>
+</html>
