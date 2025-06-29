@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, UploadCloud as CloudUpload, TestTube, Loader, CheckCircle, AlertCircle, FolderOpen } from 'lucide-react';
+import { X, Save, UploadCloud as CloudUpload, TestTube, Loader, CheckCircle, AlertCircle, FolderOpen, Wifi, WifiOff } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { GoogleDriveService } from '../services/googleDriveService';
 
@@ -28,6 +28,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
       const config = GoogleDriveService.getConfig();
       setWebhookUrl(config.webhookUrl);
       setFolderId(config.folderId);
+      setTestResult(null); // Reset test result when modal opens
     }
   }, [isOpen]);
 
@@ -35,13 +36,35 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
     setIsSaving(true);
 
     try {
+      // Validate inputs before saving
+      if (!webhookUrl.trim()) {
+        onError('❌ L\'URL du webhook n8n est requise');
+        setIsSaving(false);
+        return;
+      }
+
+      if (!folderId.trim()) {
+        onError('❌ L\'ID du dossier Google Drive est requis');
+        setIsSaving(false);
+        return;
+      }
+
+      // Validate URL format
+      try {
+        new URL(webhookUrl);
+      } catch (urlError) {
+        onError('❌ L\'URL du webhook n8n n\'est pas valide');
+        setIsSaving(false);
+        return;
+      }
+
       // Update the configuration
       GoogleDriveService.updateWebhookConfig(webhookUrl, folderId);
       
       onSuccess('✅ Configuration Google Drive mise à jour avec succès !');
       setIsSaving(false);
     } catch (error: any) {
-      onError(`Erreur lors de l'enregistrement: ${error.message}`);
+      onError(`❌ Erreur lors de l'enregistrement: ${error.message}`);
       setIsSaving(false);
     }
   };
@@ -56,12 +79,17 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
       setTestResult(result);
       
       if (result.success) {
-        onSuccess(`✅ Test réussi ! ${result.message}`);
+        onSuccess(result.message);
       } else {
-        onError(`❌ Test échoué: ${result.message}`);
+        onError(result.message);
       }
     } catch (error: any) {
-      onError(`Erreur lors du test: ${error.message}`);
+      const errorMessage = `❌ Erreur lors du test: ${error.message || 'Erreur inconnue'}`;
+      setTestResult({
+        success: false,
+        message: errorMessage
+      });
+      onError(errorMessage);
     } finally {
       setIsTesting(false);
     }
@@ -93,7 +121,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              URL du Webhook n8n
+              URL du Webhook n8n *
             </label>
             <div className="flex items-center">
               <CloudUpload className="w-5 h-5 text-gray-400 mr-2" />
@@ -103,6 +131,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 placeholder="https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                required
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -112,7 +141,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
           
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              ID du Dossier Google Drive
+              ID du Dossier Google Drive *
             </label>
             <div className="flex items-center">
               <FolderOpen className="w-5 h-5 text-gray-400 mr-2" />
@@ -122,6 +151,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
                 onChange={(e) => setFolderId(e.target.value)}
                 placeholder="1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                required
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -145,19 +175,27 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
         {/* Résultat du test */}
         {testResult && (
           <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               {testResult.success ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-red-500" />
+                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
               )}
-              <div>
+              <div className="flex-1">
                 <p className={`font-medium ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
                   {testResult.success ? '✅ Test réussi !' : '❌ Test échoué'}
                 </p>
-                <p className={`text-sm ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
-                  {testResult.message}
-                </p>
+                <div className={`text-sm mt-1 ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
+                  {testResult.message.split('\n').map((line: string, index: number) => (
+                    <div key={index} className={index > 0 ? 'mt-1' : ''}>
+                      {line.startsWith('•') ? (
+                        <div className="ml-2">{line}</div>
+                      ) : (
+                        line
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -176,8 +214,8 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
           <div className="flex space-x-3">
             <button
               onClick={handleTestConnection}
-              disabled={!webhookUrl || isSaving || isTesting}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
+              disabled={!webhookUrl.trim() || !folderId.trim() || isSaving || isTesting}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTesting ? (
                 <>
@@ -194,8 +232,8 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
             
             <button
               onClick={handleSaveConfig}
-              disabled={!webhookUrl || isSaving}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50"
+              disabled={!webhookUrl.trim() || !folderId.trim() || isSaving}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
