@@ -1,13 +1,12 @@
 import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Google Drive API configuration
+// Google Drive API configuration from the provided credentials
 const GOOGLE_DRIVE_CONFIG = {
   CLIENT_ID: '821174911169-s2udukis4po47qd5qtnqhb0sankm9lrr.apps.googleusercontent.com',
-  API_KEY: '', // Empty API key to avoid discovery document errors
-  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+  CLIENT_SECRET: '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',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
-  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
+  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Default folder ID
 };
 
 declare global {
@@ -42,13 +41,13 @@ export class GoogleDriveService {
         return false;
       }
 
-      // Initialize gapi client
+      // Initialize gapi client without discovery docs to avoid API key errors
       await new Promise<void>((resolve) => {
         window.gapi.load('client', async () => {
           try {
-            // Initialize client without discovery docs to avoid API key errors
+            // Initialize client without discovery docs
             await window.gapi.client.init({});
-            console.log('Google API client initialized without discovery docs');
+            console.log('Google API client initialized');
             resolve();
           } catch (error) {
             console.warn('Error initializing gapi client, continuing with OAuth only:', error);
