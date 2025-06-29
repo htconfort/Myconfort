@@ -5,7 +5,6 @@ import { AdvancedPDFService } from './advancedPdfService';
 const GOOGLE_DRIVE_CONFIG = {
   CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
   API_KEY: 'AIzaSyDQZLXXQvV9ZdgkTcTow5YDU0vxCkC-lFY', // Clé API générée à partir du client ID
-  CLIENT_SECRET: 'GOCSPX-ZOW9e7kkPBSO\\WW2WFhPWgentiW2',
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
   FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
@@ -32,51 +31,62 @@ export class GoogleDriveService {
         return this.isSignedIn;
       }
 
-      // Load Google API script if not already loaded
+      // Check if Google API scripts are loaded
       if (!window.gapi) {
-        await this.loadGoogleAPI();
+        console.log('Google API script not loaded yet');
+        return false;
       }
 
-      // Load Google Identity Services script if not already loaded
       if (!window.google?.accounts) {
-        await this.loadGoogleIdentityAPI();
+        console.log('Google Identity Services script not loaded yet');
+        return false;
       }
 
       // Initialize gapi client
       await new Promise<void>((resolve) => {
         window.gapi.load('client', async () => {
-          await window.gapi.client.init({
-            apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
-            discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
-          });
-          resolve();
+          try {
+            await window.gapi.client.init({
+              apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
+              discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
+            });
+            resolve();
+          } catch (error) {
+            console.error('Error initializing gapi client:', error);
+            resolve(); // Resolve anyway to continue
+          }
         });
       });
 
       // Initialize Google Identity Services
-      this.tokenClient = window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
-        scope: GOOGLE_DRIVE_CONFIG.SCOPES,
-        callback: (response: any) => {
-          if (response.error) {
-            console.error('Error getting token:', response);
-            this.isSignedIn = false;
-          } else {
-            this.isSignedIn = true;
-            console.log('✅ Google Drive token obtained');
-          }
-        }
-      });
-
-      this.isInitialized = true;
-      console.log('✅ Google Drive API initialized');
-      
-      // Check if we have a valid token already
       try {
-        const token = this.getAccessToken();
-        this.isSignedIn = !!token;
-      } catch (e) {
-        this.isSignedIn = false;
+        this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
+          scope: GOOGLE_DRIVE_CONFIG.SCOPES,
+          callback: (response: any) => {
+            if (response.error) {
+              console.error('Error getting token:', response);
+              this.isSignedIn = false;
+            } else {
+              this.isSignedIn = true;
+              console.log('✅ Google Drive token obtained');
+            }
+          }
+        });
+
+        this.isInitialized = true;
+        console.log('✅ Google Drive API initialized');
+        
+        // Check if we have a valid token already
+        try {
+          const token = this.getAccessToken();
+          this.isSignedIn = !!token;
+        } catch (e) {
+          this.isSignedIn = false;
+        }
+      } catch (error) {
+        console.error('Error initializing token client:', error);
+        return false;
       }
       
       return this.isSignedIn;
@@ -87,40 +97,19 @@ export class GoogleDriveService {
   }
 
   /**
-   * Load Google API script dynamically
-   */
-  private static loadGoogleAPI(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google API'));
-      document.head.appendChild(script);
-    });
-  }
-
-  /**
-   * Load Google Identity Services API script dynamically
-   */
-  private static loadGoogleIdentityAPI(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Identity Services API'));
-      document.head.appendChild(script);
-    });
-  }
-
-  /**
    * Get access token
    */
   private static getAccessToken(): string | null {
-    if (!window.gapi?.client?.getToken) {
+    try {
+      if (!window.gapi?.client?.getToken) {
+        return null;
+      }
+      const token = window.gapi.client.getToken();
+      return token ? token.access_token : null;
+    } catch (error) {
+      console.error('Error getting access token:', error);
       return null;
     }
-    const token = window.gapi.client.getToken();
-    return token ? token.access_token : null;
   }
 
   /**
@@ -129,25 +118,40 @@ export class GoogleDriveService {
   static async signIn(): Promise<boolean> {
     try {
       if (!this.isInitialized) {
-        await this.initialize();
+        const initialized = await this.initialize();
+        if (!initialized) {
+          console.error('Failed to initialize Google Drive API');
+          return false;
+        }
       }
 
       if (!this.isSignedIn) {
         return new Promise((resolve) => {
-          this.tokenClient.callback = (response: any) => {
-            if (response.error) {
-              console.error('Error getting token:', response);
-              this.isSignedIn = false;
+          try {
+            if (!this.tokenClient) {
+              console.error('Token client not initialized');
               resolve(false);
-            } else {
-              this.isSignedIn = true;
-              console.log('✅ Google Drive token obtained');
-              resolve(true);
+              return;
             }
-          };
-          
-          // Request token
-          this.tokenClient.requestAccessToken({ prompt: 'consent' });
+            
+            this.tokenClient.callback = (response: any) => {
+              if (response.error) {
+                console.error('Error getting token:', response);
+                this.isSignedIn = false;
+                resolve(false);
+              } else {
+                this.isSignedIn = true;
+                console.log('✅ Google Drive token obtained');
+                resolve(true);
+              }
+            };
+            
+            // Request token
+            this.tokenClient.requestAccessToken({ prompt: 'consent' });
+          } catch (error) {
+            console.error('Error requesting access token:', error);
+            resolve(false);
+          }
         });
       }
 
