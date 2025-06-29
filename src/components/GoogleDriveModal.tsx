@@ -102,7 +102,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 placeholder="https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -121,7 +121,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
                 value={folderId}
                 onChange={(e) => setFolderId(e.target.value)}
                 placeholder="1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
