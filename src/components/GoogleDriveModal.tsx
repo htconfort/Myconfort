@@ -21,6 +21,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
 
   // Load the current configuration
   useEffect(() => {
@@ -29,8 +30,29 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
       setWebhookUrl(config.webhookUrl);
       setFolderId(config.folderId);
       setTestResult(null); // Reset test result when modal opens
+      
+      // Check internet connectivity
+      checkInternetConnection();
     }
   }, [isOpen]);
+
+  // Check internet connection
+  const checkInternetConnection = () => {
+    if (navigator.onLine) {
+      setConnectionStatus('online');
+    } else {
+      setConnectionStatus('offline');
+    }
+
+    // Also add event listeners for online/offline events
+    window.addEventListener('online', () => setConnectionStatus('online'));
+    window.addEventListener('offline', () => setConnectionStatus('offline'));
+
+    return () => {
+      window.removeEventListener('online', () => setConnectionStatus('online'));
+      window.removeEventListener('offline', () => setConnectionStatus('offline'));
+    };
+  };
 
   const handleSaveConfig = () => {
     setIsSaving(true);
@@ -70,6 +92,12 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
   };
 
   const handleTestConnection = async () => {
+    // Check internet connection first
+    if (connectionStatus === 'offline') {
+      onError('❌ Vous êtes hors ligne. Veuillez vérifier votre connexion internet.');
+      return;
+    }
+    
     setIsTesting(true);
     setTestResult(null);
 
@@ -116,6 +144,19 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
             Cette intégration permet d'envoyer automatiquement vos factures PDF vers Google Drive via n8n.
           </p>
         </div>
+
+        {/* Statut de la connexion internet */}
+        {connectionStatus === 'offline' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <WifiOff className="w-5 h-5 text-red-500" />
+              <div>
+                <p className="font-medium text-red-700">Vous êtes actuellement hors ligne</p>
+                <p className="text-sm text-red-600">Veuillez vérifier votre connexion internet pour utiliser cette fonctionnalité</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Formulaire de configuration */}
         <div className="space-y-4">
@@ -172,6 +213,18 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
           </ol>
         </div>
 
+        {/* Résolution de problèmes */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-medium text-yellow-800 mb-2">Résolution des problèmes courants :</h4>
+          <ul className="list-disc ml-5 space-y-2 text-sm text-yellow-700">
+            <li><strong>Erreur "Failed to fetch"</strong> - Vérifiez que votre instance n8n est en ligne et accessible</li>
+            <li><strong>Erreur CORS</strong> - Configurez votre n8n pour accepter les requêtes de votre domaine</li>
+            <li><strong>Erreur 404</strong> - Vérifiez que l'URL du webhook est correcte et que le workflow est actif</li>
+            <li><strong>Timeout</strong> - Vérifiez la connectivité réseau et que n8n répond dans un délai raisonnable</li>
+            <li><strong>Erreur HTTPS</strong> - Assurez-vous que votre navigateur accepte les requêtes vers le serveur n8n</li>
+          </ul>
+        </div>
+
         {/* Résultat du test */}
         {testResult && (
           <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
@@ -214,7 +267,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
           <div className="flex space-x-3">
             <button
               onClick={handleTestConnection}
-              disabled={!webhookUrl.trim() || !folderId.trim() || isSaving || isTesting}
+              disabled={!webhookUrl.trim() || !folderId.trim() || isSaving || isTesting || connectionStatus === 'offline'}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTesting ? (

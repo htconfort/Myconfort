@@ -77,26 +77,74 @@ export class GoogleDriveService {
       
       console.log('📤 Envoi des données vers n8n pour upload Google Drive...');
       
-      // Send data to n8n webhook
-      const response = await fetch(MAKE_CONFIG.WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(webhookData)
-      });
+      // Set up fetch with timeout and proper error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 30000); // 30 second timeout
       
-      if (!response.ok) {
-        throw new Error(`Erreur n8n: ${response.status} ${response.statusText}`);
+      try {
+        // Send data to n8n webhook with proper error handling
+        const response = await fetch(MAKE_CONFIG.WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(webhookData),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          // Handle different HTTP error codes
+          let errorMessage = '';
+          switch (response.status) {
+            case 404:
+              errorMessage = 'Webhook n8n introuvable (404). Vérifiez que l\'URL est correcte et que le workflow n8n est actif.';
+              break;
+            case 500:
+              errorMessage = 'Erreur serveur n8n (500). Vérifiez la configuration de votre workflow n8n.';
+              break;
+            case 403:
+              errorMessage = 'Accès refusé (403). Vérifiez les permissions de votre webhook n8n.';
+              break;
+            case 400:
+              errorMessage = 'Requête invalide (400). Vérifiez la configuration de votre webhook n8n.';
+              break;
+            default:
+              errorMessage = `Erreur HTTP ${response.status}: ${response.statusText}`;
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        console.log('✅ PDF envoyé avec succès vers Google Drive via n8n');
+        return true;
+        
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        
+        // Handle specific fetch errors
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Timeout: Le webhook n8n ne répond pas dans les temps. Vérifiez que votre instance n8n est active et accessible.');
+        }
+        
+        if (fetchError.message.includes('Failed to fetch')) {
+          throw new Error('Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau');
+        }
+        
+        if (fetchError.message.includes('CORS')) {
+          throw new Error('Erreur CORS: Le webhook n8n doit autoriser les requêtes depuis votre domaine. Vérifiez la configuration CORS de votre instance n8n.');
+        }
+        
+        throw fetchError; // Re-throw if it's an unexpected error
       }
       
-      const result = await response.json();
-      console.log('✅ PDF envoyé avec succès vers Google Drive via n8n:', result);
-      
-      return true;
     } catch (error) {
       console.error('❌ Erreur lors de l\'upload vers Google Drive:', error);
-      return false;
+      throw error;
     }
   }
   
@@ -116,93 +164,6 @@ export class GoogleDriveService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  }
-
-  async testGoogleDriveIntegration(): Promise<GoogleDriveResponse> {
-    try {
-      // Vérifier si GAPI est initialisé
-      if (!window.gapi || !window.gapi.client || !window.gapi.client.drive) {
-        throw new Error('Google API non initialisé');
-      }
-
-      // Vérifier la connexion
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      if (!authInstance.isSignedIn.get()) {
-        throw new Error('Utilisateur non connecté à Google');
-      }
-
-      console.log('🔍 Test de connexion Google Drive...');
-
-      // Lister les fichiers
-      const response = await window.gapi.client.drive.files.list({
-        pageSize: 10,
-        fields: 'nextPageToken, files(id, name, mimeType, size, modifiedTime)',
-        orderBy: 'modifiedTime desc'
-      });
-
-      console.log('✅ Connexion Google Drive réussie:', response.result);
-      return response.result;
-
-    } catch (error) {
-      console.error('❌ Erreur test Google Drive:', error);
-      throw error;
-    }
-  }
-
-  async uploadFile(file: File, parentFolderId?: string): Promise<GoogleFile> {
-    try {
-      const metadata = {
-        name: file.name,
-        parents: parentFolderId ? [parentFolderId] : undefined,
-      };
-
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', file);
-
-      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${window.gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token}`,
-        },
-        body: form,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erreur upload: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Erreur upload fichier:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Validates if a URL is accessible
-   */
-  private static async validateUrl(url: string): Promise<boolean> {
-    try {
-      // First, validate URL format
-      new URL(url);
-      
-      // Try to make a simple HEAD request to check if the endpoint is accessible
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await fetch(url, {
-        method: 'HEAD',
-        signal: controller.signal,
-        mode: 'no-cors' // This helps avoid CORS issues for basic connectivity check
-      });
-      
-      clearTimeout(timeoutId);
-      return true;
-    } catch (error) {
-      console.warn('URL validation failed:', error);
-      return false;
-    }
   }
 
   /**
@@ -338,7 +299,7 @@ export class GoogleDriveService {
         if (fetchError.message.includes('Failed to fetch')) {
           return {
             success: false,
-            message: '❌ Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau'
+            message: '❌ Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau ou de pare-feu\n• Le serveur n8n accepte les requêtes HTTPS'
           };
         }
         
@@ -349,7 +310,10 @@ export class GoogleDriveService {
           };
         }
         
-        throw fetchError; // Re-throw if it's an unexpected error
+        return {
+          success: false,
+          message: `❌ Erreur de connexion: ${fetchError.message || 'Erreur inconnue'}`
+        };
       }
       
     } catch (error: any) {
