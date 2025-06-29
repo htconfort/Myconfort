@@ -1,19 +1,19 @@
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
-// Configuration for Google Drive integration via Make webhook
+// Configuration for Google Drive integration via n8n webhook
 const MAKE_CONFIG = {
-  WEBHOOK_URL: 'https://hook.eu1.make.com/[VOTRE_WEBHOOK_ID]', // Replace with your actual webhook ID
-  FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'
+  WEBHOOK_URL: 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort', // n8n webhook URL
+  FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // Google Drive folder ID
 };
 
 export class GoogleDriveService {
   /**
-   * Uploads a PDF to Google Drive via Make webhook
+   * Uploads a PDF to Google Drive via n8n webhook
    */
   static async uploadPDFToGoogleDrive(invoice: Invoice, pdfBlob: Blob): Promise<boolean> {
     try {
-      console.log('🚀 UPLOAD PDF VERS GOOGLE DRIVE VIA MAKE');
+      console.log('🚀 UPLOAD PDF VERS GOOGLE DRIVE VIA n8n');
       
       // Convert PDF blob to base64
       const pdfBase64 = await this.blobToBase64(pdfBlob);
@@ -31,7 +31,7 @@ export class GoogleDriveService {
       const acompteAmount = invoice.payment.depositAmount || 0;
       const montantRestant = totalAmount - acompteAmount;
       
-      // Prepare data for Make webhook
+      // Prepare data for n8n webhook
       const webhookData = {
         // PDF data
         nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
@@ -65,9 +65,9 @@ export class GoogleDriveService {
         dossier_id: MAKE_CONFIG.FOLDER_ID
       };
       
-      console.log('📤 Envoi des données vers Make pour upload Google Drive...');
+      console.log('📤 Envoi des données vers n8n pour upload Google Drive...');
       
-      // Send data to Make webhook
+      // Send data to n8n webhook
       const response = await fetch(MAKE_CONFIG.WEBHOOK_URL, {
         method: 'POST',
         headers: {
@@ -77,11 +77,11 @@ export class GoogleDriveService {
       });
       
       if (!response.ok) {
-        throw new Error(`Erreur Make: ${response.status} ${response.statusText}`);
+        throw new Error(`Erreur n8n: ${response.status} ${response.statusText}`);
       }
       
       const result = await response.json();
-      console.log('✅ PDF envoyé avec succès vers Google Drive via Make:', result);
+      console.log('✅ PDF envoyé avec succès vers Google Drive via n8n:', result);
       
       return true;
     } catch (error) {
@@ -113,7 +113,7 @@ export class GoogleDriveService {
    */
   static async testGoogleDriveIntegration(): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('🧪 TEST DE L\'INTÉGRATION GOOGLE DRIVE VIA MAKE');
+      console.log('🧪 TEST DE L\'INTÉGRATION GOOGLE DRIVE VIA n8n');
       
       // Create a small test PDF
       const testBlob = new Blob(['Test PDF content for Google Drive integration'], { type: 'application/pdf' });
@@ -121,14 +121,14 @@ export class GoogleDriveService {
       
       // Prepare test data
       const testData = {
-        nom_facture: 'Test_Integration_Make_GoogleDrive',
+        nom_facture: 'Test_Integration_n8n_GoogleDrive',
         fichier_facture: testBase64.split(',')[1],
         date_creation: new Date().toISOString(),
         test: true,
         dossier_id: MAKE_CONFIG.FOLDER_ID
       };
       
-      // Send test data to Make webhook
+      // Send test data to n8n webhook
       const response = await fetch(MAKE_CONFIG.WEBHOOK_URL, {
         method: 'POST',
         headers: {
@@ -138,7 +138,7 @@ export class GoogleDriveService {
       });
       
       if (!response.ok) {
-        throw new Error(`Erreur Make: ${response.status} ${response.statusText}`);
+        throw new Error(`Erreur n8n: ${response.status} ${response.statusText}`);
       }
       
       const result = await response.json();
@@ -158,11 +158,11 @@ export class GoogleDriveService {
   }
   
   /**
-   * Configures the Make webhook URL
+   * Configures the n8n webhook URL
    */
   static updateWebhookConfig(webhookUrl: string, folderId?: string): void {
     if (webhookUrl) {
-      localStorage.setItem('make_webhook_url', webhookUrl);
+      localStorage.setItem('n8n_webhook_url', webhookUrl);
     }
     
     if (folderId) {
@@ -170,7 +170,7 @@ export class GoogleDriveService {
     }
     
     // Update the configuration
-    const savedWebhookUrl = localStorage.getItem('make_webhook_url');
+    const savedWebhookUrl = localStorage.getItem('n8n_webhook_url');
     const savedFolderId = localStorage.getItem('google_drive_folder_id');
     
     if (savedWebhookUrl) {
@@ -186,6 +186,18 @@ export class GoogleDriveService {
    * Gets the current configuration
    */
   static getConfig(): { webhookUrl: string; folderId: string } {
+    // Initialize with default values from localStorage if available
+    const savedWebhookUrl = localStorage.getItem('n8n_webhook_url');
+    const savedFolderId = localStorage.getItem('google_drive_folder_id');
+    
+    if (savedWebhookUrl) {
+      MAKE_CONFIG.WEBHOOK_URL = savedWebhookUrl;
+    }
+    
+    if (savedFolderId) {
+      MAKE_CONFIG.FOLDER_ID = savedFolderId;
+    }
+    
     return {
       webhookUrl: MAKE_CONFIG.WEBHOOK_URL,
       folderId: MAKE_CONFIG.FOLDER_ID

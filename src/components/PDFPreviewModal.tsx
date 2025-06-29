@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle, UploadCloud as CloudUpload } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Loader, UploadCloud as CloudUpload } from 'lucide-react';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import html2canvas from 'html2canvas';
@@ -25,64 +25,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [uploadStep, setUploadStep] = useState('');
   
   const handlePrint = () => {
-    const printContent = document.getElementById('pdf-preview-content');
-    if (printContent) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Facture ${invoice.invoiceNumber}</title>
-              <link href="https://cdn.tailwindcss.com" rel="stylesheet">
-              <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-              <style>
-                body { 
-                  font-family: 'Inter', sans-serif; 
-                  margin: 0; 
-                  padding: 0; 
-                  background: white;
-                  color: black;
-                  line-height: 1.5;
-                }
-                
-                /* Styles pour l'impression */
-                @media print {
-                  .no-print { display: none !important; }
-                  body { 
-                    -webkit-print-color-adjust: exact; 
-                    print-color-adjust: exact;
-                    margin: 0;
-                    padding: 10mm;
-                  }
-                  * { 
-                    print-color-adjust: exact; 
-                    -webkit-print-color-adjust: exact;
-                  }
-                  @page { 
-                    margin: 10mm; 
-                    size: A4;
-                  }
-                }
-                
-                /* Préservation des couleurs MYCONFORT */
-                .bg-\\[\\#477A0C\\] { background-color: #477A0C !important; }
-                .text-\\[\\#F2EFE2\\] { color: #F2EFE2 !important; }
-                .text-\\[\\#477A0C\\] { color: #477A0C !important; }
-                .text-black { color: black !important; }
-                .font-bold { font-weight: bold !important; }
-                .font-semibold { font-weight: 600 !important; }
-              </style>
-            </head>
-            <body class="bg-white">
-              ${printContent.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
+    window.print();
   };
 
   // Partage d'aperçu par email
@@ -327,7 +270,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             📁 Dossier: {GoogleDriveService.getConfig().folderId} • 🎯 Format: PDF haute qualité
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 La facture sera automatiquement envoyée vers votre Google Drive via Make
+            💡 La facture sera automatiquement envoyée vers votre Google Drive via n8n
           </div>
         </div>
 

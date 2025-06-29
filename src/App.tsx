@@ -474,7 +474,7 @@ function App() {
             invoice={invoice}
             onSuccess={handleEmailJSSuccess}
             onError={handleEmailJSError}
-            onShowConfig={() => setShowEmailJSConfig(true)}
+            onShowConfig={() => setShowGoogleDriveConfig(true)}
           />
         </div>
 

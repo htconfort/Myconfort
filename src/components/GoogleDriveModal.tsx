@@ -16,8 +16,8 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
   onSuccess,
   onError
 }) => {
-  const [webhookUrl, setWebhookUrl] = useState('');
-  const [folderId, setFolderId] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort');
+  const [folderId, setFolderId] = useState('1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-');
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
@@ -85,7 +85,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
           </div>
           
           <p className="mt-2 text-sm text-blue-100">
-            Cette intégration permet d'envoyer automatiquement vos factures PDF vers Google Drive via Make (Integromat).
+            Cette intégration permet d'envoyer automatiquement vos factures PDF vers Google Drive via n8n.
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              URL du Webhook Make
+              URL du Webhook n8n
             </label>
             <div className="flex items-center">
               <CloudUpload className="w-5 h-5 text-gray-400 mr-2" />
@@ -101,12 +101,12 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
                 type="text"
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
-                placeholder="https://hook.eu1.make.com/votre-webhook-id"
+                placeholder="https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              URL du webhook Make qui recevra les données de la facture
+              URL du webhook n8n qui recevra les données de la facture
             </p>
           </div>
           
@@ -134,9 +134,9 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-800 mb-2">Comment configurer l'intégration :</h4>
           <ol className="list-decimal ml-5 space-y-2 text-sm text-blue-700">
-            <li>Créez un scénario dans Make (Integromat) avec un webhook comme déclencheur</li>
+            <li>Créez un workflow dans n8n avec un webhook comme déclencheur</li>
             <li>Ajoutez un module Google Drive pour uploader un fichier</li>
-            <li>Copiez l'URL du webhook Make et collez-la ci-dessus</li>
+            <li>Copiez l'URL du webhook n8n et collez-la ci-dessus</li>
             <li>Créez un dossier dans Google Drive et copiez son ID</li>
             <li>Testez la connexion pour vérifier que tout fonctionne</li>
           </ol>
