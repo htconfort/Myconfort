@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Download, Printer, FileText, Share2, Loader, CheckCircle, AlertCircle, CloudUpload } from 'lucide-react';
 import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import html2canvas from 'html2canvas';
+import { AdvancedPDFService } from '../services/advancedPdfService';
+import { GoogleDriveService } from '../services/googleDriveService';
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStep, setShareStep] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStep, setUploadStep] = useState('');
   
   const handlePrint = () => {
     const printContent = document.getElementById('pdf-preview-content');
@@ -154,6 +158,35 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     }
   };
 
+  // Upload to Google Drive
+  const handleUploadToGoogleDrive = async () => {
+    setIsUploading(true);
+    setUploadStep('🔄 Génération du PDF...');
+
+    try {
+      // Generate PDF blob
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      
+      setUploadStep('📤 Envoi vers Google Drive...');
+      
+      // Upload to Google Drive
+      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      
+      if (success) {
+        setUploadStep('✅ PDF envoyé avec succès !');
+        alert(`✅ Facture ${invoice.invoiceNumber} envoyée avec succès vers Google Drive !`);
+      } else {
+        throw new Error('Échec de l\'envoi vers Google Drive');
+      }
+    } catch (error) {
+      console.error('❌ Erreur upload Google Drive:', error);
+      alert(`❌ Erreur lors de l'envoi vers Google Drive: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsUploading(false);
+      setUploadStep('');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -172,6 +205,26 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
+            {/* Bouton upload Google Drive */}
+            <button
+              onClick={handleUploadToGoogleDrive}
+              disabled={isUploading}
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
+              title="Envoyer cette facture vers Google Drive"
+            >
+              {isUploading ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Envoi en cours...</span>
+                </>
+              ) : (
+                <>
+                  <CloudUpload size={18} />
+                  <span>Google Drive</span>
+                </>
+              )}
+            </button>
+            
             {/* Bouton partage aperçu */}
             <button
               onClick={handleSharePreviewViaEmail}
@@ -200,6 +253,13 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <span>Imprimer</span>
             </button>
             <button
+              onClick={onDownload}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105"
+            >
+              <Download size={18} />
+              <span>Télécharger PDF</span>
+            </button>
+            <button
               onClick={onClose}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-2 rounded-lg transition-all hover:scale-105"
             >
@@ -216,6 +276,19 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <div>
                 <div className="font-semibold text-purple-900">Capture de l'aperçu en cours...</div>
                 <div className="text-sm text-purple-700">{shareStep}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Indicateur d'upload en cours */}
+        {isUploading && uploadStep && (
+          <div className="bg-blue-50 border-b border-blue-200 p-3">
+            <div className="flex items-center space-x-3">
+              <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              <div>
+                <div className="font-semibold text-blue-900">Envoi vers Google Drive en cours...</div>
+                <div className="text-sm text-blue-700">{uploadStep}</div>
               </div>
             </div>
           </div>
@@ -238,6 +311,23 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
             💡 L'image sera téléchargée et votre client mail s'ouvrira automatiquement
+          </div>
+        </div>
+
+        {/* Instructions pour Google Drive */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-3">
+          <div className="flex items-center space-x-2 text-sm">
+            <CloudUpload className="w-4 h-4 text-blue-600" />
+            <span className="font-semibold text-blue-900">Google Drive :</span>
+            <span className="text-blue-800">
+              Cliquez sur "Google Drive" pour envoyer cette facture vers votre Drive
+            </span>
+          </div>
+          <div className="mt-1 text-xs text-gray-600">
+            📁 Dossier: {GoogleDriveService.getConfig().folderId} • 🎯 Format: PDF haute qualité
+          </div>
+          <div className="mt-1 text-xs text-blue-600 font-semibold">
+            💡 La facture sera automatiquement envoyée vers votre Google Drive via Make
           </div>
         </div>
 

@@ -1,12 +1,12 @@
 import React from 'react';
-import { Users, Package, Building2, Archive } from 'lucide-react';
+import { Users, Package, Building2, Archive, CloudUpload } from 'lucide-react';
 
 interface HeaderProps {
   onGeneratePDF: () => void;
   onShowClients: () => void;
-  onSendEmail: () => void;
   onShowInvoices: () => void;
   onShowProducts: () => void;
+  onShowGoogleDrive: () => void;
   onScrollToClient?: () => void;
   onScrollToProducts?: () => void;
 }
@@ -15,7 +15,8 @@ export const Header: React.FC<HeaderProps> = ({
   onGeneratePDF,
   onShowClients,
   onShowInvoices,
-  onShowProducts
+  onShowProducts,
+  onShowGoogleDrive
 }) => {
   return (
     <header className="bg-gradient-to-r from-[#477A0C] to-[#5A8F0F] shadow-xl sticky top-0 z-40">
@@ -59,6 +60,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Users size={18} />
             <span className="hidden md:inline">Clients</span>
+          </button>
+          
+          <button
+            onClick={onShowGoogleDrive}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
+            title="Configurer Google Drive"
+          >
+            <CloudUpload size={18} />
+            <span className="hidden md:inline">Drive</span>
           </button>
         </div>
       </div>
