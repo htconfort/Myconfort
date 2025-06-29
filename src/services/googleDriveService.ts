@@ -5,7 +5,6 @@ import { AdvancedPDFService } from './advancedPdfService';
 const GOOGLE_DRIVE_CONFIG = {
   API_KEY: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
   CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
-  CLIENT_SECRET: 'GOCSPX-ZOW9e7kkPBSO\\WW2WFhPWgentiW2',
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
   FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Votre dossier Google Drive
