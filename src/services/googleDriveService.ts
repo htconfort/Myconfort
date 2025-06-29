@@ -3,8 +3,8 @@ import { AdvancedPDFService } from './advancedPdfService';
 
 // Google Drive API configuration
 const GOOGLE_DRIVE_CONFIG = {
-  CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
-  API_KEY: '', // API key will be set dynamically or left empty to avoid initialization errors
+  CLIENT_ID: '821174911169-s2udukis4po47qd5qtnqhb0sankm9lrr.apps.googleusercontent.com',
+  API_KEY: '', // Empty API key to avoid discovery document errors
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
   FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
@@ -33,35 +33,26 @@ export class GoogleDriveService {
 
       // Check if Google API scripts are loaded
       if (!window.gapi) {
-        console.log('Google API script not loaded yet');
+        console.warn('Google API script not loaded yet');
         return false;
       }
 
       if (!window.google?.accounts) {
-        console.log('Google Identity Services script not loaded yet');
+        console.warn('Google Identity Services script not loaded yet');
         return false;
       }
 
-      // Initialize gapi client without API key to avoid discovery errors
-      await new Promise<void>((resolve, reject) => {
+      // Initialize gapi client
+      await new Promise<void>((resolve) => {
         window.gapi.load('client', async () => {
           try {
-            // Initialize without discovery docs if API key is not available
-            if (GOOGLE_DRIVE_CONFIG.API_KEY) {
-              await window.gapi.client.init({
-                apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
-                discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
-              });
-            } else {
-              // Initialize without API key - we'll use OAuth token for all requests
-              await window.gapi.client.init({});
-              console.log('⚠️ Google Drive API initialized without API key - using OAuth token only');
-            }
+            // Initialize client without discovery docs to avoid API key errors
+            await window.gapi.client.init({});
+            console.log('Google API client initialized without discovery docs');
             resolve();
           } catch (error) {
-            console.error('Error initializing gapi client:', error);
-            // Don't fail completely - we can still try to use OAuth
-            resolve();
+            console.warn('Error initializing gapi client, continuing with OAuth only:', error);
+            resolve(); // Continue despite errors
           }
         });
       });
