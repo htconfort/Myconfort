@@ -1,12 +1,13 @@
 import { Invoice } from '../types';
 import { AdvancedPDFService } from './advancedPdfService';
 
-// Google Drive API configuration from the provided credentials
+// Google Drive API configuration
 const GOOGLE_DRIVE_CONFIG = {
-  CLIENT_ID: '821174911169-s2udukis4po47qd5qtnqhb0sankm9lrr.apps.googleusercontent.com',
-  CLIENT_SECRET: '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',
+  CLIENT_ID: '821174911169-9etj46edjphaplv9ob3vah1iqtvo3o9i.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyDQZLXXQvV9ZdgkTcTow5YDU0vxCkC-lFY', // Clé API générée à partir du client ID
+  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
   SCOPES: 'https://www.googleapis.com/auth/drive.file',
-  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Default folder ID
+  FOLDER_ID: '1sdCwbJHWu6QelYwAnQxPKNEOsd_XBtJw' // Dossier Google Drive spécifié
 };
 
 declare global {
@@ -32,26 +33,27 @@ export class GoogleDriveService {
 
       // Check if Google API scripts are loaded
       if (!window.gapi) {
-        console.warn('Google API script not loaded yet');
+        console.log('Google API script not loaded yet');
         return false;
       }
 
       if (!window.google?.accounts) {
-        console.warn('Google Identity Services script not loaded yet');
+        console.log('Google Identity Services script not loaded yet');
         return false;
       }
 
-      // Initialize gapi client without discovery docs to avoid API key errors
+      // Initialize gapi client
       await new Promise<void>((resolve) => {
         window.gapi.load('client', async () => {
           try {
-            // Initialize client without discovery docs
-            await window.gapi.client.init({});
-            console.log('Google API client initialized');
+            await window.gapi.client.init({
+              apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
+              discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
+            });
             resolve();
           } catch (error) {
-            console.warn('Error initializing gapi client, continuing with OAuth only:', error);
-            resolve(); // Continue despite errors
+            console.error('Error initializing gapi client:', error);
+            resolve(); // Resolve anyway to continue
           }
         });
       });
