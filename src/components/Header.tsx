@@ -13,7 +13,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onGeneratePDF,
   onShowClients,
   onSendEmail,
   onShowInvoices,
