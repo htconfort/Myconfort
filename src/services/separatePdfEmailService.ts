@@ -1,14 +1,67 @@
 import html2pdf from 'html2pdf.js';
 import emailjs from 'emailjs-com';
-import { Invoice } from '../types';
-import { formatCurrency, calculateProductTotal } from '../utils/calculations';
+
+// 🔧 INTERFACE COMPATIBLE (au lieu d'importer depuis types)
+interface Invoice {
+  invoiceNumber: string;
+  client: {
+    name: string;
+    email: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    phone: string;
+  };
+  invoiceDate: string;
+  products: Array<{
+    name: string;
+    quantity: number;
+    priceTTC: number;
+    discount: number;
+    discountType: 'percentage' | 'fixed';
+  }>;
+  payment: {
+    method: string;
+    depositAmount: number;
+  };
+  advisorName: string;
+  eventLocation: string;
+  invoiceNotes: string;
+  termsAccepted: boolean;
+  taxRate: number;
+  delivery: {
+    method: string;
+    notes: string;
+  };
+  signature?: string; // Ajouté pour la compatibilité
+}
+
+// 🔧 FONCTIONS UTILITAIRES INTÉGRÉES (au lieu d'importer)
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(amount);
+};
+
+const calculateProductTotal = (
+  quantity: number,
+  priceTTC: number,
+  discount: number,
+  discountType: 'percentage' | 'fixed'
+): number => {
+  const discountAmount = discountType === 'percentage' 
+    ? (priceTTC * discount / 100)
+    : discount;
+  return (priceTTC - discountAmount) * quantity;
+};
 
 // Configuration EmailJS DÉFINITIVE avec clés API exactes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CONFIRMÉ PAR TEST REÇU
-  TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY DÉFINITIVE (PUBLIC) EXACTE
-  PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_' // ✅ PRIVATE KEY DÉFINITIVE EXACTE
+  SERVICE_ID: process.env.REACT_APP_EMAILJS_SERVICE_ID || 'service_ymw6jjh',
+  TEMPLATE_ID: process.env.REACT_APP_EMAILJS_TEMPLATE_ID || 'template_yng4k8s',
+  USER_ID: process.env.REACT_APP_EMAILJS_USER_ID || 'eqxx9fwyTsoAoF00i',
+  PRIVATE_KEY: process.env.REACT_APP_EMAILJS_PRIVATE_KEY || 'MwZ9s8tHaiq8YimGZrF5_'
 };
 
 export class SeparatePdfEmailService {
@@ -189,7 +242,7 @@ export class SeparatePdfEmailService {
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Produits
@@ -203,7 +256,7 @@ export class SeparatePdfEmailService {
         EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST REÇU
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Email de notification envoyé avec succès via CLÉS API DÉFINITIVES:', response);

@@ -1,7 +1,7 @@
 import { Invoice } from '../types';
-import { formatCurrency, calculateProductTotal } from '../utils/calculations';
+import { calculateProductTotal } from '../utils/calculations';
 
-// Configuration for Google Drive integration via n8n webhook
+// Configuration for Google Drive integration via make (formerly n8n) webhook
 const MAKE_CONFIG = {
   WEBHOOK_URL: 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort', // n8n webhook URL
   FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // Google Drive folder ID

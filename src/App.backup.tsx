@@ -9,15 +9,7 @@ import { GoogleDriveService } from './services/googleDriveService';
 // @ts-ignore
 import { SeparatePdfEmailService } from './services/separatePdfEmailService';
 
-// INTERFACES
-interface ServiceResult {
-  success: boolean;
-  url?: string;
-  message?: string;
-  [key: string]: any;
-}
-
-// TYPES
+// TYPES POUR LES VRAIES DONNÉES MYCONFORT (identiques à avant)
 interface RealInvoice {
   invoiceNumber: string;
   client: {
@@ -51,43 +43,7 @@ interface RealInvoice {
   };
 }
 
-type ShareStep = 'idle' | 'generating-pdf' | 'uploading-drive' | 'sending-email' | 'completed' | 'error';
-
-interface ShareProgress {
-  step: ShareStep;
-  progress: number;
-  message: string;
-}
-
-// CONSTANTES DE STYLE
-const STYLES = {
-  button: {
-    base: {
-      padding: '12px',
-      border: 'none',
-      borderRadius: '6px',
-      fontWeight: 'bold' as const,
-      fontSize: '13px',
-      cursor: 'pointer' as const,
-      transition: 'all 0.2s',
-    },
-    disabled: {
-      cursor: 'not-allowed' as const,
-      opacity: 0.5,
-    }
-  },
-  colors: {
-    primary: '#059669',
-    secondary: '#0ea5e9',
-    warning: '#f59e0b',
-    purple: '#8b5cf6',
-    success: '#22c55e',
-    error: '#ef4444',
-    blue: '#3b82f6',
-  }
-} as const;
-
-// DONNÉES DE TEST
+// TEMPLATES DE VRAIES FACTURES MYCONFORT (identiques à avant)
 const realInvoiceTemplates: RealInvoice[] = [
   {
     invoiceNumber: 'MYCONFORT-2025-001',
@@ -214,86 +170,97 @@ const realInvoiceTemplates: RealInvoice[] = [
   }
 ];
 
-// SERVICES AVEC GESTION D'ERREUR AMÉLIORÉE
-class MYCONFORTServices {
-  static async downloadPDF(invoice: RealInvoice): Promise<ServiceResult> {
+// 🎯 SERVICES RÉELS MYCONFORT (remplace les simulations)
+const realMYCONFORTServices = {
+  
+  // 📄 VRAI SERVICE PDF
+  downloadPDF: async (invoice: RealInvoice) => {
     console.log('🚀 RÉEL - AdvancedPDFService.downloadPDF appelé avec:', invoice);
+    console.log('📄 Utilisation du vrai service PDF MYCONFORT');
     
     try {
-      const result = await (AdvancedPDFService as any).downloadPDF(invoice);
+      // Appel du VRAI service
+      const result = await AdvancedPDFService.downloadPDF(invoice);
       console.log('✅ AdvancedPDFService.downloadPDF - Succès:', result);
-      return { success: true, ...result };
+      return result;
     } catch (error) {
       console.error('❌ Erreur AdvancedPDFService.downloadPDF:', error);
-      return { 
-        success: false, 
-        message: `Erreur PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
+      throw error;
     }
-  }
+  },
 
-  static async getPDFBlob(invoice: RealInvoice): Promise<Blob> {
+  // 📄 VRAI SERVICE PDF BLOB
+  getPDFBlob: async (invoice: RealInvoice) => {
     console.log('🚀 RÉEL - AdvancedPDFService.getPDFBlob appelé');
     
     try {
-      const blob = await (AdvancedPDFService as any).getPDFBlob(invoice);
+      const blob = await AdvancedPDFService.getPDFBlob(invoice);
       console.log('✅ AdvancedPDFService.getPDFBlob - Succès:', blob);
       return blob;
     } catch (error) {
       console.error('❌ Erreur AdvancedPDFService.getPDFBlob:', error);
       throw error;
     }
-  }
+  },
 
-  static async uploadToGoogleDrive(invoice: RealInvoice): Promise<ServiceResult> {
+  // 📁 VRAI SERVICE GOOGLE DRIVE
+  uploadToGoogleDrive: async (invoice: RealInvoice) => {
     console.log('🚀 RÉEL - GoogleDriveService.uploadPDFToGoogleDrive appelé');
+    console.log('📁 Utilisation du vrai service Google Drive MYCONFORT');
     
     try {
-      const pdfBlob = await this.getPDFBlob(invoice);
-      const result = await (GoogleDriveService as any).uploadPDFToGoogleDrive(invoice, pdfBlob);
+      // Générer le PDF d'abord
+      const pdfBlob = await realMYCONFORTServices.getPDFBlob(invoice);
+      
+      // Upload avec le VRAI service Google Drive
+      const result = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
       console.log('✅ GoogleDriveService.uploadPDFToGoogleDrive - Succès:', result);
       
       return { 
         success: true, 
-        url: result?.url || `https://drive.google.com/file/${invoice.invoiceNumber}`,
-        message: 'Upload Google Drive réussi'
+        url: result.url || `https://drive.google.com/file/${invoice.invoiceNumber}`,
+        result: result
       };
     } catch (error) {
       console.error('❌ Erreur GoogleDriveService.uploadPDFToGoogleDrive:', error);
-      return { 
-        success: false, 
-        message: `Erreur Google Drive: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
+      throw error;
     }
-  }
+  },
 
-  static async sendEmail(invoice: RealInvoice, customEmail?: string): Promise<ServiceResult> {
+  // 📧 VRAI SERVICE EMAIL EMAILJS
+  sendEmail: async (invoice: RealInvoice, customEmail?: string) => {
     const emailTo = customEmail || invoice.client.email;
     console.log('🚀 RÉEL - SeparatePdfEmailService appelé vers:', emailTo);
+    console.log('📧 Utilisation du vrai service EmailJS MYCONFORT avec clés définitives');
     
     try {
+      // Préparer l'invoice avec le bon email si nécessaire
       const invoiceForEmail = customEmail ? {
         ...invoice,
-        client: { ...invoice.client, email: customEmail }
+        client: {
+          ...invoice.client,
+          email: customEmail
+        }
       } : invoice;
 
-      const result = await (SeparatePdfEmailService as any).generatePDFAndSendEmail(invoiceForEmail);
+      // Appel du VRAI service EmailJS
+      const result = await SeparatePdfEmailService.generatePDFAndSendEmail(invoiceForEmail);
       console.log('✅ SeparatePdfEmailService.generatePDFAndSendEmail - Succès:', result);
       
       return { 
         success: true, 
-        message: 'Email envoyé avec succès'
+        emailSent: result.emailSent,
+        pdfGenerated: result.pdfGenerated,
+        message: result.message 
       };
     } catch (error) {
       console.error('❌ Erreur SeparatePdfEmailService.generatePDFAndSendEmail:', error);
-      return { 
-        success: false, 
-        message: `Erreur Email: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
+      throw error;
     }
-  }
+  },
 
-  static async sendEmailOnly(invoice: RealInvoice, customEmail?: string): Promise<ServiceResult> {
+  // 📧 VRAI SERVICE EMAIL SEULEMENT
+  sendEmailOnly: async (invoice: RealInvoice, customEmail?: string) => {
     const emailTo = customEmail || invoice.client.email;
     console.log('🚀 RÉEL - SeparatePdfEmailService.sendEmailSeparately appelé vers:', emailTo);
     
@@ -303,126 +270,130 @@ class MYCONFORTServices {
         client: { ...invoice.client, email: customEmail }
       } : invoice;
 
-      const result = await (SeparatePdfEmailService as any).sendEmailSeparately(invoiceForEmail);
+      const result = await SeparatePdfEmailService.sendEmailSeparately(invoiceForEmail);
       console.log('✅ SeparatePdfEmailService.sendEmailSeparately - Succès:', result);
       
-      return { 
-        success: true, 
-        message: 'Email notification envoyé' 
-      };
+      return { success: true, emailSent: result };
     } catch (error) {
       console.error('❌ Erreur SeparatePdfEmailService.sendEmailSeparately:', error);
-      return { 
-        success: false, 
-        message: `Erreur Email: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
+      throw error;
     }
-  }
+  },
 
-  static async testEmailJS(invoice: RealInvoice): Promise<ServiceResult> {
+  // 🧪 VRAI TEST EMAILJS
+  testEmailJS: async (invoice: RealInvoice) => {
     console.log('🚀 RÉEL - SeparatePdfEmailService.testSeparateMethod appelé');
+    console.log('🧪 Test complet avec vos clés EmailJS définitives');
     
     try {
-      await (SeparatePdfEmailService as any).testSeparateMethod(invoice);
+      await SeparatePdfEmailService.testSeparateMethod(invoice);
       console.log('✅ SeparatePdfEmailService.testSeparateMethod - Succès');
-      return { success: true, message: 'Test EmailJS réussi' };
+      return { success: true };
     } catch (error) {
       console.error('❌ Erreur SeparatePdfEmailService.testSeparateMethod:', error);
-      return { 
-        success: false, 
-        message: `Erreur Test: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
+      throw error;
     }
   }
-}
+};
 
-// HOOK AMÉLIORÉ
-const useMYCONFORTSharing = () => {
+// HOOK AVEC VRAIS SERVICES MYCONFORT
+const useRealMYCONFORTSharing = () => {
   const [isSharing, setIsSharing] = useState(false);
-  const [shareProgress, setShareProgress] = useState<ShareProgress>({
-    step: 'idle',
+  const [shareProgress, setShareProgress] = useState({
+    step: 'idle' as const,
     progress: 0,
     message: ''
   });
 
-  const updateProgress = (step: ShareStep, progress: number, message: string) => {
-    setShareProgress({ step, progress, message });
-  };
-
-  const resetProgress = () => {
-    setTimeout(() => {
-      setShareProgress({ step: 'idle', progress: 0, message: '' });
-    }, 3000);
-  };
-
-  const executeAction = async (
-    action: () => Promise<ServiceResult>,
-    successMessage: string,
-    errorMessage: string
-  ): Promise<ServiceResult> => {
-    setIsSharing(true);
-    try {
-      const result = await action();
-      if (result.success) {
-        updateProgress('completed', 100, successMessage);
-      } else {
-        updateProgress('error', 0, result.message || errorMessage);
-      }
-      return result;
-    } catch (error) {
-      updateProgress('error', 0, errorMessage);
-      return { success: false, message: errorMessage };
-    } finally {
-      setIsSharing(false);
-      resetProgress();
-    }
+  const updateProgress = (step: string, progress: number, message: string) => {
+    setShareProgress({ step: step as any, progress, message });
   };
 
   const downloadPDF = async (invoice: RealInvoice) => {
+    setIsSharing(true);
     updateProgress('generating-pdf', 30, `🚀 Génération PDF RÉEL pour ${invoice.client.name}...`);
-    return executeAction(
-      () => MYCONFORTServices.downloadPDF(invoice),
-      '✅ PDF téléchargé avec VRAI service !',
-      '❌ Erreur service PDF réel'
-    );
+    try {
+      await realMYCONFORTServices.downloadPDF(invoice);
+      updateProgress('completed', 100, '✅ PDF téléchargé avec VRAI service !');
+      return true;
+    } catch (error) {
+      updateProgress('error', 0, '❌ Erreur service PDF réel');
+      console.error('Erreur downloadPDF:', error);
+      return false;
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareProgress({ step: 'idle', progress: 0, message: '' }), 3000);
+    }
   };
 
   const shareToGoogleDrive = async (invoice: RealInvoice) => {
+    setIsSharing(true);
     updateProgress('uploading-drive', 20, `🚀 Upload RÉEL ${invoice.invoiceNumber} vers Google Drive...`);
-    return executeAction(
-      () => MYCONFORTServices.uploadToGoogleDrive(invoice),
-      '✅ Upload Google Drive RÉEL réussi !',
-      '❌ Erreur Google Drive réel'
-    );
+    try {
+      const result = await realMYCONFORTServices.uploadToGoogleDrive(invoice);
+      updateProgress('completed', 100, '✅ Upload Google Drive RÉEL réussi !');
+      return result;
+    } catch (error) {
+      updateProgress('error', 0, '❌ Erreur Google Drive réel');
+      console.error('Erreur shareToGoogleDrive:', error);
+      return { success: false };
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareProgress({ step: 'idle', progress: 0, message: '' }), 3000);
+    }
   };
 
   const shareByEmail = async (invoice: RealInvoice, customEmail?: string) => {
+    setIsSharing(true);
     const emailTo = customEmail || invoice.client.email;
     updateProgress('sending-email', 40, `🚀 Envoi EMAIL RÉEL vers ${emailTo}...`);
-    return executeAction(
-      () => MYCONFORTServices.sendEmail(invoice, customEmail),
-      '✅ Email RÉEL envoyé avec EmailJS !',
-      '❌ Erreur EmailJS réel'
-    );
+    try {
+      const result = await realMYCONFORTServices.sendEmail(invoice, customEmail);
+      updateProgress('completed', 100, '✅ Email RÉEL envoyé avec EmailJS !');
+      return result;
+    } catch (error) {
+      updateProgress('error', 0, '❌ Erreur EmailJS réel');
+      console.error('Erreur shareByEmail:', error);
+      return { success: false };
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareProgress({ step: 'idle', progress: 0, message: '' }), 3000);
+    }
   };
 
   const sendEmailOnly = async (invoice: RealInvoice, customEmail?: string) => {
+    setIsSharing(true);
     const emailTo = customEmail || invoice.client.email;
     updateProgress('sending-email', 50, `🚀 Email notification RÉEL vers ${emailTo}...`);
-    return executeAction(
-      () => MYCONFORTServices.sendEmailOnly(invoice, customEmail),
-      '✅ Email notification RÉEL envoyé !',
-      '❌ Erreur email notification réel'
-    );
+    try {
+      const result = await realMYCONFORTServices.sendEmailOnly(invoice, customEmail);
+      updateProgress('completed', 100, '✅ Email notification RÉEL envoyé !');
+      return result;
+    } catch (error) {
+      updateProgress('error', 0, '❌ Erreur email notification réel');
+      console.error('Erreur sendEmailOnly:', error);
+      return { success: false };
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareProgress({ step: 'idle', progress: 0, message: '' }), 3000);
+    }
   };
 
   const testEmailJS = async (invoice: RealInvoice) => {
+    setIsSharing(true);
     updateProgress('sending-email', 60, '🧪 Test RÉEL EmailJS avec clés définitives...');
-    return executeAction(
-      () => MYCONFORTServices.testEmailJS(invoice),
-      '✅ Test EmailJS RÉEL terminé !',
-      '❌ Erreur test EmailJS réel'
-    );
+    try {
+      await realMYCONFORTServices.testEmailJS(invoice);
+      updateProgress('completed', 100, '✅ Test EmailJS RÉEL terminé !');
+      return true;
+    } catch (error) {
+      updateProgress('error', 0, '❌ Erreur test EmailJS réel');
+      console.error('Erreur testEmailJS:', error);
+      return false;
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareProgress({ step: 'idle', progress: 0, message: '' }), 3000);
+    }
   };
 
   return {
@@ -436,70 +407,10 @@ const useMYCONFORTSharing = () => {
   };
 };
 
-// UTILITÉ
-const calculateTotal = (invoice: RealInvoice): number => {
-  return invoice.products.reduce((sum, product) => {
-    const discountAmount = product.discountType === 'percentage' 
-      ? (product.priceTTC * product.discount / 100)
-      : product.discount;
-    return sum + ((product.priceTTC - discountAmount) * product.quantity);
-  }, 0);
-};
-
-const getProgressColor = (step: ShareStep): string => {
-  switch (step) {
-    case 'completed': return STYLES.colors.success;
-    case 'error': return STYLES.colors.error;
-    default: return STYLES.colors.blue;
-  }
-};
-
-// COMPOSANTS
-const ProgressBar: React.FC<{ shareProgress: ShareProgress }> = ({ shareProgress }) => (
-  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#eff6ff', borderRadius: '8px' }}>
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-      <span style={{ marginRight: '8px', fontSize: '16px' }}>🚀</span>
-      <span style={{ fontSize: '14px', fontWeight: '500', color: '#1e40af' }}>
-        {shareProgress.message}
-      </span>
-    </div>
-    <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '4px', height: '8px' }}>
-      <div 
-        style={{
-          height: '8px',
-          borderRadius: '4px',
-          backgroundColor: getProgressColor(shareProgress.step),
-          width: `${shareProgress.progress}%`,
-          transition: 'all 0.3s ease'
-        }}
-      />
-    </div>
-  </div>
-);
-
-const ActionButton: React.FC<{
-  onClick: () => void;
-  disabled: boolean;
-  color: string;
-  children: React.ReactNode;
-}> = ({ onClick, disabled, color, children }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    style={{
-      ...STYLES.button.base,
-      backgroundColor: color,
-      color: 'white',
-      ...(disabled ? STYLES.button.disabled : {})
-    }}
-  >
-    {children}
-  </button>
-);
-
-// COMPOSANT PRINCIPAL
+// COMPOSANT PRINCIPAL AVEC VRAIS SERVICES
 function App() {
   const [selectedInvoice, setSelectedInvoice] = useState<RealInvoice>(realInvoiceTemplates[0]);
+  const [showModal, setShowModal] = useState(false);
   const [customEmail, setCustomEmail] = useState('');
 
   const { 
@@ -510,18 +421,30 @@ function App() {
     testEmailJS,
     isSharing, 
     shareProgress 
-  } = useMYCONFORTSharing();
+  } = useRealMYCONFORTSharing();
+
+  const calculateTotal = (invoice: RealInvoice) => {
+    return invoice.products.reduce((sum, product) => {
+      const discountAmount = product.discountType === 'percentage' 
+        ? (product.priceTTC * product.discount / 100)
+        : product.discount;
+      return sum + ((product.priceTTC - discountAmount) * product.quantity);
+    }, 0);
+  };
+
+  const getProgressColor = () => {
+    switch (shareProgress.step) {
+      case 'completed': return '#22c55e';
+      case 'error': return '#ef4444';
+      default: return '#3b82f6';
+    }
+  };
 
   return (
-    <div className="App" style={{ 
-      padding: '20px', 
-      fontFamily: 'Arial, sans-serif', 
-      maxWidth: '1200px', 
-      margin: '0 auto' 
-    }}>
+    <div className="App" style={{ padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: STYLES.colors.primary, marginBottom: '10px' }}>
+        <h1 style={{ color: '#059669', marginBottom: '10px' }}>
           🚀 MYCONFORT - VRAIS SERVICES INTÉGRÉS !
         </h1>
         <p style={{ color: '#6b7280' }}>
@@ -535,17 +458,12 @@ function App() {
         padding: '20px', 
         borderRadius: '12px',
         marginBottom: '30px',
-        border: `2px solid ${STYLES.colors.primary}`
+        border: '2px solid #059669'
       }}>
         <h3 style={{ color: '#047857', margin: '0 0 15px 0', textAlign: 'center' }}>
           ✅ VRAIS SERVICES MYCONFORT ACTIFS !
         </h3>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-          gap: '10px', 
-          textAlign: 'center' 
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px', textAlign: 'center' }}>
           <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px' }}>
             📄 <strong>AdvancedPDFService</strong><br/>
             <span style={{ fontSize: '12px', color: '#6b7280' }}>Service PDF réel MYCONFORT</span>
@@ -561,14 +479,14 @@ function App() {
         </div>
       </div>
 
-      {/* Contenu principal */}
+      {/* Sélection de facture */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px', marginBottom: '30px' }}>
         
         {/* Panel de sélection */}
         <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px' }}>
           <h3 style={{ color: '#1f2937', marginBottom: '15px' }}>📋 Factures MYCONFORT :</h3>
           
-          {realInvoiceTemplates.map((invoice) => (
+          {realInvoiceTemplates.map((invoice, index) => (
             <div
               key={invoice.invoiceNumber}
               onClick={() => setSelectedInvoice(invoice)}
@@ -595,54 +513,112 @@ function App() {
         <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ color: '#1f2937', margin: 0 }}>📄 Test avec VRAIS services</h3>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: STYLES.colors.primary }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#059669' }}>
               {calculateTotal(selectedInvoice).toFixed(2)}€
             </div>
           </div>
 
-          {/* Progress bar */}
-          {isSharing && <ProgressBar shareProgress={shareProgress} />}
+          {/* Progress bar pour vrais services */}
+          {isSharing && (
+            <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#eff6ff', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ marginRight: '8px', fontSize: '16px' }}>🚀</span>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#1e40af' }}>{shareProgress.message}</span>
+              </div>
+              <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '4px', height: '8px' }}>
+                <div 
+                  style={{
+                    height: '8px',
+                    borderRadius: '4px',
+                    backgroundColor: getProgressColor(),
+                    width: `${shareProgress.progress}%`,
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Actions avec VRAIS services */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
-            <ActionButton
+            <button
               onClick={() => downloadPDF(selectedInvoice)}
               disabled={isSharing}
-              color={STYLES.colors.primary}
+              style={{
+                padding: '12px',
+                backgroundColor: '#059669',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: isSharing ? 'not-allowed' : 'pointer',
+                opacity: isSharing ? 0.5 : 1,
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
             >
               📄 PDF RÉEL<br/>
               <span style={{ fontSize: '11px' }}>AdvancedPDFService</span>
-            </ActionButton>
+            </button>
 
-            <ActionButton
+            <button
               onClick={() => shareToGoogleDrive(selectedInvoice)}
               disabled={isSharing}
-              color={STYLES.colors.secondary}
+              style={{
+                padding: '12px',
+                backgroundColor: '#0ea5e9',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: isSharing ? 'not-allowed' : 'pointer',
+                opacity: isSharing ? 0.5 : 1,
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
             >
               📁 DRIVE RÉEL<br/>
               <span style={{ fontSize: '11px' }}>GoogleDriveService</span>
-            </ActionButton>
+            </button>
 
-            <ActionButton
+            <button
               onClick={() => shareByEmail(selectedInvoice)}
               disabled={isSharing}
-              color={STYLES.colors.warning}
+              style={{
+                padding: '12px',
+                backgroundColor: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: isSharing ? 'not-allowed' : 'pointer',
+                opacity: isSharing ? 0.5 : 1,
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
             >
               📧 EMAIL RÉEL<br/>
               <span style={{ fontSize: '11px' }}>SeparatePdfEmailService</span>
-            </ActionButton>
+            </button>
 
-            <ActionButton
+            <button
               onClick={() => testEmailJS(selectedInvoice)}
               disabled={isSharing}
-              color={STYLES.colors.purple}
+              style={{
+                padding: '12px',
+                backgroundColor: '#8b5cf6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: isSharing ? 'not-allowed' : 'pointer',
+                opacity: isSharing ? 0.5 : 1,
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
             >
               🧪 TEST RÉEL<br/>
               <span style={{ fontSize: '11px' }}>EmailJS complet</span>
-            </ActionButton>
+            </button>
           </div>
 
-          {/* Email personnalisé */}
+          {/* Email personnalisé avec VRAIS services */}
           <div style={{ padding: '15px', backgroundColor: '#f0f9ff', borderRadius: '8px' }}>
             <h4 style={{ color: '#1e40af', margin: '0 0 10px 0' }}>📧 Email avec VRAI EmailJS :</h4>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
@@ -659,13 +635,22 @@ function App() {
                   fontSize: '14px'
                 }}
               />
-              <ActionButton
+              <button
                 onClick={() => shareByEmail(selectedInvoice, customEmail || selectedInvoice.client.email)}
                 disabled={isSharing}
-                color="#dc2626"
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isSharing ? 'not-allowed' : 'pointer',
+                  opacity: isSharing ? 0.5 : 1,
+                  fontSize: '12px'
+                }}
               >
                 🚀 RÉEL
-              </ActionButton>
+              </button>
             </div>
             
             <button
@@ -690,13 +675,7 @@ function App() {
       </div>
 
       {/* Status final */}
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '20px', 
-        backgroundColor: '#f0fdf4', 
-        borderRadius: '12px', 
-        border: `2px solid ${STYLES.colors.success}` 
-      }}>
+      <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f0fdf4', borderRadius: '12px', border: '2px solid #22c55e' }}>
         <h2 style={{ color: '#15803d', marginBottom: '10px' }}>🎉 MISSION ACCOMPLIE !</h2>
         <p style={{ color: '#166534', margin: 0 }}>
           Votre système de partage MYCONFORT est maintenant <strong>100% opérationnel</strong> avec vos vrais services !<br/>
