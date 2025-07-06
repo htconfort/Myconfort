@@ -58,10 +58,10 @@ const calculateProductTotal = (
 
 // Configuration EmailJS DÉFINITIVE avec clés API exactes
 const EMAILJS_CONFIG = {
-  SERVICE_ID: process.env.REACT_APP_EMAILJS_SERVICE_ID || 'service_ymw6jjh',
-  TEMPLATE_ID: process.env.REACT_APP_EMAILJS_TEMPLATE_ID || 'template_yng4k8s',
-  USER_ID: process.env.REACT_APP_EMAILJS_USER_ID || 'eqxx9fwyTsoAoF00i',
-  PRIVATE_KEY: process.env.REACT_APP_EMAILJS_PRIVATE_KEY || 'MwZ9s8tHaiq8YimGZrF5_'
+  SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_ymw6jjh',
+  TEMPLATE_ID: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_yng4k8s',
+  USER_ID: import.meta.env.VITE_EMAILJS_USER_ID || 'eqxx9fwyTsoAoF00i',
+  PRIVATE_KEY: import.meta.env.VITE_EMAILJS_PRIVATE_KEY || 'MwZ9s8tHaiq8YimGZrF5_'
 };
 
 export class SeparatePdfEmailService {
