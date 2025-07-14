@@ -1,708 +1,631 @@
-import React, { useState } from 'react';
-import './App.css';
-
-// 🔧 IMPORTS DES VRAIS SERVICES MYCONFORT
-// @ts-ignore
+import React, { useState, useEffect } from 'react';
+import { Header } from './components/Header';
+import { InvoiceHeader } from './components/InvoiceHeader';
+import { ClientSection } from './components/ClientSection';
+import { ProductSection } from './components/ProductSection';
+import { ClientListModal } from './components/ClientListModal';
+import { InvoicesListModal } from './components/InvoicesListModal';
+import { ProductsListModal } from './components/ProductsListModal';
+import { PDFPreviewModal } from './components/PDFPreviewModal';
+import { EmailJSConfigModal } from './components/EmailJSConfigModal';
+import { GoogleDriveModal } from './components/GoogleDriveModal';
+import { SignaturePad } from './components/SignaturePad';
+import { EmailSender } from './components/EmailSender';
+import { InvoicePreview } from './components/InvoicePreview';
+import { Toast } from './components/ui/Toast';
+import { Invoice, Client, ToastType } from './types';
+import { generateInvoiceNumber } from './utils/calculations';
+import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
 import { AdvancedPDFService } from './services/advancedPdfService';
-// @ts-ignore  
-import { GoogleDriveService } from './services/googleDriveService';
-// @ts-ignore
-import { SeparatePdfEmailService } from './services/separatePdfEmailService';
 
-// INTERFACES
-interface ServiceResult {
-  success: boolean;
-  url?: string;
-  message?: string;
-  [key: string]: any;
-}
-
-// TYPES
-interface RealInvoice {
-  invoiceNumber: string;
-  client: {
-    name: string;
-    email: string;
-    address: string;
-    city: string;
-    postalCode: string;
-    phone: string;
-  };
-  invoiceDate: string;
-  products: Array<{
-    name: string;
-    quantity: number;
-    priceTTC: number;
-    discount: number;
-    discountType: 'percentage' | 'fixed';
-  }>;
-  payment: {
-    method: string;
-    depositAmount: number;
-  };
-  advisorName: string;
-  eventLocation: string;
-  invoiceNotes: string;
-  termsAccepted: boolean;
-  taxRate: number;
-  delivery: {
-    method: string;
-    notes: string;
-  };
-}
-
-type ShareStep = 'idle' | 'generating-pdf' | 'uploading-drive' | 'sending-email' | 'completed' | 'error';
-
-interface ShareProgress {
-  step: ShareStep;
-  progress: number;
-  message: string;
-}
-
-// CONSTANTES DE STYLE
-const STYLES = {
-  button: {
-    base: {
-      padding: '12px',
-      border: 'none',
-      borderRadius: '6px',
-      fontWeight: 'bold' as const,
-      fontSize: '13px',
-      cursor: 'pointer' as const,
-      transition: 'all 0.2s',
-    },
-    disabled: {
-      cursor: 'not-allowed' as const,
-      opacity: 0.5,
-    }
-  },
-  colors: {
-    primary: '#059669',
-    secondary: '#0ea5e9',
-    warning: '#f59e0b',
-    purple: '#8b5cf6',
-    success: '#22c55e',
-    error: '#ef4444',
-    blue: '#3b82f6',
-  }
-} as const;
-
-// DONNÉES DE TEST
-const realInvoiceTemplates: RealInvoice[] = [
-  {
-    invoiceNumber: 'MYCONFORT-2025-001',
-    client: {
-      name: 'M. Jean Dupont',
-      email: 'jean.dupont@email.com',
-      address: '123 Rue de la Paix',
-      city: 'Paris',
-      postalCode: '75001',
-      phone: '01 23 45 67 89'
-    },
-    invoiceDate: '2025-07-04',
-    products: [
-      {
-        name: 'Installation climatisation Samsung',
-        quantity: 1,
-        priceTTC: 2499.99,
-        discount: 10,
-        discountType: 'percentage'
-      },
-      {
-        name: 'Maintenance annuelle',
-        quantity: 1,
-        priceTTC: 299.99,
-        discount: 0,
-        discountType: 'fixed'
-      }
-    ],
-    payment: {
-      method: 'Carte bancaire',
-      depositAmount: 500.00
-    },
-    advisorName: 'Marc MARTIN - MYCONFORT',
-    eventLocation: 'Domicile client',
-    invoiceNotes: 'Installation prévue sous 15 jours. Garantie 2 ans incluse.',
-    termsAccepted: true,
+function App() {
+  const [invoice, setInvoice] = useState<Invoice>({
+    invoiceNumber: generateInvoiceNumber(),
+    invoiceDate: new Date().toISOString().split('T')[0],
+    eventLocation: '',
+    advisorName: '',
+    invoiceNotes: '',
+    termsAccepted: false,
     taxRate: 20,
-    delivery: {
-      method: 'Livraison standard',
-      notes: 'Livraison entre 9h et 17h'
-    }
-  },
-  {
-    invoiceNumber: 'MYCONFORT-2025-002',
     client: {
-      name: 'Mme Sophie Martin',
-      email: 'sophie.martin@gmail.com',
-      address: '45 Avenue des Champs',
-      city: 'Lyon',
-      postalCode: '69000',
-      phone: '04 78 90 12 34'
+      name: '',
+      address: '',
+      postalCode: '',
+      city: '',
+      phone: '',
+      email: '',
+      housingType: '',
+      doorCode: ''
     },
-    invoiceDate: '2025-07-04',
-    products: [
-      {
-        name: 'Pompe à chaleur Daikin',
-        quantity: 1,
-        priceTTC: 4999.99,
-        discount: 15,
-        discountType: 'percentage'
-      },
-      {
-        name: 'Kit de démarrage',
-        quantity: 1,
-        priceTTC: 199.99,
-        discount: 0,
-        discountType: 'fixed'
-      }
-    ],
-    payment: {
-      method: 'Virement bancaire',
-      depositAmount: 1000.00
-    },
-    advisorName: 'Pierre DUBOIS - MYCONFORT',
-    eventLocation: 'Maison individuelle',
-    invoiceNotes: 'Crédit d\'impôt applicable. Devis détaillé fourni.',
-    termsAccepted: true,
-    taxRate: 20,
     delivery: {
-      method: 'Livraison express',
-      notes: 'Installation programmée le 15/07/2025'
-    }
-  },
-  {
-    invoiceNumber: 'MYCONFORT-2025-003',
-    client: {
-      name: 'Entreprise ABC SAS',
-      email: 'contact@entreprise-abc.fr',
-      address: '78 Boulevard de la République',
-      city: 'Marseille',
-      postalCode: '13000',
-      phone: '04 91 23 45 67'
+      method: '',
+      notes: ''
     },
-    invoiceDate: '2025-07-04',
-    products: [
-      {
-        name: 'Système CVC bureaux (500m²)',
-        quantity: 1,
-        priceTTC: 12999.99,
-        discount: 20,
-        discountType: 'percentage'
-      },
-      {
-        name: 'Contrat maintenance 3 ans',
-        quantity: 1,
-        priceTTC: 1999.99,
-        discount: 0,
-        discountType: 'fixed'
-      }
-    ],
     payment: {
-      method: 'Chèque',
-      depositAmount: 3000.00
+      method: '',
+      depositAmount: 0
     },
-    advisorName: 'Julie MOREAU - MYCONFORT',
-    eventLocation: 'Locaux professionnels',
-    invoiceNotes: 'Projet B2B. TVA déductible. Facture sur 30 jours.',
-    termsAccepted: true,
-    taxRate: 20,
-    delivery: {
-      method: 'Livraison chantier',
-      notes: 'Coordination avec le maître d\'œuvre requise'
-    }
-  }
-];
-
-// SERVICES AVEC GESTION D'ERREUR AMÉLIORÉE
-class MYCONFORTServices {
-  static async downloadPDF(invoice: RealInvoice): Promise<ServiceResult> {
-    console.log('🚀 RÉEL - AdvancedPDFService.downloadPDF appelé avec:', invoice);
-    
-    try {
-      const result = await (AdvancedPDFService as any).downloadPDF(invoice);
-      console.log('✅ AdvancedPDFService.downloadPDF - Succès:', result);
-      return { success: true, ...result };
-    } catch (error) {
-      console.error('❌ Erreur AdvancedPDFService.downloadPDF:', error);
-      return { 
-        success: false, 
-        message: `Erreur PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
-    }
-  }
-
-  static async getPDFBlob(invoice: RealInvoice): Promise<Blob> {
-    console.log('🚀 RÉEL - AdvancedPDFService.getPDFBlob appelé');
-    
-    try {
-      const blob = await (AdvancedPDFService as any).getPDFBlob(invoice);
-      console.log('✅ AdvancedPDFService.getPDFBlob - Succès:', blob);
-      return blob;
-    } catch (error) {
-      console.error('❌ Erreur AdvancedPDFService.getPDFBlob:', error);
-      throw error;
-    }
-  }
-
-  static async uploadToGoogleDrive(invoice: RealInvoice): Promise<ServiceResult> {
-    console.log('🚀 RÉEL - GoogleDriveService.uploadPDFToGoogleDrive appelé');
-    
-    try {
-      const pdfBlob = await this.getPDFBlob(invoice);
-      const result = await (GoogleDriveService as any).uploadPDFToGoogleDrive(invoice, pdfBlob);
-      console.log('✅ GoogleDriveService.uploadPDFToGoogleDrive - Succès:', result);
-      
-      return { 
-        success: true, 
-        url: result?.url || `https://drive.google.com/file/${invoice.invoiceNumber}`,
-        message: 'Upload Google Drive réussi'
-      };
-    } catch (error) {
-      console.error('❌ Erreur GoogleDriveService.uploadPDFToGoogleDrive:', error);
-      return { 
-        success: false, 
-        message: `Erreur Google Drive: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
-    }
-  }
-
-  static async sendEmail(invoice: RealInvoice, customEmail?: string): Promise<ServiceResult> {
-    const emailTo = customEmail || invoice.client.email;
-    console.log('🚀 RÉEL - SeparatePdfEmailService appelé vers:', emailTo);
-    
-    try {
-      const invoiceForEmail = customEmail ? {
-        ...invoice,
-        client: { ...invoice.client, email: customEmail }
-      } : invoice;
-
-      const result = await (SeparatePdfEmailService as any).generatePDFAndSendEmail(invoiceForEmail);
-      console.log('✅ SeparatePdfEmailService.generatePDFAndSendEmail - Succès:', result);
-      
-      return { 
-        success: true, 
-        message: 'Email envoyé avec succès'
-      };
-    } catch (error) {
-      console.error('❌ Erreur SeparatePdfEmailService.generatePDFAndSendEmail:', error);
-      return { 
-        success: false, 
-        message: `Erreur Email: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
-    }
-  }
-
-  static async sendEmailOnly(invoice: RealInvoice, customEmail?: string): Promise<ServiceResult> {
-    const emailTo = customEmail || invoice.client.email;
-    console.log('🚀 RÉEL - SeparatePdfEmailService.sendEmailSeparately appelé vers:', emailTo);
-    
-    try {
-      const invoiceForEmail = customEmail ? {
-        ...invoice,
-        client: { ...invoice.client, email: customEmail }
-      } : invoice;
-
-      const result = await (SeparatePdfEmailService as any).sendEmailSeparately(invoiceForEmail);
-      console.log('✅ SeparatePdfEmailService.sendEmailSeparately - Succès:', result);
-      
-      return { 
-        success: true, 
-        message: 'Email notification envoyé' 
-      };
-    } catch (error) {
-      console.error('❌ Erreur SeparatePdfEmailService.sendEmailSeparately:', error);
-      return { 
-        success: false, 
-        message: `Erreur Email: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
-    }
-  }
-
-  static async testEmailJS(invoice: RealInvoice): Promise<ServiceResult> {
-    console.log('🚀 RÉEL - SeparatePdfEmailService.testSeparateMethod appelé');
-    
-    try {
-      await (SeparatePdfEmailService as any).testSeparateMethod(invoice);
-      console.log('✅ SeparatePdfEmailService.testSeparateMethod - Succès');
-      return { success: true, message: 'Test EmailJS réussi' };
-    } catch (error) {
-      console.error('❌ Erreur SeparatePdfEmailService.testSeparateMethod:', error);
-      return { 
-        success: false, 
-        message: `Erreur Test: ${error instanceof Error ? error.message : 'Erreur inconnue'}` 
-      };
-    }
-  }
-}
-
-// HOOK AMÉLIORÉ
-const useMYCONFORTSharing = () => {
-  const [isSharing, setIsSharing] = useState(false);
-  const [shareProgress, setShareProgress] = useState<ShareProgress>({
-    step: 'idle',
-    progress: 0,
-    message: ''
+    products: [],
+    signature: ''
   });
 
-  const updateProgress = (step: ShareStep, progress: number, message: string) => {
-    setShareProgress({ step, progress, message });
+  const [clients, setClients] = useState<Client[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [showClientsList, setShowClientsList] = useState(false);
+  const [showInvoicesList, setShowInvoicesList] = useState(false);
+  const [showProductsList, setShowProductsList] = useState(false);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [showEmailJSConfig, setShowEmailJSConfig] = useState(false);
+  const [showGoogleDriveConfig, setShowGoogleDriveConfig] = useState(false);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [showInvoicePreview, setShowInvoicePreview] = useState(true);
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success' as ToastType
+  });
+
+  useEffect(() => {
+    setClients(loadClients());
+    setInvoices(loadInvoices());
+    const draft = loadDraft();
+    if (draft) {
+      setInvoice(draft);
+      showToast('Brouillon chargé', 'success');
+    }
+
+    // Auto-save every 60 seconds
+    const interval = setInterval(() => {
+      handleSave();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ show: true, message, type });
   };
 
-  const resetProgress = () => {
-    setTimeout(() => {
-      setShareProgress({ step: 'idle', progress: 0, message: '' });
-    }, 3000);
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, show: false }));
   };
 
-  const executeAction = async (
-    action: () => Promise<ServiceResult>,
-    successMessage: string,
-    errorMessage: string
-  ): Promise<ServiceResult> => {
-    setIsSharing(true);
+  const handleSave = () => {
     try {
-      const result = await action();
-      if (result.success) {
-        updateProgress('completed', 100, successMessage);
-      } else {
-        updateProgress('error', 0, result.message || errorMessage);
+      saveDraft(invoice);
+      if (invoice.client.name && invoice.client.email) {
+        saveClient(invoice.client);
+        setClients(loadClients());
       }
-      return result;
+      showToast('Brouillon enregistré', 'success');
     } catch (error) {
-      updateProgress('error', 0, errorMessage);
-      return { success: false, message: errorMessage };
-    } finally {
-      setIsSharing(false);
-      resetProgress();
+      showToast('Erreur lors de l\'enregistrement', 'error');
     }
   };
 
-  const downloadPDF = async (invoice: RealInvoice) => {
-    updateProgress('generating-pdf', 30, `🚀 Génération PDF RÉEL pour ${invoice.client.name}...`);
-    return executeAction(
-      () => MYCONFORTServices.downloadPDF(invoice),
-      '✅ PDF téléchargé avec VRAI service !',
-      '❌ Erreur service PDF réel'
-    );
+  const handleSaveInvoice = () => {
+    try {
+      if (!invoice.client.name || !invoice.client.email || invoice.products.length === 0) {
+        showToast('Veuillez compléter les informations client et ajouter au moins un produit', 'error');
+        return;
+      }
+
+      saveInvoice(invoice);
+      setInvoices(loadInvoices());
+      showToast(`Facture ${invoice.invoiceNumber} enregistrée avec succès`, 'success');
+    } catch (error) {
+      showToast('Erreur lors de l\'enregistrement de la facture', 'error');
+    }
   };
 
-  const shareToGoogleDrive = async (invoice: RealInvoice) => {
-    updateProgress('uploading-drive', 20, `🚀 Upload RÉEL ${invoice.invoiceNumber} vers Google Drive...`);
-    return executeAction(
-      () => MYCONFORTServices.uploadToGoogleDrive(invoice),
-      '✅ Upload Google Drive RÉEL réussi !',
-      '❌ Erreur Google Drive réel'
-    );
+  // 🔒 VALIDATION OBLIGATOIRE RENFORCÉE AVEC DATE
+  const validateMandatoryFields = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Validation date (OBLIGATOIRE)
+    if (!invoice.invoiceDate || invoice.invoiceDate.trim() === '') {
+      errors.push('Date de la facture obligatoire');
+    }
+
+    // Validation lieu d'événement (OBLIGATOIRE)
+    if (!invoice.eventLocation || invoice.eventLocation.trim() === '') {
+      errors.push('Lieu de l\'événement obligatoire');
+    }
+
+    // Validation informations client (TOUS OBLIGATOIRES)
+    if (!invoice.client.name || invoice.client.name.trim() === '') {
+      errors.push('Nom complet du client obligatoire');
+    }
+
+    if (!invoice.client.address || invoice.client.address.trim() === '') {
+      errors.push('Adresse du client obligatoire');
+    }
+
+    if (!invoice.client.postalCode || invoice.client.postalCode.trim() === '') {
+      errors.push('Code postal du client obligatoire');
+    }
+
+    if (!invoice.client.city || invoice.client.city.trim() === '') {
+      errors.push('Ville du client obligatoire');
+    }
+
+    if (!invoice.client.housingType || invoice.client.housingType.trim() === '') {
+      errors.push('Type de logement du client obligatoire');
+    }
+
+    if (!invoice.client.doorCode || invoice.client.doorCode.trim() === '') {
+      errors.push('Code porte/étage du client obligatoire');
+    }
+
+    if (!invoice.client.phone || invoice.client.phone.trim() === '') {
+      errors.push('Téléphone du client obligatoire');
+    }
+
+    if (!invoice.client.email || invoice.client.email.trim() === '') {
+      errors.push('Email du client obligatoire');
+    }
+
+    // Validation email format
+    if (invoice.client.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invoice.client.email)) {
+      errors.push('Format d\'email invalide');
+    }
+
+    // Validation produits
+    if (invoice.products.length === 0) {
+      errors.push('Au moins un produit obligatoire');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   };
 
-  const shareByEmail = async (invoice: RealInvoice, customEmail?: string) => {
-    const emailTo = customEmail || invoice.client.email;
-    updateProgress('sending-email', 40, `🚀 Envoi EMAIL RÉEL vers ${emailTo}...`);
-    return executeAction(
-      () => MYCONFORTServices.sendEmail(invoice, customEmail),
-      '✅ Email RÉEL envoyé avec EmailJS !',
-      '❌ Erreur EmailJS réel'
-    );
+  const handleShowPDFPreview = () => {
+    // 🔒 VALIDATION OBLIGATOIRE AVANT APERÇU
+    const validation = validateMandatoryFields();
+    
+    if (!validation.isValid) {
+      showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+      return;
+    }
+    
+    handleSave();
+    handleSaveInvoice();
+    setShowPDFPreview(true);
   };
 
-  const sendEmailOnly = async (invoice: RealInvoice, customEmail?: string) => {
-    const emailTo = customEmail || invoice.client.email;
-    updateProgress('sending-email', 50, `🚀 Email notification RÉEL vers ${emailTo}...`);
-    return executeAction(
-      () => MYCONFORTServices.sendEmailOnly(invoice, customEmail),
-      '✅ Email notification RÉEL envoyé !',
-      '❌ Erreur email notification réel'
-    );
+  const handleGeneratePDF = async () => {
+    try {
+      // 🔒 VALIDATION OBLIGATOIRE AVANT GÉNÉRATION PDF
+      const validation = validateMandatoryFields();
+      
+      if (!validation.isValid) {
+        showToast(`Impossible de générer le PDF. Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+        return;
+      }
+
+      handleSave();
+      handleSaveInvoice();
+      showToast('Génération du PDF MYCONFORT en cours...', 'success');
+      
+      await AdvancedPDFService.downloadPDF(invoice);
+      showToast(`PDF MYCONFORT téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      showToast('Erreur lors de la génération du PDF', 'error');
+    }
   };
 
-  const testEmailJS = async (invoice: RealInvoice) => {
-    updateProgress('sending-email', 60, '🧪 Test RÉEL EmailJS avec clés définitives...');
-    return executeAction(
-      () => MYCONFORTServices.testEmailJS(invoice),
-      '✅ Test EmailJS RÉEL terminé !',
-      '❌ Erreur test EmailJS réel'
-    );
+  const handlePrint = () => {
+    window.print();
   };
 
-  return {
-    isSharing,
-    shareProgress,
-    downloadPDF,
-    shareToGoogleDrive,
-    shareByEmail,
-    sendEmailOnly,
-    testEmailJS
+  const handleEmailJSSuccess = (message: string) => {
+    handleSaveInvoice();
+    showToast(message, 'success');
   };
-};
 
-// UTILITÉ
-const calculateTotal = (invoice: RealInvoice): number => {
-  return invoice.products.reduce((sum, product) => {
-    const discountAmount = product.discountType === 'percentage' 
-      ? (product.priceTTC * product.discount / 100)
-      : product.discount;
-    return sum + ((product.priceTTC - discountAmount) * product.quantity);
-  }, 0);
-};
+  const handleEmailJSError = (message: string) => {
+    showToast(message, 'error');
+  };
 
-const getProgressColor = (step: ShareStep): string => {
-  switch (step) {
-    case 'completed': return STYLES.colors.success;
-    case 'error': return STYLES.colors.error;
-    default: return STYLES.colors.blue;
-  }
-};
+  const handleLoadClient = (client: Client) => {
+    setInvoice(prev => ({ ...prev, client }));
+    setShowClientsList(false);
+    showToast('Client chargé avec succès', 'success');
+  };
 
-// COMPOSANTS
-const ProgressBar: React.FC<{ shareProgress: ShareProgress }> = ({ shareProgress }) => (
-  <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#eff6ff', borderRadius: '8px' }}>
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-      <span style={{ marginRight: '8px', fontSize: '16px' }}>🚀</span>
-      <span style={{ fontSize: '14px', fontWeight: '500', color: '#1e40af' }}>
-        {shareProgress.message}
-      </span>
-    </div>
-    <div style={{ width: '100%', backgroundColor: '#e5e7eb', borderRadius: '4px', height: '8px' }}>
-      <div 
-        style={{
-          height: '8px',
-          borderRadius: '4px',
-          backgroundColor: getProgressColor(shareProgress.step),
-          width: `${shareProgress.progress}%`,
-          transition: 'all 0.3s ease'
-        }}
-      />
-    </div>
-  </div>
-);
+  const handleDeleteClient = (index: number) => {
+    const updatedClients = clients.filter((_, i) => i !== index);
+    setClients(updatedClients);
+    saveClients(updatedClients);
+    showToast('Client supprimé', 'success');
+  };
 
-const ActionButton: React.FC<{
-  onClick: () => void;
-  disabled: boolean;
-  color: string;
-  children: React.ReactNode;
-}> = ({ onClick, disabled, color, children }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    style={{
-      ...STYLES.button.base,
-      backgroundColor: color,
-      color: 'white',
-      ...(disabled ? STYLES.button.disabled : {})
-    }}
-  >
-    {children}
-  </button>
-);
+  const handleLoadInvoice = (loadedInvoice: Invoice) => {
+    setInvoice(loadedInvoice);
+    showToast(`Facture ${loadedInvoice.invoiceNumber} chargée avec succès`, 'success');
+  };
 
-// COMPOSANT PRINCIPAL
-function App() {
-  const [selectedInvoice, setSelectedInvoice] = useState<RealInvoice>(realInvoiceTemplates[0]);
-  const [customEmail, setCustomEmail] = useState('');
+  const handleDeleteInvoice = (index: number) => {
+    const invoiceToDelete = invoices[index];
+    if (invoiceToDelete) {
+      deleteInvoice(invoiceToDelete.invoiceNumber);
+      setInvoices(loadInvoices());
+      showToast(`Facture ${invoiceToDelete.invoiceNumber} supprimée`, 'success');
+    }
+  };
 
-  const { 
-    downloadPDF, 
-    shareToGoogleDrive, 
-    shareByEmail, 
-    sendEmailOnly,
-    testEmailJS,
-    isSharing, 
-    shareProgress 
-  } = useMYCONFORTSharing();
+  const handleSaveSignature = (signature: string) => {
+    setInvoice(prev => ({ ...prev, signature }));
+    showToast('Signature enregistrée - Facture prête pour envoi !', 'success');
+  };
+
+  // 🆕 FONCTION NOUVELLE FACTURE - REMISE À ZÉRO COMPLÈTE
+  const handleNewInvoice = () => {
+    if (window.confirm('Êtes-vous sûr de vouloir créer une nouvelle facture?\n\nToutes les données actuelles seront perdues et remises à zéro.')) {
+      // Générer un nouveau numéro de facture
+      const newInvoiceNumber = generateInvoiceNumber();
+      
+      // Remettre à zéro TOUTES les données
+      setInvoice({
+        invoiceNumber: newInvoiceNumber,
+        invoiceDate: new Date().toISOString().split('T')[0], // Date du jour
+        eventLocation: '',
+        advisorName: '',
+        invoiceNotes: '',
+        termsAccepted: false,
+        taxRate: 20,
+        client: {
+          name: '',
+          address: '',
+          postalCode: '',
+          city: '',
+          phone: '',
+          email: '',
+          housingType: '',
+          doorCode: ''
+        },
+        delivery: {
+          method: '',
+          notes: ''
+        },
+        payment: {
+          method: '',
+          depositAmount: 0
+        },
+        products: [],
+        signature: ''
+      });
+      
+      // Effacer le brouillon
+      localStorage.removeItem('myconfortInvoiceDraft');
+      
+      showToast(`✅ Nouvelle facture créée : ${newInvoiceNumber}`, 'success');
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // 🔒 VALIDATION COMPLÈTE POUR BOUTON PDF
+  const handleValidateAndPDF = () => {
+    const validation = validateMandatoryFields();
+    if (!validation.isValid) {
+      showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+      return;
+    }
+    handleShowPDFPreview();
+  };
+
+  // 🔒 VÉRIFICATION DES CHAMPS OBLIGATOIRES POUR L'AFFICHAGE
+  const validation = validateMandatoryFields();
 
   return (
-    <div className="App" style={{ 
-      padding: '20px', 
-      fontFamily: 'Arial, sans-serif', 
-      maxWidth: '1200px', 
-      margin: '0 auto' 
-    }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: STYLES.colors.primary, marginBottom: '10px' }}>
-          🚀 MYCONFORT - VRAIS SERVICES INTÉGRÉS !
-        </h1>
-        <p style={{ color: '#6b7280' }}>
-          Système opérationnel avec AdvancedPDFService, GoogleDriveService et SeparatePdfEmailService
-        </p>
-      </div>
+    <div className="min-h-screen font-['Inter'] text-gray-100" style={{ backgroundColor: '#14281D' }}>
+      <Header
+        onGeneratePDF={handleValidateAndPDF}
+        onShowClients={() => setShowClientsList(true)}
+        onShowInvoices={() => setShowInvoicesList(true)}
+        onShowProducts={() => setShowProductsList(true)}
+        onShowGoogleDrive={() => setShowGoogleDriveConfig(true)}
+      />
 
-      {/* Status VRAIS SERVICES */}
-      <div style={{ 
-        backgroundColor: '#ecfdf5', 
-        padding: '20px', 
-        borderRadius: '12px',
-        marginBottom: '30px',
-        border: `2px solid ${STYLES.colors.primary}`
-      }}>
-        <h3 style={{ color: '#047857', margin: '0 0 15px 0', textAlign: 'center' }}>
-          ✅ VRAIS SERVICES MYCONFORT ACTIFS !
-        </h3>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-          gap: '10px', 
-          textAlign: 'center' 
-        }}>
-          <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px' }}>
-            📄 <strong>AdvancedPDFService</strong><br/>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>Service PDF réel MYCONFORT</span>
-          </div>
-          <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px' }}>
-            📁 <strong>GoogleDriveService</strong><br/>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>Upload Drive réel via n8n</span>
-          </div>
-          <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px' }}>
-            📧 <strong>SeparatePdfEmailService</strong><br/>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>EmailJS avec clés définitives</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenu principal */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px', marginBottom: '30px' }}>
-        
-        {/* Panel de sélection */}
-        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px' }}>
-          <h3 style={{ color: '#1f2937', marginBottom: '15px' }}>📋 Factures MYCONFORT :</h3>
-          
-          {realInvoiceTemplates.map((invoice) => (
-            <div
-              key={invoice.invoiceNumber}
-              onClick={() => setSelectedInvoice(invoice)}
-              style={{
-                padding: '15px',
-                marginBottom: '10px',
-                backgroundColor: selectedInvoice.invoiceNumber === invoice.invoiceNumber ? '#dbeafe' : 'white',
-                border: selectedInvoice.invoiceNumber === invoice.invoiceNumber ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>{invoice.invoiceNumber}</div>
-              <div style={{ fontSize: '14px', color: '#6b7280' }}>{invoice.client.name}</div>
-              <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                {invoice.products.length} produit(s) - {calculateTotal(invoice).toFixed(2)}€
+      <main className="container mx-auto px-4 py-6" id="invoice-content">
+        {/* En-tête MYCONFORT avec dégradé basé sur #477A0C */}
+        <div 
+          className="text-white rounded-xl shadow-xl p-6 mb-6"
+          style={{
+            background: 'linear-gradient(135deg, #477A0C 0%, #5A8F0F 25%, #3A6A0A 50%, #6BA015 75%, #477A0C 100%)'
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-full">
+                <span className="text-2xl">🌸</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">MYCONFORT</h1>
+                <p className="text-green-100">Facturation professionnelle avec signature électronique</p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Détails de la facture sélectionnée */}
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ color: '#1f2937', margin: 0 }}>📄 Test avec VRAIS services</h3>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: STYLES.colors.primary }}>
-              {calculateTotal(selectedInvoice).toFixed(2)}€
+            <div className="text-right">
+              <div className="text-sm text-blue-100">Statut de la facture</div>
+              <div className="flex items-center space-x-2 mt-1">
+                {validation.isValid ? (
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>✅</span>
+                    <span>COMPLÈTE</span>
+                  </div>
+                ) : (
+                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>⚠️</span>
+                    <span>INCOMPLÈTE</span>
+                  </div>
+                )}
+                {invoice.signature && (
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+                    <span>🔒</span>
+                    <span>SIGNÉE</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Progress bar */}
-          {isSharing && <ProgressBar shareProgress={shareProgress} />}
+        <InvoiceHeader
+          invoice={invoice}
+          onUpdate={(updates) => setInvoice(prev => ({ ...prev, ...updates }))}
+        />
 
-          {/* Actions avec VRAIS services */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '20px' }}>
-            <ActionButton
-              onClick={() => downloadPDF(selectedInvoice)}
-              disabled={isSharing}
-              color={STYLES.colors.primary}
-            >
-              📄 PDF RÉEL<br/>
-              <span style={{ fontSize: '11px' }}>AdvancedPDFService</span>
-            </ActionButton>
+        <div id="client-section">
+          <ClientSection
+            client={invoice.client}
+            onUpdate={(client) => setInvoice(prev => ({ ...prev, client }))}
+          />
+        </div>
 
-            <ActionButton
-              onClick={() => shareToGoogleDrive(selectedInvoice)}
-              disabled={isSharing}
-              color={STYLES.colors.secondary}
-            >
-              📁 DRIVE RÉEL<br/>
-              <span style={{ fontSize: '11px' }}>GoogleDriveService</span>
-            </ActionButton>
+        <div id="products-section">
+          <ProductSection
+            products={invoice.products}
+            onUpdate={(products) => setInvoice(prev => ({ ...prev, products }))}
+            taxRate={invoice.taxRate}
+            invoiceNotes={invoice.invoiceNotes}
+            onNotesChange={(invoiceNotes) => setInvoice(prev => ({ ...prev, invoiceNotes }))}
+            acompteAmount={invoice.payment.depositAmount}
+            onAcompteChange={(amount) => setInvoice(prev => ({ 
+              ...prev, 
+              payment: { ...prev.payment, depositAmount: amount }
+            }))}
+            paymentMethod={invoice.payment.method}
+            onPaymentMethodChange={(method) => setInvoice(prev => ({
+              ...prev,
+              payment: { ...prev.payment, method }
+            }))}
+            advisorName={invoice.advisorName}
+            onAdvisorNameChange={(name) => setInvoice(prev => ({ ...prev, advisorName: name }))}
+            termsAccepted={invoice.termsAccepted}
+            onTermsAcceptedChange={(accepted) => setInvoice(prev => ({ ...prev, termsAccepted: accepted }))}
+            signature={invoice.signature}
+            onShowSignaturePad={() => setShowSignaturePad(true)}
+          />
+        </div>
 
-            <ActionButton
-              onClick={() => shareByEmail(selectedInvoice)}
-              disabled={isSharing}
-              color={STYLES.colors.warning}
-            >
-              📧 EMAIL RÉEL<br/>
-              <span style={{ fontSize: '11px' }}>SeparatePdfEmailService</span>
-            </ActionButton>
-
-            <ActionButton
-              onClick={() => testEmailJS(selectedInvoice)}
-              disabled={isSharing}
-              color={STYLES.colors.purple}
-            >
-              🧪 TEST RÉEL<br/>
-              <span style={{ fontSize: '11px' }}>EmailJS complet</span>
-            </ActionButton>
-          </div>
-
-          {/* Email personnalisé */}
-          <div style={{ padding: '15px', backgroundColor: '#f0f9ff', borderRadius: '8px' }}>
-            <h4 style={{ color: '#1e40af', margin: '0 0 10px 0' }}>📧 Email avec VRAI EmailJS :</h4>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-              <input
-                type="email"
-                placeholder={`Défaut: ${selectedInvoice.client.email}`}
-                value={customEmail}
-                onChange={(e) => setCustomEmail(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                  fontSize: '14px'
-                }}
-              />
-              <ActionButton
-                onClick={() => shareByEmail(selectedInvoice, customEmail || selectedInvoice.client.email)}
-                disabled={isSharing}
-                color="#dc2626"
-              >
-                🚀 RÉEL
-              </ActionButton>
+        {/* Delivery Section - UNIFORMISÉ */}
+        <div id="delivery-section" className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+            <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+              INFORMATIONS LOGISTIQUES
+            </span>
+          </h2>
+          
+          <div className="bg-[#F2EFE2] rounded-lg p-6 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-black mb-1 font-bold">
+                  Mode de livraison
+                </label>
+                <select
+                  value={invoice.delivery.method}
+                  onChange={(e) => setInvoice(prev => ({
+                    ...prev,
+                    delivery: { ...prev.delivery, method: e.target.value }
+                  }))}
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
+                >
+                  <option value="">Sélectionner</option>
+                  <option value="Colissimo 48 heures">Colissimo 48 heures</option>
+                  <option value="Livraison par transporteur">Livraison par transporteur</option>
+                  <option value="Retrait en magasin">Retrait en magasin</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-black mb-1 font-bold">
+                  Précisions de livraison
+                </label>
+                <textarea
+                  value={invoice.delivery.notes}
+                  onChange={(e) => setInvoice(prev => ({
+                    ...prev,
+                    delivery: { ...prev.delivery, notes: e.target.value }
+                  }))}
+                  className="w-full border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold h-20"
+                  placeholder="Instructions spéciales, étage, code d'accès..."
+                />
+              </div>
             </div>
             
-            <button
-              onClick={() => sendEmailOnly(selectedInvoice, customEmail || selectedInvoice.client.email)}
-              disabled={isSharing}
-              style={{
-                width: '100%',
-                padding: '8px',
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSharing ? 'not-allowed' : 'pointer',
-                opacity: isSharing ? 0.5 : 1,
-                fontSize: '12px'
-              }}
-            >
-              📧 Email notification RÉEL (sans PDF joint)
-            </button>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-black italic font-semibold">
+              <p>📦 Livraison estimée sous 48 heures. Les délais sont donnés à titre indicatif et ne sont pas contractuels.</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Status final */}
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '20px', 
-        backgroundColor: '#f0fdf4', 
-        borderRadius: '12px', 
-        border: `2px solid ${STYLES.colors.success}` 
-      }}>
-        <h2 style={{ color: '#15803d', marginBottom: '10px' }}>🎉 MISSION ACCOMPLIE !</h2>
-        <p style={{ color: '#166534', margin: 0 }}>
-          Votre système de partage MYCONFORT est maintenant <strong>100% opérationnel</strong> avec vos vrais services !<br/>
-          PDF, Google Drive et EmailJS fonctionnent avec vos vraies données et configurations.
-        </p>
-      </div>
+        {/* PDF Generation Section */}
+        <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <EmailSender
+            invoice={invoice}
+            onSuccess={handleEmailJSSuccess}
+            onError={handleEmailJSError}
+            onShowConfig={() => setShowGoogleDriveConfig(true)}
+          />
+        </div>
+
+        {/* Aperçu de la facture - UNIFORMISÉ SANS BOUTON TÉLÉCHARGER PDF */}
+        {showInvoicePreview && (
+          <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-[#F2EFE2] flex items-center justify-center">
+                <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+                  APERÇU DE LA FACTURE
+                </span>
+              </h2>
+              <button
+                onClick={() => setShowInvoicePreview(!showInvoicePreview)}
+                className="text-[#F2EFE2] hover:text-white underline text-sm font-semibold"
+              >
+                {showInvoicePreview ? 'Masquer' : 'Afficher'} l'aperçu
+              </button>
+            </div>
+            
+            <div className="bg-[#F2EFE2] rounded-lg p-4">
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <InvoicePreview invoice={invoice} />
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                <p className="font-semibold">🎯 Aperçu de votre facture MYCONFORT</p>
+                <p>Cet aperçu sera converti en PDF lorsque vous cliquerez sur le bouton "Générer et télécharger le PDF".</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons - UNIFORMISÉ AVEC NOUVELLE FACTURE CLIQUABLE */}
+        <div className="bg-[#477A0C] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] p-6 mb-6 transform transition-all hover:scale-[1.005] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)]">
+          <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
+            <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
+              ACTIONS PRINCIPALES
+            </span>
+          </h2>
+          
+          <div className="bg-[#F2EFE2] rounded-lg p-6">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div>
+                <label className="block text-black mb-1 font-bold">Email du destinataire</label>
+                <input
+                  value={invoice.client.email}
+                  onChange={(e) => setInvoice(prev => ({
+                    ...prev,
+                    client: { ...prev.client, email: e.target.value }
+                  }))}
+                  type="email"
+                  className="w-full md:w-64 border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
+                  placeholder="client@email.com"
+                />
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <button
+                  onClick={handleValidateAndPDF}
+                  disabled={!validation.isValid}
+                  className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105 disabled:hover:scale-100 ${
+                    validation.isValid 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
+                  title={validation.isValid ? "Voir l'aperçu et générer le PDF" : "Complétez tous les champs obligatoires"}
+                >
+                  <span>APERÇU & PDF</span>
+                </button>
+                <button
+                  onClick={handleSaveInvoice}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>ENREGISTRER</span>
+                </button>
+                {/* 🆕 BOUTON NOUVELLE FACTURE MAINTENANT CLIQUABLE */}
+                <button
+                  onClick={handleNewInvoice}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                  title="Créer une nouvelle facture (remet tout à zéro)"
+                >
+                  <span>✨</span>
+                  <span>NOUVELLE FACTURE</span>
+                </button>
+                <button
+                  onClick={() => setShowGoogleDriveConfig(true)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
+                >
+                  <span>📁</span>
+                  <span>GOOGLE DRIVE</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <ClientListModal
+        isOpen={showClientsList}
+        onClose={() => setShowClientsList(false)}
+        clients={clients}
+        onLoadClient={handleLoadClient}
+        onDeleteClient={handleDeleteClient}
+      />
+
+      <InvoicesListModal
+        isOpen={showInvoicesList}
+        onClose={() => setShowInvoicesList(false)}
+        invoices={invoices}
+        onLoadInvoice={handleLoadInvoice}
+        onDeleteInvoice={handleDeleteInvoice}
+      />
+
+      <ProductsListModal
+        isOpen={showProductsList}
+        onClose={() => setShowProductsList(false)}
+      />
+
+      <PDFPreviewModal
+        isOpen={showPDFPreview}
+        onClose={() => setShowPDFPreview(false)}
+        invoice={invoice}
+        onDownload={handleGeneratePDF}
+      />
+
+      <EmailJSConfigModal
+        isOpen={showEmailJSConfig}
+        onClose={() => setShowEmailJSConfig(false)}
+        onSuccess={handleEmailJSSuccess}
+        onError={handleEmailJSError}
+      />
+
+      <GoogleDriveModal
+        isOpen={showGoogleDriveConfig}
+        onClose={() => setShowGoogleDriveConfig(false)}
+        onSuccess={handleEmailJSSuccess}
+        onError={handleEmailJSError}
+      />
+
+      <SignaturePad
+        isOpen={showSignaturePad}
+        onClose={() => setShowSignaturePad(false)}
+        onSave={handleSaveSignature}
+      />
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        show={toast.show}
+        onClose={hideToast}
+      />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 const EMAILJS_CONFIG = {
   SERVICE_ID: 'service_ymw6jjh', // ✅ SERVICE ID CONFIRMÉ PAR TEST REÇU
   TEMPLATE_ID: 'template_yng4k8s',
-  USER_ID: 'eqzx9fwyTsoAoF00i', // ✅ API KEY DÉFINITIVE (PUBLIC) EXACTE
+  USER_ID: 'eqxx9fwyTsoAoF00i', // ✅ API KEY DÉFINITIVE (PUBLIC) EXACTE
   PRIVATE_KEY: 'MwZ9s8tHaiq8YimGZrF5_' // ✅ PRIVATE KEY DÉFINITIVE EXACTE
 };
 
@@ -189,7 +189,7 @@ export class SeparatePdfEmailService {
         generated_time: new Date().toLocaleTimeString('fr-FR'),
         template_used: 'template_yng4k8s',
         service_used: 'service_ymw6jjh',
-        user_id_used: 'eqzx9fwyTsoAoF00i',
+        user_id_used: 'eqxx9fwyTsoAoF00i',
         private_key_used: 'MwZ9s8tHaiq8YimGZrF5_',
         
         // Produits
@@ -203,7 +203,7 @@ export class SeparatePdfEmailService {
         EMAILJS_CONFIG.SERVICE_ID, // service_ymw6jjh CONFIRMÉ PAR TEST REÇU
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
-        EMAILJS_CONFIG.USER_ID // eqzx9fwyTsoAoF00i API KEY DÉFINITIVE
+        EMAILJS_CONFIG.USER_ID // eqxx9fwyTsoAoF00i API KEY DÉFINITIVE
       );
 
       console.log('✅ Email de notification envoyé avec succès via CLÉS API DÉFINITIVES:', response);

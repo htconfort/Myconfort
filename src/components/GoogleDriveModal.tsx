@@ -45,15 +45,12 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
     }
 
     // Also add event listeners for online/offline events
-    const handleOnline = () => setConnectionStatus('online');
-    const handleOffline = () => setConnectionStatus('offline');
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', () => setConnectionStatus('online'));
+    window.addEventListener('offline', () => setConnectionStatus('offline'));
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', () => setConnectionStatus('online'));
+      window.removeEventListener('offline', () => setConnectionStatus('offline'));
     };
   };
 
@@ -156,18 +153,6 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
               <div>
                 <p className="font-medium text-red-700">Vous êtes actuellement hors ligne</p>
                 <p className="text-sm text-red-600">Veuillez vérifier votre connexion internet pour utiliser cette fonctionnalité</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {connectionStatus === 'online' && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <Wifi className="w-5 h-5 text-green-500" />
-              <div>
-                <p className="font-medium text-green-700">Connexion internet active</p>
-                <p className="text-sm text-green-600">Vous pouvez tester et configurer l'intégration Google Drive</p>
               </div>
             </div>
           </div>
