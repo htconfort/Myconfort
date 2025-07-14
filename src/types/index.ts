@@ -9,8 +9,6 @@ export interface Client {
   phone: string;
   email: string;
   siret?: string;
-  createdAt?: string;
-  invoices?: string[];
 }
 
 export interface Product {
@@ -22,25 +20,6 @@ export interface Product {
   priceTTC: number;
   discount: number;
   discountType: 'percent' | 'fixed';
-  autoCalculateHT?: boolean;
-}
-
-export interface ProductCatalog {
-  category: string;
-  name: string;
-  price?: number;
-  priceTTC: number;
-  autoCalculateHT?: boolean;
-}
-
-export interface DeliveryInfo {
-  method: string;
-  notes: string;
-}
-
-export interface PaymentInfo {
-  method: string;
-  depositAmount: number;
 }
 
 export interface Invoice {
@@ -52,15 +31,16 @@ export interface Invoice {
   termsAccepted: boolean;
   taxRate: number;
   client: Client;
-  delivery: DeliveryInfo;
-  payment: PaymentInfo;
+  delivery: {
+    method: string;
+    notes: string;
+  };
+  payment: {
+    method: string;
+    depositAmount: number;
+  };
   products: Product[];
   signature?: string;
 }
 
 export type ToastType = 'success' | 'error';
-
-export interface ValidationError {
-  field: string;
-  message: string;
-}
