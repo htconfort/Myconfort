@@ -16,22 +16,21 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
   onSuccess,
   onError
 }) => {
-  const [webhookUrl, setWebhookUrl] = useState('https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort');
-  const [folderId, setFolderId] = useState('1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-');
+  const [webhookUrl, setWebhookUrl] = useState(() => {
+    return localStorage.getItem('n8n_webhook_url') || 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort';
+  });
+  const [folderId, setFolderId] = useState(() => {
+    return localStorage.getItem('google_drive_folder_id') || '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-';
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
 
-  // Load the current configuration
+  // Reset test result and check connectivity when modal opens
   useEffect(() => {
     if (isOpen) {
-      const config = GoogleDriveService.getConfig();
-      setWebhookUrl(config.webhookUrl);
-      setFolderId(config.folderId);
-      setTestResult(null); // Reset test result when modal opens
-      
-      // Check internet connectivity
+      setTestResult(null);
       checkInternetConnection();
     }
   }, [isOpen]);
@@ -80,8 +79,9 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
         return;
       }
 
-      // Update the configuration
-      GoogleDriveService.updateWebhookConfig(webhookUrl, folderId);
+      // Save configuration to localStorage
+      localStorage.setItem('n8n_webhook_url', webhookUrl.trim());
+      localStorage.setItem('google_drive_folder_id', folderId.trim());
       
       onSuccess('✅ Configuration Google Drive mise à jour avec succès !');
       setIsSaving(false);
