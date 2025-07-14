@@ -71,7 +71,6 @@ function App() {
         onShowClients={() => setShowClientsList(true)}
         onShowInvoices={() => setShowInvoicesList(true)}
         onShowProducts={() => setShowProductsList(true)}
-        onShowGoogleDrive={() => setShowGoogleDriveConfig(true)}
       />
 
       <main className="container mx-auto px-4 py-6">
