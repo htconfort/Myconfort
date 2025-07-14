@@ -52,13 +52,16 @@ export const useGoogleDrive = () => {
         message: 'Connexion à Google Drive...'
       });
 
+      console.log('🔐 Appel direct à googleDriveService.authenticate()...');
       const success = await googleDriveService.authenticate();
       
       if (success) {
+        console.log('✅ Authentification réussie, mise à jour du statut...');
         setStatus(prev => ({ ...prev, isSignedIn: true }));
         setUploadProgress(null);
         return true;
       } else {
+        console.log('❌ Authentification échouée');
         setUploadProgress({
           stage: 'error',
           message: 'Échec de l\'authentification'

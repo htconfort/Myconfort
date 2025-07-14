@@ -102,13 +102,25 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
     setTestResult(null);
 
     try {
-      // Test the Google Drive integration
-      const result = await GoogleDriveService.testGoogleDriveIntegration();
-      setTestResult(result);
+      console.log('🧪 Test de connexion Google Drive...');
       
-      if (result.success) {
+      // Test direct avec googleDriveService
+      await googleDriveService.initialize();
+      const authenticated = await googleDriveService.authenticate();
+      
+      if (authenticated) {
+        const result = {
+          success: true,
+          message: '✅ Connexion Google Drive réussie !\n\n• API Key: Configurée\n• Client ID: Configuré\n• Authentification: OK'
+        };
+        setTestResult(result);
         onSuccess(result.message);
       } else {
+        const result = {
+          success: false,
+          message: '❌ Échec de l\'authentification Google'
+        };
+        setTestResult(result);
         onError(result.message);
       }
     } catch (error: any) {

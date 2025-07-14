@@ -48,8 +48,14 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
   };
 
   // 🔐 Gérer la connexion
-  const handleConnect = async () => {
-    await signIn();
+  const handleConnectGoogleDrive = async () => {
+    try {
+      console.log('🔐 Déclenchement authentification Google Drive...');
+      await googleDriveService.authenticate();
+      console.log('✅ Authentification Google Drive réussie');
+    } catch (error) {
+      console.error('❌ Erreur authentification Google Drive:', error);
+    }
   };
 
   // Vérifier si la configuration est valide
@@ -134,12 +140,12 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
     if (!authStatus.isSignedIn) {
       return (
         <button
-          onClick={handleConnect}
+          onClick={handleConnectGoogleDrive}
           disabled={disabled}
           className={`flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
         >
           <Settings className="w-4 h-4" />
-          <span>Connecter Drive</span>
+          <span>Connexion Google Drive</span>
         </button>
       );
     }
