@@ -126,19 +126,33 @@ export const useGoogleDrive = () => {
         message: 'Test de connexion Google Drive...'
       });
 
-      const result = await googleDriveService.testGoogleDriveIntegration();
+      // Vérifier la configuration
+      const config = googleDriveService.getConfig();
+      if (!config.API_KEY || !config.CLIENT_ID) {
+        setUploadProgress({
+          stage: 'error',
+          message: '❌ Configuration Google Drive manquante dans .env'
+        });
+        return false;
+      }
 
-      if (result.success) {
+      // Tester l'initialisation
+      await googleDriveService.initialize();
+      
+      // Tester l'authentification
+      const authenticated = await googleDriveService.authenticate();
+      
+      if (authenticated) {
         setUploadProgress({
           stage: 'complete',
-          message: result.message
+          message: `✅ Connexion Google Drive réussie !\n\n• API Key: Configurée\n• Client ID: Configuré\n• Dossier: ${config.FOLDER_ID}\n• Authentification: OK`
         });
         setTimeout(() => setUploadProgress(null), 5000);
         return true;
       } else {
         setUploadProgress({
           stage: 'error',
-          message: result.message
+          message: '❌ Échec de l\'authentification Google'
         });
         return false;
       }
@@ -146,14 +160,14 @@ export const useGoogleDrive = () => {
       console.error('❌ Erreur test connexion:', error);
       setUploadProgress({
         stage: 'error',
-        message: `Erreur de test: ${error}`
+        message: `❌ Erreur de test: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       });
       return false;
     }
   }, []);
 
   return {
-    authStatus: status, // Pour compatibilité avec l'ancien code
+    authStatus: status,
     uploadProgress,
     signIn,
     uploadFile,

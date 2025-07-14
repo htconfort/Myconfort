@@ -19,12 +19,26 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
 
   // 📤 Gérer l'upload
   const handleUpload = async () => {
-    const success = await googleDriveService.uploadInvoicePDF(invoice, (file, fileName, folderId) => 
-      uploadFile(file, fileName, folderId)
-    );
-    
-    if (success) {
-      console.log('✅ Facture uploadée avec succès');
+    try {
+      // Générer le PDF
+      const { AdvancedPDFService } = await import('../services/advancedPdfService');
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      
+      // Créer le fichier
+      const fileName = `Facture_MYCONFORT_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      
+      // Récupérer l'ID du dossier depuis localStorage ou utiliser celui par défaut
+      const folderId = localStorage.getItem('google_drive_folder_id') || '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-';
+      
+      // Upload le fichier
+      const success = await uploadFile(file, fileName, folderId);
+      
+      if (success) {
+        console.log('✅ Facture uploadée avec succès sur Google Drive');
+      }
+    } catch (error) {
+      console.error('❌ Erreur upload facture:', error);
     }
   };
 
@@ -38,8 +52,29 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
     await signIn();
   };
 
+  // Vérifier si la configuration est valide
+  const isConfigValid = () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
+    const clientId = import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID;
+    return !!(apiKey && clientId);
+  };
+
   // 🎨 Rendu du bouton selon l'état
   const renderButton = () => {
+    // Configuration manquante
+    if (!isConfigValid()) {
+      return (
+        <button
+          disabled
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg bg-red-100 text-red-700 cursor-not-allowed ${className}`}
+          title="Configuration Google Drive manquante dans .env"
+        >
+          <AlertCircle className="w-4 h-4" />
+          <span>Config manquante</span>
+        </button>
+      );
+    }
+
     // Erreur de configuration
     if (authStatus.error) {
       return (
@@ -49,7 +84,7 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
           title={authStatus.error}
         >
           <AlertCircle className="w-4 h-4" />
-          <span>Config Error</span>
+          <span>Erreur config</span>
         </button>
       );
     }
@@ -141,6 +176,13 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
       {authStatus.isSignedIn && authStatus.userEmail && (
         <div className="text-xs text-gray-500 text-center">
           Connecté: {authStatus.userEmail}
+        </div>
+      )}
+      
+      {/* Informations de configuration */}
+      {isConfigValid() && (
+        <div className="text-xs text-gray-500 text-center">
+          Dossier: {localStorage.getItem('google_drive_folder_id') || '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'}
         </div>
       )}
     </div>
