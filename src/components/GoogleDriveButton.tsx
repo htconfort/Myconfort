@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudUpload, Loader, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { UploadCloud as CloudUpload, Loader, CheckCircle, AlertCircle, Settings } from 'lucide-react';
 import { useGoogleDrive } from '../hooks/useGoogleDrive';
 import { GoogleDriveService } from '../services/googleDriveService';
 import { Invoice } from '../types';
