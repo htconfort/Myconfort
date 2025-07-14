@@ -1,157 +1,86 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GOOGLE_DRIVE_CONFIG } from '../config/googleDrive';
-import { GoogleAuthStatus, UploadProgress } from '../types/googleDrive';
+import { googleDriveService } from '../services/googleDriveService';
+
+interface GoogleDriveStatus {
+  isLoaded: boolean;
+  isSignedIn: boolean;
+  error?: string;
+  userEmail?: string;
+}
+
+interface UploadProgress {
+  stage: 'auth' | 'upload' | 'complete' | 'error';
+  message: string;
+  progress?: number;
+}
 
 export const useGoogleDrive = () => {
-  const [authStatus, setAuthStatus] = useState<GoogleAuthStatus>({
-    isSignedIn: false,
-    isLoaded: false
+  const [status, setStatus] = useState<GoogleDriveStatus>({
+    isLoaded: false,
+    isSignedIn: false
   });
   
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
-  // 🔧 Initialisation de l'API Google
+  // 🔧 Initialisation
   useEffect(() => {
-    const initializeGoogleAPI = async () => {
+    const initializeGoogleDrive = async () => {
       try {
-        // Vérifier la configuration
-        if (!GOOGLE_DRIVE_CONFIG.isConfigured()) {
-          const errors = GOOGLE_DRIVE_CONFIG.getErrors();
-          setAuthStatus({
-            isSignedIn: false,
-            isLoaded: false,
-            error: `Configuration manquante: ${errors.join(', ')}`
-          });
-          return;
-        }
-
-        // Attendre que gapi soit disponible
-        if (typeof window.gapi === 'undefined') {
-          setAuthStatus({
-            isSignedIn: false,
-            isLoaded: false,
-            error: 'Google API non disponible. Vérifiez que le script est chargé.'
-          });
-          return;
-        }
-
-        // Charger les modules nécessaires
-        await new Promise<void>((resolve) => {
-          window.gapi.load('client:auth2', resolve);
-        });
-
-        // Initialiser le client
-        await window.gapi.client.init({
-          apiKey: GOOGLE_DRIVE_CONFIG.API_KEY,
-          clientId: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
-          discoveryDocs: [GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC],
-          scope: GOOGLE_DRIVE_CONFIG.SCOPES.join(' ')
-        });
-
-        const authInstance = window.gapi.auth2.getAuthInstance();
-        const isSignedIn = authInstance.isSignedIn.get();
-        
-        // Obtenir l'email de l'utilisateur si connecté
-        let userEmail = '';
-        if (isSignedIn) {
-          const user = authInstance.currentUser.get();
-          userEmail = user.getBasicProfile().getEmail();
-        }
-
-        setAuthStatus({
-          isSignedIn,
+        await googleDriveService.initialize();
+        setStatus({
           isLoaded: true,
-          userEmail
+          isSignedIn: googleDriveService.isAuthenticated()
         });
-
-        // Écouter les changements d'authentification
-        authInstance.isSignedIn.listen((signedIn: boolean) => {
-          let email = '';
-          if (signedIn) {
-            const user = authInstance.currentUser.get();
-            email = user.getBasicProfile().getEmail();
-          }
-          
-          setAuthStatus(prev => ({
-            ...prev,
-            isSignedIn: signedIn,
-            userEmail: email
-          }));
-        });
-
       } catch (error) {
-        console.error('❌ Erreur initialisation Google API:', error);
-        setAuthStatus({
-          isSignedIn: false,
+        console.error('❌ Erreur initialisation Google Drive:', error);
+        setStatus({
           isLoaded: false,
-          error: `Erreur d'initialisation: ${error}`
+          isSignedIn: false,
+          error: error instanceof Error ? error.message : 'Erreur d\'initialisation'
         });
       }
     };
 
-    initializeGoogleAPI();
+    initializeGoogleDrive();
   }, []);
 
-  // 🔐 Connexion Google
+  // 🔐 Connexion
   const signIn = useCallback(async (): Promise<boolean> => {
     try {
-      if (!authStatus.isLoaded) {
-        throw new Error('API Google non initialisée');
-      }
-
       setUploadProgress({
         stage: 'auth',
         message: 'Connexion à Google Drive...'
       });
 
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      await authInstance.signIn();
+      const success = await googleDriveService.authenticate();
       
-      setUploadProgress(null);
-      return true;
+      if (success) {
+        setStatus(prev => ({ ...prev, isSignedIn: true }));
+        setUploadProgress(null);
+        return true;
+      } else {
+        setUploadProgress({
+          stage: 'error',
+          message: 'Échec de l\'authentification'
+        });
+        return false;
+      }
     } catch (error) {
-      console.error('❌ Erreur connexion Google:', error);
+      console.error('❌ Erreur connexion:', error);
       setUploadProgress({
         stage: 'error',
         message: `Erreur de connexion: ${error}`
       });
       return false;
     }
-  }, [authStatus.isLoaded]);
-
-  // 🚪 Déconnexion Google
-  const signOut = useCallback(async (): Promise<void> => {
-    try {
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      await authInstance.signOut();
-    } catch (error) {
-      console.error('❌ Erreur déconnexion Google:', error);
-    }
   }, []);
 
-  // 📤 Upload de fichier vers Google Drive
+  // 📤 Upload de fichier
   const uploadFile = useCallback(async (file: File, fileName: string, folderId?: string): Promise<boolean> => {
     try {
-      if (!authStatus.isSignedIn) {
+      if (!status.isSignedIn) {
         const connected = await signIn();
         if (!connected) return false;
-      }
-
-      // Validation du fichier
-      if (file.size > GOOGLE_DRIVE_CONFIG.MAX_FILE_SIZE) {
-        setUploadProgress({
-          stage: 'error',
-          message: `Fichier trop volumineux (max ${GOOGLE_DRIVE_CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB)`
-        });
-        return false;
-      }
-
-      if (!GOOGLE_DRIVE_CONFIG.ALLOWED_TYPES.includes(file.type)) {
-        setUploadProgress({
-          stage: 'error',
-          message: 'Type de fichier non autorisé (PDF uniquement)'
-        });
-        return false;
       }
 
       setUploadProgress({
@@ -160,99 +89,59 @@ export const useGoogleDrive = () => {
         progress: 0
       });
 
-      // Métadonnées du fichier
-      const metadata = {
-        name: fileName,
-        parents: [folderId || GOOGLE_DRIVE_CONFIG.FOLDER_ID],
-        description: `Facture MyConfort générée le ${new Date().toLocaleDateString('fr-FR')}`
-      };
+      const result = await googleDriveService.uploadFile(file, folderId);
 
-      // Préparer la requête multipart
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', file);
+      if (result.success) {
+        setUploadProgress({
+          stage: 'complete',
+          message: '✅ Fichier uploadé avec succès !',
+          progress: 100
+        });
 
-      // Obtenir le token d'accès
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      const user = authInstance.currentUser.get();
-      const accessToken = user.getAuthResponse().access_token;
-
-      setUploadProgress({
-        stage: 'upload',
-        message: 'Envoi vers Google Drive...',
-        progress: 50
-      });
-
-      // Upload vers Google Drive
-      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: form
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
+        // Nettoyer après 3 secondes
+        setTimeout(() => setUploadProgress(null), 3000);
+        return true;
+      } else {
+        setUploadProgress({
+          stage: 'error',
+          message: `Erreur d'upload: ${result.error}`
+        });
+        return false;
       }
-
-      const result = await response.json();
-      
-      setUploadProgress({
-        stage: 'complete',
-        message: `✅ Fichier uploadé avec succès dans Google Drive !`,
-        progress: 100
-      });
-
-      // Nettoyer le message après 3 secondes
-      setTimeout(() => setUploadProgress(null), 3000);
-
-      console.log('✅ Upload réussi:', result);
-      return true;
-
     } catch (error) {
-      console.error('❌ Erreur upload Google Drive:', error);
+      console.error('❌ Erreur upload:', error);
       setUploadProgress({
         stage: 'error',
         message: `Erreur d'upload: ${error}`
       });
       return false;
     }
-  }, [authStatus.isSignedIn, signIn]);
+  }, [status.isSignedIn, signIn]);
 
   // 🧪 Test de connexion
   const testConnection = useCallback(async (): Promise<boolean> => {
     try {
-      const { GoogleDriveService } = await import('../services/googleDriveService');
-      const config = GoogleDriveService.getConfig();
-      const targetFolderId = config.folderId || GOOGLE_DRIVE_CONFIG.FOLDER_ID;
-      
-      if (!authStatus.isSignedIn) {
-        const connected = await signIn();
-        if (!connected) return false;
-      }
-
       setUploadProgress({
         stage: 'upload',
         message: 'Test de connexion Google Drive...'
       });
 
-      // Tester l'accès au dossier
-      const response = await window.gapi.client.drive.files.get({
-        fileId: targetFolderId,
-        fields: 'id,name,mimeType'
-      });
+      const result = await googleDriveService.testGoogleDriveIntegration();
 
-      if (response.result) {
+      if (result.success) {
         setUploadProgress({
           stage: 'complete',
-          message: `✅ Connexion réussie ! Dossier: ${response.result.name}`
+          message: result.message
         });
-        setTimeout(() => setUploadProgress(null), 3000);
+        setTimeout(() => setUploadProgress(null), 5000);
         return true;
+      } else {
+        setUploadProgress({
+          stage: 'error',
+          message: result.message
+        });
+        return false;
       }
-
-      return false;
     } catch (error) {
       console.error('❌ Erreur test connexion:', error);
       setUploadProgress({
@@ -261,13 +150,12 @@ export const useGoogleDrive = () => {
       });
       return false;
     }
-  }, [authStatus.isSignedIn, signIn]);
+  }, []);
 
   return {
-    authStatus,
+    authStatus: status, // Pour compatibilité avec l'ancien code
     uploadProgress,
     signIn,
-    signOut,
     uploadFile,
     testConnection,
     clearProgress: () => setUploadProgress(null)

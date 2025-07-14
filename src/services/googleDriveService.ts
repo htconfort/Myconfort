@@ -1,276 +1,184 @@
-import { Invoice } from '../types';
-import { GOOGLE_DRIVE_CONFIG } from '../config/googleDrive';
-import { PDFService } from './pdfService';
-
-interface GoogleDriveConfig {
-  webhookUrl: string;
-  folderId: string;
-}
+import { gapi } from 'gapi-script';
 
 export class GoogleDriveService {
-  private static readonly STORAGE_KEY = 'google_drive_config';
+  private static instance: GoogleDriveService;
+  private readonly API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
+  private readonly CLIENT_ID = import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID;
+  private readonly SCOPES = 'https://www.googleapis.com/auth/drive.file';
+  private readonly DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  private readonly FOLDER_ID = '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'; // Ton dossier Drive
 
-  /**
-   * 🔧 Récupérer la configuration Google Drive
-   */
-  static getConfig(): GoogleDriveConfig {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const config = JSON.parse(stored);
-        return {
-          webhookUrl: config.webhookUrl || import.meta.env.N8N_WEBHOOK_URL || '',
-          folderId: config.folderId || import.meta.env.GOOGLE_DRIVE_FOLDER_ID || ''
-        };
-      }
-    } catch (error) {
-      console.warn('⚠️ Erreur lecture config Google Drive:', error);
+  private gapiLoaded = false;
+  private isSignedIn = false;
+
+  private constructor() {}
+
+  public static getInstance(): GoogleDriveService {
+    if (!GoogleDriveService.instance) {
+      GoogleDriveService.instance = new GoogleDriveService();
     }
+    return GoogleDriveService.instance;
+  }
 
-    // Configuration par défaut depuis les variables d'environnement
+  // Optionnel : expose la config (DEBUG)
+  public static getConfig() {
     return {
-      webhookUrl: import.meta.env.N8N_WEBHOOK_URL || '',
-      folderId: import.meta.env.GOOGLE_DRIVE_FOLDER_ID || ''
+      API_KEY: import.meta.env.VITE_GOOGLE_DRIVE_API_KEY,
+      CLIENT_ID: import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID,
+      SCOPES: 'https://www.googleapis.com/auth/drive.file',
+      DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+      FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-',
     };
   }
 
-  /**
-   * 💾 Mettre à jour la configuration Google Drive
-   */
-  static updateWebhookConfig(webhookUrl: string, folderId: string): void {
-    try {
-      const config: GoogleDriveConfig = {
-        webhookUrl: webhookUrl.trim(),
-        folderId: folderId.trim()
+  public async initialize(): Promise<void> {
+    if (!this.API_KEY || !this.CLIENT_ID) throw new Error('API Google Drive non configurée (.env)');
+    if (this.gapiLoaded) return;
+    return new Promise((resolve, reject) => {
+      const start = () => {
+        gapi.client.init({
+          apiKey: this.API_KEY,
+          clientId: this.CLIENT_ID,
+          scope: this.SCOPES,
+          discoveryDocs: [this.DISCOVERY_DOC],
+        }).then(() => {
+          const auth = gapi.auth2.getAuthInstance();
+          this.isSignedIn = auth.isSignedIn.get();
+          auth.isSignedIn.listen((signedIn: boolean) => {
+            this.isSignedIn = signedIn;
+          });
+          this.gapiLoaded = true;
+          console.log('✅ Google API initialisée');
+          resolve();
+        }).catch((error: any) => {
+          console.error('❌ Erreur initialisation Google API:', error);
+          reject(error);
+        });
       };
-      
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(config));
-      console.log('✅ Configuration Google Drive sauvegardée');
-    } catch (error) {
-      console.error('❌ Erreur sauvegarde config Google Drive:', error);
-      throw new Error('Impossible de sauvegarder la configuration');
-    }
+      if (typeof gapi !== 'undefined' && gapi.client) {
+        start();
+      } else {
+        gapi.load('client:auth2', start);
+      }
+    });
   }
 
-  /**
-   * 📤 Upload d'une facture PDF vers Google Drive
-   */
-  static async uploadInvoicePDF(
-    invoice: Invoice, 
-    uploadFunction: (file: File, fileName: string, folderId: string) => Promise<boolean>
-  ): Promise<boolean> {
+  public async authenticate(): Promise<boolean> {
     try {
-      console.log('📤 Début upload facture vers Google Drive...');
-
-      const config = this.getConfig();
-      if (!config.folderId) {
-        throw new Error('ID du dossier Google Drive non configuré');
-      }
-
-      // Générer le PDF
-      const pdfBlob = await PDFService.getPDFBlob(invoice);
-      
-      // Créer le fichier
-      const fileName = `Facture_MyConfort_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
-      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-      // Upload via le hook avec l'ID du dossier
-      const success = await uploadFunction(file, fileName, config.folderId);
-
-      if (success) {
-        console.log('✅ Upload facture réussi:', fileName);
-        
-        // Optionnel: Notifier n8n si configuré
-        if (config.webhookUrl) {
-          await this.notifyN8N(invoice, fileName);
-        }
-      }
-
-      return success;
-    } catch (error) {
-      console.error('❌ Erreur upload facture:', error);
+      if (!this.gapiLoaded) await this.initialize();
+      const auth = gapi.auth2.getAuthInstance();
+      if (this.isSignedIn) return true;
+      await auth.signIn();
+      this.isSignedIn = true;
+      return true;
+    } catch (e) {
+      console.error('❌ Erreur authentification Google:', e);
       return false;
     }
   }
 
-  /**
-   * 📤 Upload direct d'un PDF vers Google Drive
-   */
-  static async uploadPDFToGoogleDrive(invoice: Invoice, pdfBlob: Blob): Promise<boolean> {
+  public async uploadFile(
+    file: File,
+    folderId: string = this.FOLDER_ID
+  ): Promise<{ success: boolean; fileId?: string; error?: string }> {
     try {
-      const config = this.getConfig();
-      
-      if (!config.webhookUrl) {
-        throw new Error('URL webhook n8n non configurée');
+      if (!this.isSignedIn) {
+        const authenticated = await this.authenticate();
+        if (!authenticated) return { success: false, error: 'Authentification échouée' };
       }
-
-      const fileName = `Facture_MyConfort_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      // Convertir le blob en base64
-      const base64 = await this.blobToBase64(pdfBlob);
-      
-      const webhookData = {
-        type: 'upload_pdf',
-        invoice_number: invoice.invoiceNumber,
-        client_name: invoice.client.name,
-        client_email: invoice.client.email,
-        file_name: fileName,
-        file_data: base64,
-        folder_id: config.folderId,
-        upload_date: new Date().toISOString()
+      const metadata = {
+        name: file.name,
+        mimeType: file.type,
+        parents: [folderId]
       };
-
-      const response = await fetch(config.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(webhookData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
+      const accessToken = gapi.auth.getToken().access_token;
+      const formData = new FormData();
+      formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      formData.append('file', file);
+      const response = await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          body: formData,
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        return { success: true, fileId: result.id };
+      } else {
+        const errorText = await response.text();
+        return { success: false, error: `Erreur HTTP ${response.status}: ${errorText}` };
       }
+    } catch (e) {
+      return { success: false, error: e instanceof Error ? e.message : 'Erreur inconnue' };
+    }
+  }
 
-      console.log('✅ PDF envoyé vers Google Drive via n8n');
-      return true;
+  public isAuthenticated(): boolean {
+    return this.isSignedIn && this.gapiLoaded;
+  }
+
+  // Méthodes pour compatibilité avec l'ancien code
+  public async uploadInvoicePDF(invoice: any, uploadFunction: (file: File, fileName: string, folderId: string) => Promise<boolean>): Promise<boolean> {
+    try {
+      const { AdvancedPDFService } = await import('./advancedPdfService');
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      const fileName = `Facture_MyConfort_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      
+      return await uploadFunction(file, fileName, this.FOLDER_ID);
+    } catch (error) {
+      console.error('❌ Erreur upload facture PDF:', error);
+      return false;
+    }
+  }
+
+  public async uploadPDFToGoogleDrive(invoice: any, pdfBlob: Blob): Promise<boolean> {
+    try {
+      const fileName = `Facture_MyConfort_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      
+      const result = await this.uploadFile(file, this.FOLDER_ID);
+      return result.success;
     } catch (error) {
       console.error('❌ Erreur upload PDF Google Drive:', error);
-      throw error;
+      return false;
     }
   }
 
-  /**
-   * 🔔 Notification vers n8n
-   */
-  private static async notifyN8N(invoice: Invoice, fileName: string): Promise<void> {
+  public async testGoogleDriveIntegration(): Promise<{ success: boolean; message: string }> {
     try {
-      const config = this.getConfig();
+      if (!this.API_KEY || !this.CLIENT_ID) {
+        return {
+          success: false,
+          message: '❌ Configuration Google Drive manquante dans .env'
+        };
+      }
+
+      await this.initialize();
       
-      const webhookData = {
-        type: 'invoice_uploaded',
-        invoice_number: invoice.invoiceNumber,
-        client_name: invoice.client.name,
-        client_email: invoice.client.email,
-        file_name: fileName,
-        upload_date: new Date().toISOString(),
-        folder_id: config.folderId
+      if (!this.isAuthenticated()) {
+        const authenticated = await this.authenticate();
+        if (!authenticated) {
+          return {
+            success: false,
+            message: '❌ Échec de l\'authentification Google'
+          };
+        }
+      }
+
+      return {
+        success: true,
+        message: `✅ Connexion Google Drive réussie !\n\n• API Key: Configurée\n• Client ID: Configuré\n• Dossier: ${this.FOLDER_ID}\n• Authentification: OK`
       };
-
-      const response = await fetch(config.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(webhookData)
-      });
-
-      if (response.ok) {
-        console.log('✅ Notification n8n envoyée');
-      } else {
-        console.warn('⚠️ Erreur notification n8n:', response.status, response.statusText);
-      }
-    } catch (error) {
-      console.warn('⚠️ Erreur notification n8n (non bloquante):', error);
-    }
-  }
-
-  /**
-   * 🧪 Test de l'intégration Google Drive
-   */
-  static async testGoogleDriveIntegration(): Promise<{ success: boolean; message: string }> {
-    try {
-      const config = this.getConfig();
-      
-      if (!config.webhookUrl) {
-        return {
-          success: false,
-          message: '❌ URL webhook n8n non configurée'
-        };
-      }
-
-      if (!config.folderId) {
-        return {
-          success: false,
-          message: '❌ ID du dossier Google Drive non configuré'
-        };
-      }
-
-      // Test de connectivité avec le webhook n8n
-      const testData = {
-        type: 'test_connection',
-        timestamp: new Date().toISOString(),
-        folder_id: config.folderId
-      };
-
-      const response = await fetch(config.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(testData)
-      });
-
-      if (response.ok) {
-        return {
-          success: true,
-          message: `✅ Connexion réussie !\n\n• Webhook n8n: Accessible\n• Dossier Google Drive: ${config.folderId}\n• Statut HTTP: ${response.status}`
-        };
-      } else {
-        return {
-          success: false,
-          message: `❌ Erreur de connexion\n\n• Statut HTTP: ${response.status}\n• Message: ${response.statusText}\n• Vérifiez que votre workflow n8n est actif`
-        };
-      }
     } catch (error) {
       return {
         success: false,
-        message: `❌ Erreur de test\n\n• Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}\n• Vérifiez votre connexion internet et l'URL du webhook`
+        message: `❌ Erreur de test\n\n• Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       };
     }
-  }
-
-  /**
-   * 🔧 Validation de la configuration
-   */
-  static validateConfig(): { isValid: boolean; errors: string[] } {
-    const config = this.getConfig();
-    const errors: string[] = [];
-
-    if (!config.webhookUrl) {
-      errors.push('URL webhook n8n manquante');
-    } else {
-      try {
-        new URL(config.webhookUrl);
-      } catch {
-        errors.push('URL webhook n8n invalide');
-      }
-    }
-
-    if (!config.folderId) {
-      errors.push('ID du dossier Google Drive manquant');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
-
-  /**
-   * 🔄 Convertir un blob en base64
-   */
-  private static blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Supprimer le préfixe "data:application/pdf;base64,"
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 }
+
+export const googleDriveService = GoogleDriveService.getInstance();

@@ -4,7 +4,7 @@ import { InvoicePDF } from './InvoicePDF';
 import { Invoice } from '../types';
 import html2canvas from 'html2canvas';
 import { AdvancedPDFService } from '../services/advancedPdfService';
-import { GoogleDriveService } from '../services/googleDriveService';
+import { googleDriveService } from '../services/googleDriveService';
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
@@ -113,7 +113,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       setUploadStep('📤 Envoi vers Google Drive...');
       
       // Upload to Google Drive
-      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      const success = await googleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
       
       if (success) {
         setUploadStep('✅ PDF envoyé avec succès !');
@@ -267,7 +267,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             </span>
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            📁 Dossier: {GoogleDriveService.getConfig().folderId} • 🎯 Format: PDF haute qualité
+            📁 Dossier: {googleDriveService.constructor.getConfig().FOLDER_ID} • 🎯 Format: PDF haute qualité
           </div>
           <div className="mt-1 text-xs text-blue-600 font-semibold">
             💡 La facture sera automatiquement envoyée vers votre Google Drive via n8n

@@ -1,7 +1,7 @@
 import React from 'react';
 import { UploadCloud as CloudUpload, Loader, CheckCircle, AlertCircle, Settings } from 'lucide-react';
 import { useGoogleDrive } from '../hooks/useGoogleDrive';
-import { GoogleDriveService } from '../services/googleDriveService';
+import { googleDriveService } from '../services/googleDriveService';
 import { Invoice } from '../types';
 
 interface GoogleDriveButtonProps {
@@ -19,12 +19,11 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
 
   // 📤 Gérer l'upload
   const handleUpload = async () => {
-    const success = await GoogleDriveService.uploadInvoicePDF(invoice, (file, fileName, folderId) => 
+    const success = await googleDriveService.uploadInvoicePDF(invoice, (file, fileName, folderId) => 
       uploadFile(file, fileName, folderId)
     );
     
     if (success) {
-      // Optionnel: callback de succès
       console.log('✅ Facture uploadée avec succès');
     }
   };
