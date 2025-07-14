@@ -3,6 +3,7 @@ import { Download, FileText } from 'lucide-react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { PDFService } from '../services/pdfService';
+import { GoogleDriveButton } from './GoogleDriveButton';
 
 interface EmailSenderProps {
   invoice: Invoice;
@@ -47,7 +48,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
     <div className="bg-[#477A0C] rounded-xl shadow-lg p-6 mb-6">
       <h2 className="text-xl font-bold text-[#F2EFE2] mb-4 flex items-center justify-center">
         <span className="bg-[#F2EFE2] text-[#477A0C] px-6 py-3 rounded-full font-bold">
-          GÉNÉRATION PDF
+          ACTIONS FACTURE
         </span>
       </h2>
       
@@ -84,23 +85,36 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleGeneratePDF}
-          disabled={!isValid}
-          className={`w-full px-8 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg ${
-            isValid 
-              ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' 
-              : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-          }`}
-        >
-          <Download className="w-6 h-6" />
-          <span>Générer et télécharger le PDF</span>
-        </button>
+        {/* Actions principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Génération PDF */}
+          <button
+            onClick={handleGeneratePDF}
+            disabled={!isValid}
+            className={`w-full px-6 py-3 rounded-xl font-bold text-lg flex items-center justify-center space-x-3 transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-lg ${
+              isValid 
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white' 
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            }`}
+          >
+            <Download className="w-6 h-6" />
+            <span>Télécharger PDF</span>
+          </button>
+
+          {/* Google Drive */}
+          <div className="w-full">
+            <GoogleDriveButton 
+              invoice={invoice} 
+              disabled={!isValid}
+              className="w-full px-6 py-3 text-lg font-bold"
+            />
+          </div>
+        </div>
 
         <div className="mt-4 text-center text-sm text-black">
           <p className="font-bold">
             {isValid 
-              ? '✅ Facture prête à être générée'
+              ? '✅ Facture prête pour export et sauvegarde'
               : '⚠️ Complétez les informations manquantes'
             }
           </p>

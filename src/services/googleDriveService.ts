@@ -1,63 +1,81 @@
 import { Invoice } from '../types';
-import { formatCurrency, calculateProductTotal } from '../utils/calculations';
-
-const WEBHOOK_CONFIG = {
-  URL: 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort',
-  FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'
-};
+import { GOOGLE_DRIVE_CONFIG } from '../config/googleDrive';
+import { PDFService } from './pdfService';
 
 export class GoogleDriveService {
-  static async uploadPDF(invoice: Invoice, pdfBlob: Blob): Promise<boolean> {
+  /**
+   * 📤 Upload d'une facture PDF vers Google Drive
+   */
+  static async uploadInvoicePDF(
+    invoice: Invoice, 
+    uploadFunction: (file: File, fileName: string) => Promise<boolean>
+  ): Promise<boolean> {
     try {
-      const pdfBase64 = await this.blobToBase64(pdfBlob);
-      const totalAmount = this.calculateTotal(invoice);
+      console.log('📤 Début upload facture vers Google Drive...');
+
+      // Générer le PDF
+      const pdfBlob = await PDFService.getPDFBlob(invoice);
       
-      const webhookData = {
-        nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
-        fichier_facture: pdfBase64.split(',')[1],
-        date_creation: new Date().toISOString(),
-        numero_facture: invoice.invoiceNumber,
-        montant_total: totalAmount,
-        nom_client: invoice.client.name,
-        email_client: invoice.client.email,
-        dossier_id: WEBHOOK_CONFIG.FOLDER_ID
-      };
-      
-      const response = await fetch(WEBHOOK_CONFIG.URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookData),
-        signal: AbortSignal.timeout(30000)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+      // Créer le fichier
+      const fileName = `Facture_MyConfort_${invoice.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      // Upload via le hook
+      const success = await uploadFunction(file, fileName);
+
+      if (success) {
+        console.log('✅ Upload facture réussi:', fileName);
+        
+        // Optionnel: Notifier n8n si configuré
+        if (GOOGLE_DRIVE_CONFIG.WEBHOOK_URL) {
+          await this.notifyN8N(invoice, fileName);
+        }
       }
-      
-      return true;
+
+      return success;
     } catch (error) {
-      console.error('Erreur upload Google Drive:', error);
-      throw error;
+      console.error('❌ Erreur upload facture:', error);
+      return false;
     }
   }
 
-  private static async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+  /**
+   * 🔔 Notification optionnelle vers n8n
+   */
+  private static async notifyN8N(invoice: Invoice, fileName: string): Promise<void> {
+    try {
+      const webhookData = {
+        type: 'invoice_uploaded',
+        invoice_number: invoice.invoiceNumber,
+        client_name: invoice.client.name,
+        client_email: invoice.client.email,
+        file_name: fileName,
+        upload_date: new Date().toISOString(),
+        folder_id: GOOGLE_DRIVE_CONFIG.FOLDER_ID
+      };
+
+      await fetch(GOOGLE_DRIVE_CONFIG.WEBHOOK_URL!, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(webhookData)
+      });
+
+      console.log('✅ Notification n8n envoyée');
+    } catch (error) {
+      console.warn('⚠️ Erreur notification n8n (non bloquante):', error);
+    }
   }
 
-  private static calculateTotal(invoice: Invoice): number {
-    return invoice.products.reduce((sum, product) => {
-      return sum + calculateProductTotal(
-        product.quantity,
-        product.priceTTC,
-        product.discount,
-        product.discountType
-      );
-    }, 0);
+  /**
+   * 🔧 Validation de la configuration
+   */
+  static validateConfig(): { isValid: boolean; errors: string[] } {
+    const errors = GOOGLE_DRIVE_CONFIG.getErrors();
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }
 }
