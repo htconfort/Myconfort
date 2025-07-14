@@ -19,7 +19,9 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
 
   // 📤 Gérer l'upload
   const handleUpload = async () => {
-    const success = await GoogleDriveService.uploadInvoicePDF(invoice, uploadFile);
+    const success = await GoogleDriveService.uploadInvoicePDF(invoice, (file, fileName, folderId) => 
+      uploadFile(file, fileName, folderId)
+    );
     
     if (success) {
       // Optionnel: callback de succès

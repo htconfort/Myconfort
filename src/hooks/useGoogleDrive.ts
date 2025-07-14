@@ -130,7 +130,7 @@ export const useGoogleDrive = () => {
   }, []);
 
   // 📤 Upload de fichier vers Google Drive
-  const uploadFile = useCallback(async (file: File, fileName: string): Promise<boolean> => {
+  const uploadFile = useCallback(async (file: File, fileName: string, folderId?: string): Promise<boolean> => {
     try {
       if (!authStatus.isSignedIn) {
         const connected = await signIn();
@@ -163,7 +163,7 @@ export const useGoogleDrive = () => {
       // Métadonnées du fichier
       const metadata = {
         name: fileName,
-        parents: [GOOGLE_DRIVE_CONFIG.FOLDER_ID],
+        parents: [folderId || GOOGLE_DRIVE_CONFIG.FOLDER_ID],
         description: `Facture MyConfort générée le ${new Date().toLocaleDateString('fr-FR')}`
       };
 
@@ -223,6 +223,10 @@ export const useGoogleDrive = () => {
   // 🧪 Test de connexion
   const testConnection = useCallback(async (): Promise<boolean> => {
     try {
+      const { GoogleDriveService } = await import('../services/googleDriveService');
+      const config = GoogleDriveService.getConfig();
+      const targetFolderId = config.folderId || GOOGLE_DRIVE_CONFIG.FOLDER_ID;
+      
       if (!authStatus.isSignedIn) {
         const connected = await signIn();
         if (!connected) return false;
@@ -235,7 +239,7 @@ export const useGoogleDrive = () => {
 
       // Tester l'accès au dossier
       const response = await window.gapi.client.drive.files.get({
-        fileId: GOOGLE_DRIVE_CONFIG.FOLDER_ID,
+        fileId: targetFolderId,
         fields: 'id,name,mimeType'
       });
 
