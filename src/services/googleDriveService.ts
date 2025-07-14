@@ -1,12 +1,21 @@
 import { gapi } from 'gapi-script';
 
+// 🔧 Configuration Google Drive OAuth2
+const GOOGLE_DRIVE_CONFIG = {
+  API_KEY: import.meta.env.VITE_GOOGLE_DRIVE_API_KEY,
+  CLIENT_ID: import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID,
+  FOLDER_ID: import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_ID || '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-',
+  SCOPES: 'https://www.googleapis.com/auth/drive.file',
+  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+};
+
 export class GoogleDriveService {
   private static instance: GoogleDriveService;
-  private readonly API_KEY = import.meta.env.VITE_GOOGLE_DRIVE_API_KEY;
-  private readonly CLIENT_ID = import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID;
-  private readonly SCOPES = 'https://www.googleapis.com/auth/drive.file';
-  private readonly DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-  private readonly FOLDER_ID = '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'; // Ton dossier Drive
+  private readonly API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
+  private readonly CLIENT_ID = GOOGLE_DRIVE_CONFIG.CLIENT_ID;
+  private readonly SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
+  private readonly DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
+  private readonly FOLDER_ID = GOOGLE_DRIVE_CONFIG.FOLDER_ID;
 
   private gapiLoaded = false;
   private isSignedIn = false;
@@ -23,16 +32,20 @@ export class GoogleDriveService {
   // Optionnel : expose la config (DEBUG)
   public static getConfig() {
     return {
-      API_KEY: import.meta.env.VITE_GOOGLE_DRIVE_API_KEY,
-      CLIENT_ID: import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID,
-      SCOPES: 'https://www.googleapis.com/auth/drive.file',
-      DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
-      FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-',
+      ...GOOGLE_DRIVE_CONFIG,
+      isConfigured: !!(GOOGLE_DRIVE_CONFIG.API_KEY && GOOGLE_DRIVE_CONFIG.CLIENT_ID)
     };
   }
 
   public async initialize(): Promise<void> {
     if (!this.API_KEY || !this.CLIENT_ID) throw new Error('API Google Drive non configurée (.env)');
+    
+    console.log('🔧 Initialisation Google Drive avec config:', {
+      API_KEY: this.API_KEY ? '✅ Configurée' : '❌ Manquante',
+      CLIENT_ID: this.CLIENT_ID ? '✅ Configurée' : '❌ Manquante',
+      FOLDER_ID: this.FOLDER_ID
+    });
+    
     if (this.gapiLoaded) return;
     return new Promise((resolve, reject) => {
       const start = () => {
@@ -65,14 +78,31 @@ export class GoogleDriveService {
 
   public async authenticate(): Promise<boolean> {
     try {
+      console.log('🔐 Démarrage authentification Google Drive...');
       if (!this.gapiLoaded) await this.initialize();
       const auth = gapi.auth2.getAuthInstance();
-      if (this.isSignedIn) return true;
+      if (this.isSignedIn) {
+        console.log('✅ Déjà authentifié');
+        return true;
+      }
+      
+      console.log('🔓 Ouverture popup d\'authentification...');
       await auth.signIn();
       this.isSignedIn = true;
+      console.log('✅ Authentification réussie');
       return true;
     } catch (e) {
       console.error('❌ Erreur authentification Google:', e);
+      
+      // Gestion des erreurs spécifiques
+      if (e.error === 'popup_blocked_by_browser') {
+        alert('❌ Pop-up bloquée par le navigateur. Veuillez autoriser les pop-ups pour ce site.');
+      } else if (e.error === 'access_denied') {
+        alert('❌ Accès refusé. Veuillez accepter les permissions Google Drive.');
+      } else if (e.error === 'redirect_uri_mismatch') {
+        alert('❌ Erreur de configuration OAuth. Vérifiez les URLs dans Google Cloud Console.');
+      }
+      
       return false;
     }
   }

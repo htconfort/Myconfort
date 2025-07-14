@@ -50,11 +50,14 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
   // 🔐 Gérer la connexion
   const handleConnectGoogleDrive = async () => {
     try {
-      console.log('🔐 Déclenchement authentification Google Drive...');
+      console.log('🔐 Clic sur bouton connexion Google Drive...');
+      console.log('🔧 Configuration actuelle:', googleDriveService.constructor.getConfig());
+      
       await googleDriveService.authenticate();
       console.log('✅ Authentification Google Drive réussie');
     } catch (error) {
       console.error('❌ Erreur authentification Google Drive:', error);
+      alert(`❌ Erreur d'authentification: ${error}`);
     }
   };
 
