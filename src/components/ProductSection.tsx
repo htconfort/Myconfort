@@ -844,6 +844,14 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal des Conditions Générales de Vente */}
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAccept={() => onTermsAcceptedChange(true)}
+        showAcceptButton={true}
+      />
     </div>
   );
 };
