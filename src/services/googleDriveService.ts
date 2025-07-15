@@ -47,6 +47,12 @@ export class GoogleDriveService {
       throw new Error('❌ Configuration Google Drive manquante dans .env\n\nVérifiez :\n• VITE_GOOGLE_DRIVE_API_KEY\n• VITE_GOOGLE_DRIVE_CLIENT_ID');
     }
     
+    // 🔍 Debug des clés API
+    console.log('🔍 Debug Google Drive API:');
+    console.log('Clé API utilisée:', import.meta.env.VITE_GOOGLE_DRIVE_API_KEY);
+    console.log('Client ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID);
+    console.log('Folder ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_ID);
+    
     console.log('🔧 Initialisation Google Drive avec config:', {
       API_KEY: this.API_KEY ? '✅ Configurée' : '❌ Manquante',
       CLIENT_ID: this.CLIENT_ID ? '✅ Configurée' : '❌ Manquante',

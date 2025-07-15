@@ -50,6 +50,10 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
   // 🔐 Gérer la connexion
   const handleConnectGoogleDrive = async () => {
     try {
+      console.log('🔍 Debug avant connexion Google Drive:');
+      console.log('Clé API utilisée:', import.meta.env.VITE_GOOGLE_DRIVE_API_KEY);
+      console.log('Client ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID);
+      
       console.log('🔐 Clic sur bouton connexion Google Drive...');
       console.log('🔧 Configuration actuelle:', googleDriveService.constructor.getConfig());
       

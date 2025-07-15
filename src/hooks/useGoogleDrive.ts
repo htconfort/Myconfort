@@ -124,6 +124,10 @@ export const useGoogleDrive = () => {
   // 🧪 Test de connexion
   const testConnection = useCallback(async (): Promise<boolean> => {
     try {
+      console.log('🔍 Debug test connexion Google Drive:');
+      console.log('Clé API utilisée:', import.meta.env.VITE_GOOGLE_DRIVE_API_KEY);
+      console.log('Client ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID);
+      
       setUploadProgress({
         stage: 'upload',
         message: 'Test de connexion Google Drive...'
