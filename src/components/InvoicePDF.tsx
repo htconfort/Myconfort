@@ -13,6 +13,20 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
   console.log('🔍 DEBUG PDF COMPONENT - Mode preview:', isPreview);
   console.log('🔍 DEBUG PDF COMPONENT - Produits count:', invoice.products?.length || 0);
   
+  // 🚫 VALIDATION : Affichage conditionnel si pas de produits
+  if (!invoice.products || invoice.products.length === 0) {
+    console.warn('⚠️ DEBUG PDF COMPONENT - Aucun produit, affichage message d\'erreur');
+    return (
+      <div className="w-full bg-white p-8 text-center">
+        <div className="border-2 border-red-500 rounded-lg p-6 bg-red-50">
+          <h2 className="text-xl font-bold text-red-800 mb-4">❌ Impossible de générer la facture</h2>
+          <p className="text-red-700 mb-4">Aucun produit n'a été ajouté à cette facture.</p>
+          <p className="text-red-600 text-sm">Veuillez ajouter au moins un produit avant de générer le PDF.</p>
+        </div>
+      </div>
+    );
+  }
+  
   const totals = React.useMemo(() => {
     console.log('🔍 DEBUG PDF COMPONENT - Calcul des totaux...');
     const subtotal = invoice.products.reduce((sum, product) => {

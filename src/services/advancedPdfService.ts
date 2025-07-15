@@ -12,6 +12,18 @@ export class AdvancedPDFService {
       console.log('🔍 DEBUG PDF - Produits:', invoice.products);
       console.log('🔍 DEBUG PDF - Client:', invoice.client);
       
+      // 🚫 VALIDATION : Vérifier qu'il y a des produits
+      if (!invoice.products || invoice.products.length === 0) {
+        console.error('❌ DEBUG PDF - Aucun produit dans la facture');
+        throw new Error('Impossible de générer un PDF sans produits.\n\nVeuillez ajouter au moins un produit à votre facture avant de télécharger le PDF.');
+      }
+      
+      // 🚫 VALIDATION : Vérifier les données client essentielles
+      if (!invoice.client.name || !invoice.client.email) {
+        console.error('❌ DEBUG PDF - Données client incomplètes:', invoice.client);
+        throw new Error('Impossible de générer un PDF sans informations client complètes.\n\nVeuillez remplir au minimum le nom et l\'email du client.');
+      }
+      
       const pdfBlob = await this.getPDFBlob(invoice);
       console.log('🔍 DEBUG PDF - Blob généré:', pdfBlob);
       console.log('🔍 DEBUG PDF - Taille du blob:', pdfBlob.size, 'bytes');
@@ -40,6 +52,12 @@ export class AdvancedPDFService {
   static async getPDFBlob(invoice: Invoice): Promise<Blob> {
     try {
       console.log('🔍 DEBUG PDF BLOB - Début génération pour facture:', invoice.invoiceNumber);
+      
+      // 🚫 VALIDATION : Double vérification des produits
+      if (!invoice.products || invoice.products.length === 0) {
+        console.error('❌ DEBUG PDF BLOB - Aucun produit pour génération blob');
+        throw new Error('Impossible de générer le PDF : aucun produit dans la facture');
+      }
       
       // Chercher l'élément de la facture
       const element = document.querySelector('.facture-apercu') || 

@@ -108,6 +108,12 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
   // Upload to Google Drive
   const handleUploadToGoogleDrive = async () => {
+    // 🚫 VALIDATION : Vérifier qu'il y a des produits
+    if (!invoice.products || invoice.products.length === 0) {
+      alert('❌ Impossible d\'envoyer vers Google Drive sans produits.\n\nVeuillez ajouter au moins un produit à votre facture.');
+      return;
+    }
+
     setIsUploading(true);
     setUploadStep('🔄 Génération du PDF...');
 

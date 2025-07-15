@@ -31,8 +31,15 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
   const montantRestant = totalTTC - acompteAmount;
 
   const handleGeneratePDF = async () => {
+    // 🚫 VALIDATION : Vérifier la validité générale
     if (!isValid) {
-      onError('Veuillez compléter tous les champs obligatoires');
+      onError('Veuillez compléter tous les champs obligatoires avant de générer le PDF');
+      return;
+    }
+
+    // 🚫 VALIDATION : Vérifier qu'il y a des produits
+    if (!invoice.products || invoice.products.length === 0) {
+      onError('Impossible de générer un PDF sans produits.\n\nVeuillez ajouter au moins un produit à votre facture.');
       return;
     }
 

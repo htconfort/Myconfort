@@ -101,7 +101,19 @@ export const useInvoice = () => {
     if (!invoice.client.email) errors.push('Email');
     if (!invoice.client.housingType) errors.push('Type de logement');
     if (!invoice.client.doorCode) errors.push('Code porte');
-    if (invoice.products.length === 0) errors.push('Au moins un produit');
+    
+    // 🚫 VALIDATION RENFORCÉE : Produits obligatoires
+    if (!invoice.products || invoice.products.length === 0) {
+      errors.push('Au moins un produit');
+    } else {
+      // Vérifier que les produits ont des données valides
+      const invalidProducts = invoice.products.filter(product => 
+        !product.name || product.quantity <= 0 || product.priceTTC <= 0
+      );
+      if (invalidProducts.length > 0) {
+        errors.push(`${invalidProducts.length} produit(s) invalide(s)`);
+      }
+    }
     
     return {
       isValid: errors.length === 0,
