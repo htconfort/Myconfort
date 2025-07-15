@@ -1,6 +1,7 @@
 import React from 'react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
+import { TermsAndConditions } from './TermsAndConditions';
 
 interface InvoicePDFProps {
   invoice: Invoice;
@@ -341,5 +342,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
         </div>
       </div>
     </div>
+    
+    {/* Page 2: Conditions Générales de Vente */}
+    <TermsAndConditions />
   );
 };

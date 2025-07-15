@@ -44,13 +44,15 @@ export class AdvancedPDFService {
 
       // Capturer l'élément avec html2canvas
       const canvas = await html2canvas(element as HTMLElement, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         width: element.scrollWidth,
-        height: element.scrollHeight
+        height: element.scrollHeight,
+        windowWidth: 1200,
+        windowHeight: 1600
       });
 
       // Créer le PDF avec jsPDF
@@ -61,16 +63,44 @@ export class AdvancedPDFService {
         format: 'a4'
       });
 
-      // Calculer les dimensions pour s'adapter à A4
+      // Calculer les dimensions pour s'adapter à A4 (multi-pages)
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, 'JPEG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Calculer le ratio pour s'adapter à la largeur A4
+      const ratio = pdfWidth / imgWidth;
+      const scaledHeight = imgHeight * ratio;
+      
+      // Si l'image est plus haute qu'une page A4, la diviser en plusieurs pages
+      if (scaledHeight > pdfHeight) {
+        const pagesNeeded = Math.ceil(scaledHeight / pdfHeight);
+        
+        for (let i = 0; i < pagesNeeded; i++) {
+          if (i > 0) {
+            pdf.addPage();
+          }
+          
+          const sourceY = (i * pdfHeight) / ratio;
+          const sourceHeight = Math.min(pdfHeight / ratio, imgHeight - sourceY);
+          
+          // Créer un canvas temporaire pour cette section
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d')!;
+          tempCanvas.width = imgWidth;
+          tempCanvas.height = sourceHeight;
+          
+          tempCtx.drawImage(canvas, 0, sourceY, imgWidth, sourceHeight, 0, 0, imgWidth, sourceHeight);
+          const tempImgData = tempCanvas.toDataURL('image/jpeg', 0.95);
+          
+          pdf.addImage(tempImgData, 'JPEG', 0, 0, pdfWidth, sourceHeight * ratio);
+        }
+      } else {
+        // L'image tient sur une seule page
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        pdf.addImage(imgData, 'JPEG', imgX, 0, imgWidth * ratio, scaledHeight);
+      }
 
       // Retourner le blob
       return pdf.output('blob');
