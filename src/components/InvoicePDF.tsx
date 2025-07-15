@@ -1,6 +1,7 @@
 import React from 'react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateHT, calculateProductTotal } from '../utils/calculations';
+import { TermsAndConditions } from './TermsAndConditions';
 
 interface InvoicePDFProps {
   invoice: Invoice;
@@ -47,6 +48,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
 
   return (
     <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif', color: '#080F0F' }}>
+      {/* PAGE 1 - FACTURE */}
+      <div className="invoice-page" style={{ pageBreakAfter: 'always', minHeight: '100vh' }}>
       {/* Bordure supérieure verte */}
       <div className="h-1 bg-[#477A0C]"></div>
       
@@ -338,6 +341,14 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           <div className="mt-4 text-xs opacity-75">
             <p>TVA non applicable, art. 293 B du CGI - RCS Paris 824 313 530</p>
           </div>
+        </div>
+      </div>
+      </div>
+
+      {/* PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE */}
+      <div className="terms-page" style={{ pageBreakBefore: 'always', minHeight: '100vh' }}>
+        <div className="terms-and-conditions">
+          <TermsAndConditions />
         </div>
       </div>
     </div>

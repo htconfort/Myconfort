@@ -303,4 +303,21 @@
     box-shadow: none;
     max-width: none;
   }
+  
+  /* Gestion des sauts de page pour l'impression */
+  .invoice-page {
+    page-break-after: always;
+  }
+  
+  .terms-page {
+    page-break-before: always;
+  }
+  
+  /* Styles spécifiques pour les CGV en impression */
+  .terms-and-conditions {
+    font-family: 'Times New Roman', serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #333;
+  }
 }

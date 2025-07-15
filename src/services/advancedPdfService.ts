@@ -42,35 +42,63 @@ export class AdvancedPDFService {
         throw new Error('Élément facture non trouvé pour la génération PDF');
       }
 
-      // Capturer l'élément avec html2canvas
-      const canvas = await html2canvas(element as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight
-      });
-
-      // Créer le PDF avec jsPDF
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      // Créer le PDF avec jsPDF pour gérer les pages multiples
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // Calculer les dimensions pour s'adapter à A4
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
+      // PAGE 1 - FACTURE
+      const invoicePage = element.querySelector('.invoice-page') as HTMLElement;
+      if (invoicePage) {
+        const canvas1 = await html2canvas(invoicePage, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: invoicePage.scrollWidth,
+          height: invoicePage.scrollHeight
+        });
 
-      pdf.addImage(imgData, 'JPEG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+        const imgData1 = canvas1.toDataURL('image/jpeg', 0.95);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth1 = canvas1.width;
+        const imgHeight1 = canvas1.height;
+        const ratio1 = Math.min(pdfWidth / imgWidth1, pdfHeight / imgHeight1);
+        const imgX1 = (pdfWidth - imgWidth1 * ratio1) / 2;
+        const imgY1 = 0;
+
+        pdf.addImage(imgData1, 'JPEG', imgX1, imgY1, imgWidth1 * ratio1, imgHeight1 * ratio1);
+      }
+
+      // PAGE 2 - CONDITIONS GÉNÉRALES DE VENTE
+      const termsPage = element.querySelector('.terms-page') as HTMLElement;
+      if (termsPage) {
+        // Ajouter une nouvelle page
+        pdf.addPage();
+        
+        const canvas2 = await html2canvas(termsPage, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: termsPage.scrollWidth,
+          height: termsPage.scrollHeight
+        });
+
+        const imgData2 = canvas2.toDataURL('image/jpeg', 0.95);
+        const imgWidth2 = canvas2.width;
+        const imgHeight2 = canvas2.height;
+        const ratio2 = Math.min(pdfWidth / imgWidth2, pdfHeight / imgHeight2);
+        const imgX2 = (pdfWidth - imgWidth2 * ratio2) / 2;
+        const imgY2 = 0;
+
+        pdf.addImage(imgData2, 'JPEG', imgX2, imgY2, imgWidth2 * ratio2, imgHeight2 * ratio2);
+      }
 
       // Retourner le blob
       return pdf.output('blob');
