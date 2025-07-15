@@ -25,11 +25,14 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [uploadStep, setUploadStep] = useState('');
   
   const handlePrint = () => {
+    console.log('🔍 DEBUG MODAL - Impression demandée');
     window.print();
   };
 
   // Partage d'aperçu par email
   const handleSharePreviewViaEmail = async () => {
+    console.log('🔍 DEBUG MODAL - Partage aperçu demandé pour:', invoice.invoiceNumber);
+    
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
       return;
@@ -43,6 +46,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       
       // Capturer l'aperçu avec html2canvas
       const element = document.getElementById('pdf-preview-content');
+      console.log('🔍 DEBUG MODAL - Élément trouvé pour capture:', element);
+      
       if (!element) {
         throw new Error('Élément aperçu non trouvé');
       }

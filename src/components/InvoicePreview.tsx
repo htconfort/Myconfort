@@ -11,6 +11,9 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   invoice, 
   className = "" 
 }) => {
+  console.log('🔍 DEBUG PREVIEW - Facture reçue:', invoice);
+  console.log('🔍 DEBUG PREVIEW - Produits:', invoice.products?.length || 0);
+  
   // Calculer le total TTC
   const totalTTC = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -43,7 +46,9 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
     <div 
       id="facture-apercu" 
       className={`facture-apercu ${className}`}
+      data-invoice-preview="true"
     >
+      {console.log('🔍 DEBUG PREVIEW - Rendu de l\'aperçu pour facture:', invoice.invoiceNumber)}
       <div className="invoice-container">
         {/* Header */}
         <header className="header">

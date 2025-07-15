@@ -9,7 +9,12 @@ interface InvoicePDFProps {
 }
 
 export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = false }) => {
+  console.log('🔍 DEBUG PDF COMPONENT - Facture reçue:', invoice);
+  console.log('🔍 DEBUG PDF COMPONENT - Mode preview:', isPreview);
+  console.log('🔍 DEBUG PDF COMPONENT - Produits count:', invoice.products?.length || 0);
+  
   const totals = React.useMemo(() => {
+    console.log('🔍 DEBUG PDF COMPONENT - Calcul des totaux...');
     const subtotal = invoice.products.reduce((sum, product) => {
       return sum + (product.quantity * calculateHT(product.priceTTC, invoice.taxRate));
     }, 0);
