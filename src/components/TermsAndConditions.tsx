@@ -330,3 +330,6 @@ const TermsAndConditions: React.FC = () => {
       </div>
     </div>
   );
+};
+
+export default TermsAndConditions;
