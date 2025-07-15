@@ -52,6 +52,7 @@ export class GoogleDriveService {
     console.log('Clé API utilisée:', import.meta.env.VITE_GOOGLE_DRIVE_API_KEY);
     console.log('Client ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_CLIENT_ID);
     console.log('Folder ID utilisé:', import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_ID);
+    console.log('CONFIG GOOGLE DRIVE (import.meta.env):', import.meta.env);
     
     console.log('🔧 Initialisation Google Drive avec config:', {
       API_KEY: this.API_KEY ? '✅ Configurée' : '❌ Manquante',
