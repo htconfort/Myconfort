@@ -1,7 +1,6 @@
 import React from 'react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
-import TermsAndConditions from './TermsAndConditions';
 
 interface InvoicePreviewProps {
   invoice: Invoice;
@@ -261,8 +260,5 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
         </footer>
       </div>
     </div>
-    
-    {/* Page 2: Conditions Générales de Vente */}
-    <TermsAndConditions />
   );
 };
