@@ -1,7 +1,7 @@
 import React from 'react';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
-import { TermsAndConditions } from './TermsAndConditions';
+import TermsAndConditions from './TermsAndConditions';
 
 interface InvoicePreviewProps {
   invoice: Invoice;

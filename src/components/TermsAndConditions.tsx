@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const TermsAndConditions: React.FC = () => {
+const TermsAndConditions: React.FC = () => {
   return (
     <div className="terms-conditions-page" style={{
       fontFamily: 'Times New Roman, serif',
@@ -330,4 +330,3 @@ export const TermsAndConditions: React.FC = () => {
       </div>
     </div>
   );
-};
