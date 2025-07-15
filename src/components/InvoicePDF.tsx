@@ -343,6 +343,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           </div>
         </div>
       </div>
+      </div>
       
       {/* Page 2: Conditions Générales de Vente */}
       <TermsAndConditions />
