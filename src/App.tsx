@@ -11,7 +11,7 @@ import { EmailJSConfigModal } from './components/EmailJSConfigModal';
 import { GoogleDriveModal } from './components/GoogleDriveModal';
 import { SignaturePad } from './components/SignaturePad';
 import { EmailSender } from './components/EmailSender';
-import { InvoicePreview } from './components/InvoicePreview';
+import { InvoicePDF } from './components/InvoicePDF';
 import { Toast } from './components/ui/Toast';
 import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
@@ -497,7 +497,7 @@ function App() {
             
             <div className="bg-[#F2EFE2] rounded-lg p-4">
               <div className="border border-gray-300 rounded-lg overflow-hidden">
-                <InvoicePreview invoice={invoice} />
+                <InvoicePDF invoice={invoice} isPreview={true} />
               </div>
               
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
