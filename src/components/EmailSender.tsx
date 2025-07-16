@@ -25,7 +25,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
       
       <div className="bg-[#F2EFE2] rounded-lg p-6">
         <div className="text-center">
-          <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-4">
+          <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-4 mb-4">
             <div className="flex items-center space-x-2 justify-center">
               <Mail className="w-6 h-6 text-blue-600" />
               <div>
@@ -33,6 +33,22 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                 <div className="text-blue-700 font-semibold text-sm">
                   Cette section peut être utilisée pour d'autres fonctionnalités
                 </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mention légale Article L224-59 */}
+          <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+            <div className="text-red-800">
+              <div className="font-bold text-sm mb-2 flex items-center justify-center">
+                <span className="mr-2">⚖️</span>
+                Article L224‑59 du Code de la consommation
+              </div>
+              <div className="text-xs leading-relaxed italic">
+                « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
+              </div>
+              <div className="mt-2 text-xs font-semibold text-red-700">
+                ℹ️ Information obligatoire pour les ventes en foire/salon
               </div>
             </div>
           </div>
