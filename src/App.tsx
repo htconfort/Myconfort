@@ -327,6 +327,24 @@ function App() {
     setShowPDFPreview(true);
   };
 
+  const validation = validateMandatoryFields();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header
+        onSave={handleSave}
+        onShowClientsList={() => setShowClientsList(true)}
+        onShowInvoicesList={() => setShowInvoicesList(true)}
+        onShowProductsList={() => setShowProductsList(true)}
+        onShowPDFPreview={handleShowPDFPreview}
+        onGeneratePDF={handleGeneratePDF}
+        onPrint={handlePrint}
+        onShowEmailJSConfig={() => setShowEmailJSConfig(true)}
+        onScrollToSection={scrollToSection}
+        isValid={validation.isValid}
+      />
+
+      <main className="container mx-auto px-4 py-8">
         {/* En-tête MYCONFORT avec dégradé basé sur #477A0C */}
         <div 
           className="text-white rounded-xl shadow-xl p-6 mb-6"
