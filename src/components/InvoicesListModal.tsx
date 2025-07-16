@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, FileText, Eye, Download, Trash2, Search, Calendar, Euro, User, Mail, Filter, MapPin } from 'lucide-react';
+import { X, FileText, Eye, Download, Trash2, Search, Calendar, Euro, User, Mail, Filter, MapPin, Printer, Edit } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Invoice } from '../types';
 import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 import { AdvancedPDFService } from '../services/advancedPdfService';
 import { PDFPreviewModal } from './PDFPreviewModal';
+import { PDFService } from '../services/pdfService';
 
 interface InvoicesListModalProps {
   isOpen: boolean;
@@ -88,6 +89,159 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
     } catch (error) {
       console.error('Erreur téléchargement PDF:', error);
       alert('Erreur lors du téléchargement du PDF');
+    }
+  };
+
+  const handlePrintInvoice = async (invoice: Invoice) => {
+    try {
+      // Créer un aperçu temporaire pour l'impression
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Impossible d\'ouvrir la fenêtre d\'impression. Veuillez autoriser les pop-ups.');
+        return;
+      }
+
+      // Calculer le total pour l'affichage
+      const total = calculateInvoiceTotal(invoice);
+      
+      // Créer le contenu HTML pour l'impression
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Facture ${invoice.invoiceNumber}</title>
+          <meta charset="UTF-8">
+          <style>
+            body { 
+              font-family: 'Arial', sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: white; 
+              color: #333;
+            }
+            .header { 
+              background: linear-gradient(135deg, #477A0C, #5A8F0F); 
+              color: white; 
+              padding: 20px; 
+              text-align: center; 
+              margin-bottom: 20px;
+            }
+            .invoice-info { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 20px; 
+              margin-bottom: 20px; 
+            }
+            .client-info { 
+              background: #f8f9fa; 
+              padding: 15px; 
+              border-radius: 8px; 
+            }
+            .products-table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin: 20px 0; 
+            }
+            .products-table th, .products-table td { 
+              border: 1px solid #ddd; 
+              padding: 8px; 
+              text-align: left; 
+            }
+            .products-table th { 
+              background: #477A0C; 
+              color: white; 
+            }
+            .total { 
+              text-align: right; 
+              font-size: 18px; 
+              font-weight: bold; 
+              margin: 20px 0; 
+              color: #477A0C; 
+            }
+            @media print {
+              body { margin: 0; padding: 10mm; }
+              .no-print { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🌸 MYCONFORT</h1>
+            <h2>Facture ${invoice.invoiceNumber}</h2>
+          </div>
+          
+          <div class="invoice-info">
+            <div>
+              <h3>Informations Facture</h3>
+              <p><strong>Numéro:</strong> ${invoice.invoiceNumber}</p>
+              <p><strong>Date:</strong> ${new Date(invoice.invoiceDate).toLocaleDateString('fr-FR')}</p>
+              ${invoice.eventLocation ? `<p><strong>Lieu:</strong> ${invoice.eventLocation}</p>` : ''}
+              ${invoice.advisorName ? `<p><strong>Conseiller:</strong> ${invoice.advisorName}</p>` : ''}
+            </div>
+            
+            <div class="client-info">
+              <h3>Client</h3>
+              <p><strong>${invoice.client.name}</strong></p>
+              <p>${invoice.client.address}</p>
+              <p>${invoice.client.postalCode} ${invoice.client.city}</p>
+              <p>Tél: ${invoice.client.phone}</p>
+              <p>Email: ${invoice.client.email}</p>
+            </div>
+          </div>
+          
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix TTC</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.products.map(product => `
+                <tr>
+                  <td>${product.name}</td>
+                  <td>${product.quantity}</td>
+                  <td>${formatCurrency(product.priceTTC)}</td>
+                  <td>${formatCurrency(calculateProductTotal(product.quantity, product.priceTTC, product.discount, product.discountType))}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="total">
+            TOTAL TTC: ${formatCurrency(total)}
+            ${invoice.payment.depositAmount > 0 ? `<br>Acompte versé: ${formatCurrency(invoice.payment.depositAmount)}<br>Reste à payer: ${formatCurrency(total - invoice.payment.depositAmount)}` : ''}
+          </div>
+          
+          ${invoice.signature ? '<p><strong>✅ Facture signée électroniquement</strong></p>' : ''}
+          
+          <div style="margin-top: 40px; text-align: center; color: #666; font-size: 12px;">
+            <p>MYCONFORT - 88 Avenue des Ternes, 75017 Paris</p>
+            <p>Tél: 04 68 50 41 45 - Email: myconfort@gmail.com</p>
+            <p>SIRET: 824 313 530 00027</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      
+      // Attendre que le contenu soit chargé puis imprimer
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 1000);
+        }, 500);
+      };
+      
+    } catch (error) {
+      console.error('Erreur impression:', error);
+      alert('Erreur lors de l\'impression de la facture');
     }
   };
 
@@ -262,18 +416,18 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDownloadPDF(invoice)}
+                            onClick={() => handlePrintInvoice(invoice)}
                             className="bg-green-500 hover:bg-green-600 text-white p-2 rounded transition-all"
-                            title="Télécharger le PDF"
+                            title="Imprimer la facture"
                           >
-                            <Download className="w-4 h-4" />
+                            <Printer className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleLoadInvoice(invoice)}
                             className="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded transition-all"
-                            title="Charger cette facture"
+                            title="Charger cette facture pour modification"
                           >
-                            <FileText className="w-4 h-4" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteInvoice(originalIndex, invoice)}
