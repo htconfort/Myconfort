@@ -115,47 +115,6 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
     <>
       <Modal isOpen={isOpen} onClose={onClose} title="📋 Toutes les Factures MYCONFORT" maxWidth="max-w-7xl">
         <div className="space-y-6">
-          {/* Statistiques */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <span className="font-semibold">Total Factures</span>
-              </div>
-              <div className="text-2xl font-bold mt-1">{invoices.length}</div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <span className="font-semibold">Signées</span>
-              </div>
-              <div className="text-2xl font-bold mt-1">
-                {invoices.filter(inv => inv.signature).length}
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <span className="font-semibold">En attente</span>
-              </div>
-              <div className="text-2xl font-bold mt-1">
-                {invoices.filter(inv => !inv.signature).length}
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Euro className="w-5 h-5" />
-                <span className="font-semibold">Chiffre d'affaires</span>
-              </div>
-              <div className="text-lg font-bold mt-1">
-                {formatCurrency(invoices.reduce((sum, inv) => sum + calculateInvoiceTotal(inv), 0))}
-              </div>
-            </div>
-          </div>
-
           {/* Filtres et recherche */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
