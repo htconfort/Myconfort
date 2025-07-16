@@ -50,9 +50,9 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
-  // États pour les chèques à venir avec calcul automatique
-  const [chequesQuantity, setChequesQuantity] = useState<number>(0);
-  const [totalARecevoir, setTotalARecevoir] = useState<number>(0);
+  // États des champs numériques en string (jamais en 0)
+  const [chequesQuantity, setChequesQuantity] = useState<string>(""); 
+  const [totalARecevoir, setTotalARecevoir] = useState<string>("");
 
   const filteredProducts = useMemo(() => {
     return productCatalog.filter(p => p.category === newProduct.category);
@@ -83,18 +83,22 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       return sum + (originalTotal - discountedTotal);
     }, 0);
 
+    // Toutes les conversions en nombre se font uniquement pour les calculs
+    const acompteNum = Number(acompteAmount || 0);
+    const totalARecevoirNum = Number(totalARecevoir || 0);
+    const chequesQuantityNum = Number(chequesQuantity || 0);
     return {
       subtotal,
       totalWithTax,
       totalDiscount,
       taxAmount: totalWithTax - (totalWithTax / (1 + (taxRate / 100))),
-      totalPercu: acompteAmount,
-      totalARecevoir: Math.max(0, totalWithTax - acompteAmount),
+      totalPercu: acompteNum,
+      totalARecevoir: Math.max(0, totalWithTax - acompteNum),
       // Calcul automatique du montant par chèque
-      montantParCheque: (totalARecevoir && chequesQuantity) ? (totalARecevoir / chequesQuantity) : 0,
-      totalCheques: (totalARecevoir && chequesQuantity) ? totalARecevoir : 0
+      montantParCheque: (totalARecevoirNum && chequesQuantityNum) ? (totalARecevoirNum / chequesQuantityNum) : 0,
+      totalCheques: (totalARecevoirNum && chequesQuantityNum) ? totalARecevoirNum : 0
     };
-  }, [products, taxRate, acompteAmount, chequesQuantity, totalARecevoir]);
+  }, [products, taxRate, acompteAmount, totalARecevoir, chequesQuantity]);
 
   // 🔒 FONCTION POUR VÉRIFIER SI LES CHAMPS OBLIGATOIRES SONT REMPLIS
   const isPaymentMethodEmpty = () => {
@@ -114,6 +118,23 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
     }`;
   };
 
+  // Gère la saisie de l'acompte
+  const handleAcompteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/^0+/, "");
+    onAcompteChange(Number(val || "0"));
+  };
+
+  // Gère la saisie du total à recevoir
+  const handleTotalARecevoirChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/^0+/, "");
+    setTotalARecevoir(val);
+  };
+
+  // Gère la saisie du nombre de chèques
+  const handleChequesQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/^0+/, "");
+    setChequesQuantity(val);
+  };
   const handleCategoryChange = (category: string) => {
     setNewProduct({
       ...newProduct,
@@ -506,10 +527,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   type="number"
                   step="0.01"
                   min="0"
+                  placeholder="0.00"
                   value={totalARecevoir}
-                  onChange={(e) => setTotalARecevoir(parseFloat(e.target.value) || 0)}
+                  onChange={handleTotalARecevoirChange}
                   className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
-                  placeholder="Montant total à recevoir"
                 />
               </div>
 
@@ -522,10 +543,11 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 <input
                   type="number"
                   min="0"
+                  step="1"
+                  placeholder="0"
                   value={chequesQuantity}
-                  onChange={(e) => setChequesQuantity(parseInt(e.target.value) || 0)}
+                  onChange={handleChequesQuantityChange}
                   className="w-full border-2 border-purple-300 rounded-lg px-3 py-2 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all bg-white text-purple-800 font-bold"
-                  placeholder="Nombre de chèques"
                 />
               </div>
 
@@ -546,7 +568,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
             </div>
 
             {/* Affichage du calcul automatique */}
-            {totalARecevoir > 0 && chequesQuantity > 0 && (
+            {Number(totalARecevoir) > 0 && Number(chequesQuantity) > 0 && (
               <div className="mt-3 p-3 bg-purple-100 border border-purple-300 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-purple-700 font-semibold">Calcul automatique :</span>
@@ -555,7 +577,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   </span>
                 </div>
                 <div className="text-xs text-purple-600">
-                  {formatCurrency(totalARecevoir)} ÷ {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} = {formatCurrency(totals.montantParCheque)} par chèque
+                  {formatCurrency(Number(totalARecevoir))} ÷ {chequesQuantity} chèque{Number(chequesQuantity) > 1 ? 's' : ''} = {formatCurrency(totals.montantParCheque)} par chèque
                 </div>
                 <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded">
                   <div className="text-sm text-green-800 font-semibold">
@@ -630,10 +652,10 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                     step="0.01"
                     min="0"
                     max={totals.totalWithTax}
-                    value={acompteAmount}
-                    onChange={(e) => onAcompteChange(parseFloat(e.target.value) || 0)}
-                    className="w-full border-2 border-blue-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-blue-800 font-bold"
                     placeholder="0.00"
+                    value={acompteAmount !== undefined && acompteAmount !== null && acompteAmount !== 0 ? acompteAmount : ""}
+                    onChange={handleAcompteChange}
+                    className="w-full border-2 border-blue-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white text-blue-800 font-bold"
                   />
                 </div>
 
@@ -667,12 +689,12 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-gray-600 mb-1">
                       <span>Progression du paiement</span>
-                      <span>{Math.round((acompteAmount / totals.totalWithTax) * 100)}%</span>
+                      <span>{Math.round((Number(acompteAmount || 0) / totals.totalWithTax) * 100)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div 
                         className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min((acompteAmount / totals.totalWithTax) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((Number(acompteAmount || 0) / totals.totalWithTax) * 100, 100)}%` }}
                       ></div>
                     </div>
                   </div>
@@ -693,7 +715,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                   </span>
                 </div>
                 <div className="text-xs text-purple-600 mt-1">
-                  {chequesQuantity} chèque{chequesQuantity > 1 ? 's' : ''} de {formatCurrency(totals.montantParCheque)} chacun
+                  {chequesQuantity} chèque{Number(chequesQuantity) > 1 ? 's' : ''} de {formatCurrency(totals.montantParCheque)} chacun
                 </div>
               </div>
             )}
