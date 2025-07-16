@@ -488,9 +488,9 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
       </div>
 
       {/* NOUVEAU: Patio avec trois bandes de lancement pour les totaux, acompte et mode de règlement */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Bande 1: Remarques avec chèques à venir AMÉLIORÉS */}
-        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Bloc REMARQUES */}
+        <div className="order-2 md:order-3 bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <Edit3 className="w-5 h-5" />
@@ -594,8 +594,8 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         </div>
 
-        {/* Bande 2: Totaux et Gestion Acompte */}
-        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+        {/* Bloc TOTAUX */}
+        <div className="order-3 md:order-2 bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <Calculator className="w-5 h-5" />
@@ -722,8 +722,8 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
           </div>
         </div>
 
-        {/* Bande 3: MODE DE RÈGLEMENT (INTÉGRÉ) AVEC CHAMPS OBLIGATOIRES */}
-        <div className="bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
+        {/* Bloc MODE DE RÈGLEMENT */}
+        <div className="order-1 md:order-1 bg-[#F2EFE2] rounded-lg p-4 border-2 border-[#477A0C]">
           <div className="flex items-center mb-3">
             <div className="bg-[#477A0C] text-[#F2EFE2] p-2 rounded-full mr-3">
               <CreditCard className="w-5 h-5" />
