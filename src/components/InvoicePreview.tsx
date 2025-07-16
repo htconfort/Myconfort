@@ -233,6 +233,15 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               <span className="total-value">{formatCurrency(totalTTC)}</span>
             </div>
             
+            {/* Mention légale Article L224‑59 - Fond blanc sans encadré */}
+            <div className="legal-mention-simple">
+              <div className="legal-title">
+                ⚖️ Article L224‑59 du Code de la consommation
+              </div>
+              <div className="legal-text">
+                « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
+              </div>
+            </div>
             {/* Acompte si applicable */}
             {acompteAmount > 0 && (
               <>

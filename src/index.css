@@ -67,6 +67,27 @@
   line-height: 1.4;
 }
 
+.legal-mention-simple {
+  background: white;
+  padding: 15px 25px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.legal-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.legal-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+  font-style: italic;
+}
+
 .signed-badge {
   background: rgba(255,255,255,0.15);
   border: 1px solid rgba(255,255,255,0.3);
