@@ -150,6 +150,19 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               <div className="signature-label">SIGNATURE CLIENT</div>
               <div className="signature-placeholder">
                 <img src={invoice.signature} alt="Signature électronique" style={{ maxHeight: '60px' }} />
+                
+                {/* Mention légale Article L224‑59 */}
+                <div className="mt-3 bg-red-600 border border-red-400 rounded-lg p-3">
+                  <div className="text-white">
+                    <div className="font-bold text-xs mb-1 flex items-center">
+                      <span className="mr-1">⚖️</span>
+                      Article L224‑59 du Code de la consommation
+                    </div>
+                    <div className="text-xs font-bold leading-relaxed">
+                      « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -64,6 +64,18 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                   MYCONFORT
                 </h1>
                 <p className="text-lg font-medium" style={{ color: '#080F0F' }}>Facturation Professionnelle</p>
+                
+                {/* Mention légale Article L224‑59 dans le PDF */}
+                <div className="mt-3 bg-red-100 border-2 border-red-500 rounded p-2">
+                  <div className="text-red-900">
+                    <div className="font-bold text-xs mb-1">
+                      ⚖️ Article L224‑59 du Code de la consommation
+                    </div>
+                    <div className="text-xs font-bold leading-tight">
+                      « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             

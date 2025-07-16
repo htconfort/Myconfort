@@ -26,6 +26,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-direction: column;
 }
 
 .header h1 {
@@ -37,6 +38,33 @@
 .header .subtitle {
   font-size: 13px;
   opacity: 0.9;
+  margin-bottom: 15px;
+}
+
+.legal-notice {
+  background: #dc2626;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.legal-notice-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.legal-notice-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.4;
 }
 
 .signed-badge {
