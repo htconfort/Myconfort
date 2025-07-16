@@ -27,7 +27,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
         <div className="text-center">
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4">
             <strong>⛔ Article L224-59 du Code de la consommation</strong><br />
-            « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
+            « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d\'une foire, d'un salon […] le professionnel informe le consommateur qu\'il ne dispose pas d'un délai de rétractation. »
           </div>
         </div>
       </div>
