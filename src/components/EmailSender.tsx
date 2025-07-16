@@ -32,7 +32,7 @@ export const EmailSender: React.FC<EmailSenderProps> = ({
                 <span className="mr-2">⚖️</span>
                 Article L224‑59 du Code de la consommation
               </div>
-              <div className="text-xs leading-relaxed italic">
+              <div className="text-sm leading-relaxed font-bold text-red-900">
                 « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
               </div>
               <div className="mt-2 text-xs font-semibold text-red-700">
