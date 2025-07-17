@@ -6,7 +6,7 @@ interface HeaderProps {
   onShowClients: () => void;
   onShowInvoices: () => void;
   onShowProducts: () => void;
-  onShowGoogleDrive: () => void;
+  onShowGoogleDrive: () => Promise<void>;
   onScrollToClient?: () => void;
   onScrollToProducts?: () => void;
 }
@@ -65,10 +65,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onShowGoogleDrive}
             className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 px-3 md:px-4 py-2 md:py-3 rounded-lg flex items-center space-x-2 font-bold shadow-md transition-all hover:scale-105 text-white"
-            title="Configurer Google Drive"
+            title="Envoyer la facture vers Google Drive"
           >
             <CloudUpload size={18} />
-            <span className="hidden md:inline">Drive</span>
+            <span className="hidden md:inline">📤 Drive</span>
           </button>
         </div>
       </div>

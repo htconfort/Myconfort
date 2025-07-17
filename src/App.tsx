@@ -17,6 +17,7 @@ import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
 import { AdvancedPDFService } from './services/advancedPdfService';
+import { GoogleDriveService } from './services/googleDriveService';
 
 function App() {
   const [invoice, setInvoice] = useState<Invoice>({
@@ -262,6 +263,33 @@ function App() {
     showToast('Signature enregistrée - Facture prête pour envoi !', 'success');
   };
 
+  // 🚀 NOUVELLE FONCTION - UPLOAD DIRECT VERS GOOGLE DRIVE
+  const handleUploadToGoogleDrive = async () => {
+    try {
+      // 🔒 VALIDATION OBLIGATOIRE AVANT UPLOAD
+      const validation = validateMandatoryFields();
+      
+      if (!validation.isValid) {
+        showToast(`Impossible d'envoyer vers Google Drive. Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+        return;
+      }
+
+      // Sauvegarder la facture avant upload
+      handleSave();
+      handleSaveInvoice();
+      
+      showToast('📤 Envoi vers Google Drive en cours...', 'success');
+      
+      // Générer le PDF et l'envoyer vers Google Drive
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      
+      showToast('✅ Facture envoyée avec succès dans Google Drive !', 'success');
+    } catch (error: any) {
+      console.error('❌ Erreur upload Google Drive:', error);
+      showToast(`❌ Erreur d'envoi Google Drive: ${error.message || 'Erreur inconnue'}`, 'error');
+    }
+  };
   // 🆕 FONCTION NOUVELLE FACTURE - REMISE À ZÉRO COMPLÈTE
   const handleNewInvoice = () => {
     if (window.confirm('Êtes-vous sûr de vouloir créer une nouvelle facture?\n\nToutes les données actuelles seront perdues et remises à zéro.')) {
@@ -333,7 +361,7 @@ function App() {
         onShowClients={() => setShowClientsList(true)}
         onShowInvoices={() => setShowInvoicesList(true)}
         onShowProducts={() => setShowProductsList(true)}
-        onShowGoogleDrive={() => setShowGoogleDriveConfig(true)}
+        onShowGoogleDrive={handleUploadToGoogleDrive}
       />
 
       <main className="container mx-auto px-4 py-6" id="invoice-content">
