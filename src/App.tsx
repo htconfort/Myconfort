@@ -320,23 +320,31 @@ function App() {
       showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
       return;
     }
-    handleShowPDFPreview();
+    // Sauvegarder avant d'ouvrir l'aperçu
+    handleSave();
+    handleSaveInvoice();
+    // Ouvrir directement la modal d'aperçu PDF (comme le bouton œil bleu)
+    setShowPDFPreview(true);
   };
 
-  // 🔒 VÉRIFICATION DES CHAMPS OBLIGATOIRES POUR L'AFFICHAGE
   const validation = validateMandatoryFields();
 
   return (
-    <div className="min-h-screen font-['Inter'] text-gray-100" style={{ backgroundColor: '#14281D' }}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header
-        onGeneratePDF={handleValidateAndPDF}
-        onShowClients={() => setShowClientsList(true)}
-        onShowInvoices={() => setShowInvoicesList(true)}
-        onShowProducts={() => setShowProductsList(true)}
-        onShowGoogleDrive={() => setShowGoogleDriveConfig(true)}
+        onSave={handleSave}
+        onShowClientsList={() => setShowClientsList(true)}
+        onShowInvoicesList={() => setShowInvoicesList(true)}
+        onShowProductsList={() => setShowProductsList(true)}
+        onShowPDFPreview={handleShowPDFPreview}
+        onGeneratePDF={handleGeneratePDF}
+        onPrint={handlePrint}
+        onShowEmailJSConfig={() => setShowEmailJSConfig(true)}
+        onScrollToSection={scrollToSection}
+        validation={validation}
       />
 
-      <main className="container mx-auto px-4 py-6" id="invoice-content">
+      <main className="container mx-auto px-4 py-8">
         {/* En-tête MYCONFORT avec dégradé basé sur #477A0C */}
         <div 
           className="text-white rounded-xl shadow-xl p-6 mb-6"
@@ -540,8 +548,9 @@ function App() {
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
                       : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   }`}
-                  title={validation.isValid ? "Voir l'aperçu et générer le PDF" : "Complétez tous les champs obligatoires"}
+                  title={validation.isValid ? "Ouvrir l'aperçu PDF avec options de téléchargement et partage" : "Complétez tous les champs obligatoires"}
                 >
+                  <span>👁️</span>
                   <span>APERÇU & PDF</span>
                 </button>
                 <button
@@ -624,4 +633,3 @@ function App() {
 }
 
 export default App;
-
