@@ -4,7 +4,7 @@ import { formatCurrency, calculateProductTotal } from '../utils/calculations';
 
 // Configuration for Google Drive integration via n8n webhook
 const MAKE_CONFIG = {
-  WEBHOOK_URL: 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort', // n8n webhook URL
+  WEBHOOK_URL: 'https://n8n.srv765811.hstgr.cloud/webhook/e7ca38d2-4b2a-4216-9c26-23663529790a', // n8n webhook URL
   FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // Google Drive folder ID
 };
 
