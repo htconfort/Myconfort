@@ -119,6 +119,81 @@ function App() {
     }
   };
 
+  // 🆕 NOUVELLE FONCTION - ENREGISTRER + ENVOYER AVEC PDF
+  const handleSaveAndSendInvoice = async () => {
+    try {
+      // 🔒 VALIDATION OBLIGATOIRE
+      const validation = validateMandatoryFields();
+      
+      if (!validation.isValid) {
+        showToast(`Champs obligatoires manquants: ${validation.errors.join(', ')}`, 'error');
+        return;
+      }
+
+      // 1. 💾 ENREGISTRER LA FACTURE LOCALEMENT
+      handleSave();
+      handleSaveInvoice();
+      
+      showToast('📧 Génération et envoi de la facture en cours...', 'success');
+      
+      // 2. 📄 GÉNÉRER LE PDF À PARTIR DE L'APERÇU
+      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
+      
+      // 3. 🔄 CONVERTIR LE PDF EN BASE64 POUR N8N
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1]; // Supprimer le préfixe data URL
+          resolve(base64);
+        };
+        reader.onerror = () => reject(new Error("Erreur de conversion PDF"));
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      // 4. 🚀 PRÉPARER LES DONNÉES POUR N8N (MÊME FORMAT QUE LE BOUTON DRIVE)
+      const webhookData = {
+        nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
+        fichier_facture: base64Data, // 📎 PDF EN PIÈCE JOINTE
+        date_creation: new Date().toISOString(),
+        numero_facture: invoice.invoiceNumber,
+        date_facture: invoice.invoiceDate,
+        montant_total: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0),
+        acompte: invoice.payment.depositAmount || 0,
+        montant_restant: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0) - (invoice.payment.depositAmount || 0),
+        nom_client: invoice.client.name,
+        email_client: invoice.client.email,
+        telephone_client: invoice.client.phone,
+        adresse_client: `${invoice.client.address}, ${invoice.client.postalCode} ${invoice.client.city}`,
+        mode_paiement: invoice.payment.method || 'Non précisé',
+        signature: invoice.signature ? 'Oui' : 'Non',
+        conseiller: invoice.advisorName || 'Non précisé',
+        lieu_evenement: invoice.eventLocation || 'Non précisé',
+        nombre_produits: invoice.products.length,
+        produits: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', '),
+        dossier_id: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // ID du dossier Google Drive
+      };
+
+      // 5. 📤 ENVOYER VERS N8N WEBHOOK
+      const response = await fetch('https://htconfort.app.n8n.cloud/webhook/e7ca38d2-4b2a-4216-9c26-23663529790a', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData)
+      });
+
+      if (response.ok) {
+        showToast('✅ Facture enregistrée et envoyée avec succès ! Email en cours d\'envoi...', 'success');
+      } else {
+        throw new Error('Erreur lors de l\'envoi vers N8N');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Erreur enregistrement et envoi:', error);
+      showToast(`❌ Erreur: ${error.message || 'Erreur inconnue'}`, 'error');
+    }
+  };
+
   // 🔒 VALIDATION OBLIGATOIRE RENFORCÉE AVEC DATE
   const validateMandatoryFields = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
@@ -561,19 +636,19 @@ function App() {
               </div>
               <div className="flex gap-3 justify-center">
                 <button
-                  onClick={handleSaveInvoice}
-                  disabled={!invoice.client.name || !invoice.client.email || invoice.products.length === 0}
+                  onClick={handleSaveAndSendInvoice}
+                  disabled={!validation.isValid}
                   className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-110 disabled:hover:scale-100 hover:shadow-2xl hover:rotate-1 ${
-                    invoice.client.name && invoice.client.email && invoice.products.length > 0
+                    validation.isValid
                       ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white animate-pulse hover:animate-none' 
                       : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   }`}
-                  title={invoice.client.name && invoice.client.email && invoice.products.length > 0 
-                    ? "Enregistrer la facture dans l'onglet Factures" 
-                    : "Complétez les informations client et ajoutez au moins un produit"}
+                  title={validation.isValid 
+                    ? "Enregistrer la facture et l'envoyer par email avec PDF en pièce jointe" 
+                    : "Complétez tous les champs obligatoires pour enregistrer et envoyer"}
                 >
-                  <span className="text-xl animate-bounce">💾</span>
-                  <span>ENREGISTRER FACTURE</span>
+                  <span className="text-xl animate-bounce">📧</span>
+                  <span>ENREGISTRER & ENVOYER</span>
                 </button>
               </div>
             </div>
