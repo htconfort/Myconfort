@@ -1,4 +1,5 @@
-import { gapi } from 'gapi-script';
+// Using global gapi object loaded via script tag in public/index.html
+declare const gapi: any;
 
 // 🔧 Configuration Google Drive OAuth2
 const GOOGLE_DRIVE_CONFIG = {
