@@ -675,37 +675,65 @@ function App() {
           </h2>
           
           <div className="bg-[#F2EFE2] rounded-lg p-6">
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <div>
-                <label className="block text-black mb-1 font-bold">Email du destinataire</label>
-                <input
-                  value={invoice.client.email}
-                  onChange={(e) => setInvoice(prev => ({
-                    ...prev,
-                    client: { ...prev.client, email: e.target.value }
-                  }))}
-                  type="email"
-                  className="w-full md:w-64 border-2 border-[#477A0C] rounded-lg px-4 py-3 focus:border-[#F55D3E] focus:ring-2 focus:ring-[#89BBFE] transition-all bg-white text-black font-bold"
-                  placeholder="client@email.com"
-                />
-              </div>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={handleSaveAndSendInvoice}
-                  disabled={!validation.isValid}
-                  className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-110 disabled:hover:scale-100 hover:shadow-2xl hover:rotate-1 ${
-                    validation.isValid
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white animate-pulse hover:animate-none' 
-                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                  }`}
-                  title={validation.isValid 
-                    ? "Enregistrer la facture puis utiliser le bouton Drive pour l'envoyer" 
-                    : "Complétez tous les champs obligatoires pour enregistrer"}
-                >
-                  <span className="text-xl animate-bounce">💾</span>
-                  <span>ENREGISTRER</span>
-                </button>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Bouton Aperçu & PDF */}
+              <button
+                onClick={handleValidateAndPDF}
+                disabled={!validation.isValid}
+                className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
+                  validation.isValid
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white' 
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                }`}
+                title={validation.isValid 
+                  ? "Voir l'aperçu et télécharger le PDF" 
+                  : "Complétez tous les champs obligatoires"}
+              >
+                <span className="text-xl">📄</span>
+                <span>APERÇU & PDF</span>
+              </button>
+
+              {/* Bouton Télécharger PDF direct */}
+              <button
+                onClick={handleGeneratePDF}
+                disabled={!validation.isValid}
+                className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
+                  validation.isValid
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white' 
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                }`}
+                title={validation.isValid 
+                  ? "Générer et télécharger le PDF directement" 
+                  : "Complétez tous les champs obligatoires"}
+              >
+                <span className="text-xl">📥</span>
+                <span>TÉLÉCHARGER PDF</span>
+              </button>
+
+              {/* Bouton Enregistrer */}
+              <button
+                onClick={handleSaveAndSendInvoice}
+                disabled={!validation.isValid}
+                className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
+                  validation.isValid
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white' 
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                }`}
+                title={validation.isValid 
+                  ? "Enregistrer la facture" 
+                  : "Complétez tous les champs obligatoires"}
+              >
+                <span className="text-xl">💾</span>
+                <span>ENREGISTRER</span>
+              </button>
+            </div>
+            
+            {/* Instructions */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              <p className="font-semibold">💡 Instructions :</p>
+              <p>• <strong>APERÇU & PDF</strong> : Voir l'aperçu et télécharger/envoyer le PDF</p>
+              <p>• <strong>TÉLÉCHARGER PDF</strong> : Génération directe du PDF</p>
+              <p>• <strong>ENREGISTRER</strong> : Sauvegarder la facture localement</p>
             </div>
           </div>
         </div>
