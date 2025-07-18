@@ -15,21 +15,17 @@
     </div>
     <div className="flex flex-wrap gap-3 justify-center">
       {/* BOUTON APERÇU & PDF SUPPRIMÉ */}
-      <button
-        onClick={handleSaveInvoice}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-      >
-        <span>ENREGISTRER</span>
-      </button>
       {/* 🆕 BOUTON NOUVELLE FACTURE MAINTENANT CLIQUABLE */}
       <button
         onClick={handleNewInvoice}
         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
         title="Créer une nouvelle facture (remet tout à zéro)"
       >
+        title="Créer une nouvelle facture (remet tout à zéro)"
         <span>✨</span>
         <span>NOUVELLE FACTURE</span>
       </button>
+      {/* 🆕 BOUTON NOUVELLE FACTURE MAINTENANT CLIQUABLE */}
     </div>
   </div>
 </div>
