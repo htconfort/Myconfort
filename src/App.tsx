@@ -559,35 +559,6 @@ function App() {
                   placeholder="client@email.com"
                 />
               </div>
-              <div className="flex flex-wrap gap-3 justify-center">
-                <button
-                  onClick={handleValidateAndPDF}
-                  disabled={!validation.isValid}
-                  className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105 disabled:hover:scale-100 ${
-                    validation.isValid 
-                      ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                  }`}
-                  title={validation.isValid ? "Voir l'aperçu et générer le PDF" : "Complétez tous les champs obligatoires"}
-                >
-                  <span>APERÇU & PDF</span>
-                </button>
-                <button
-                  onClick={handleSaveInvoice}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-                >
-                  <span>ENREGISTRER</span>
-                </button>
-                {/* 🆕 BOUTON NOUVELLE FACTURE MAINTENANT CLIQUABLE */}
-                <button
-                  onClick={handleNewInvoice}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105"
-                  title="Créer une nouvelle facture (remet tout à zéro)"
-                >
-                  <span>✨</span>
-                  <span>NOUVELLE FACTURE</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
