@@ -119,7 +119,7 @@ function App() {
     }
   };
 
-  // 🆕 NOUVELLE FONCTION - ENREGISTRER + ENVOYER AVEC PDF
+  // 🆕 NOUVELLE FONCTION - ENREGISTRER + UTILISER MÊME LOGIQUE QUE BOUTON DRIVE
   const handleSaveAndSendInvoice = async () => {
     try {
       // 🔒 VALIDATION OBLIGATOIRE
@@ -134,63 +134,16 @@ function App() {
       handleSave();
       handleSaveInvoice();
       
-      showToast('📧 Génération et envoi de la facture en cours...', 'success');
+      showToast('📧 Enregistrement terminé ! Cliquez maintenant sur le bouton "Drive" en haut à droite pour envoyer l\'email avec PDF.', 'success');
       
-      // 2. 📄 GÉNÉRER LE PDF À PARTIR DE L'APERÇU
-      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
-      
-      // 3. 🔄 CONVERTIR LE PDF EN BASE64 POUR N8N
-      const base64Data = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = (reader.result as string).split(",")[1]; // Supprimer le préfixe data URL
-          resolve(base64);
-        };
-        reader.onerror = () => reject(new Error("Erreur de conversion PDF"));
-        reader.readAsDataURL(pdfBlob);
-      });
-
-      // 4. 🚀 PRÉPARER LES DONNÉES POUR N8N (MÊME FORMAT QUE LE BOUTON DRIVE)
-      const webhookData = {
-        nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
-        fichier_facture: base64Data, // 📎 PDF EN PIÈCE JOINTE
-        date_creation: new Date().toISOString(),
-        numero_facture: invoice.invoiceNumber,
-        date_facture: invoice.invoiceDate,
-        montant_total: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0),
-        acompte: invoice.payment.depositAmount || 0,
-        montant_restant: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0) - (invoice.payment.depositAmount || 0),
-        nom_client: invoice.client.name,
-        email_client: invoice.client.email,
-        telephone_client: invoice.client.phone,
-        adresse_client: `${invoice.client.address}, ${invoice.client.postalCode} ${invoice.client.city}`,
-        mode_paiement: invoice.payment.method || 'Non précisé',
-        signature: invoice.signature ? 'Oui' : 'Non',
-        conseiller: invoice.advisorName || 'Non précisé',
-        lieu_evenement: invoice.eventLocation || 'Non précisé',
-        nombre_produits: invoice.products.length,
-        produits: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', '),
-        dossier_id: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // ID du dossier Google Drive
-      };
-
-      // 5. 📤 ENVOYER VERS N8N WEBHOOK
-      const response = await fetch('https://htconfort.app.n8n.cloud/webhook/e7ca38d2-4b2a-4216-9c26-23663529790a', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookData)
-      });
-
-      if (response.ok) {
-        showToast('✅ Facture enregistrée et envoyée avec succès ! Email en cours d\'envoi...', 'success');
-      } else {
-        throw new Error('Erreur lors de l\'envoi vers N8N');
-      }
+      // 🎯 GUIDANCE UTILISATEUR
+      setTimeout(() => {
+        showToast('💡 Astuce : Le bouton "Drive" en haut à droite enverra automatiquement l\'email avec la pièce jointe PDF !', 'info');
+      }, 3000);
       
     } catch (error: any) {
-      console.error('❌ Erreur enregistrement et envoi:', error);
-      showToast(`❌ Erreur: ${error.message || 'Erreur inconnue'}`, 'error');
+      console.error('❌ Erreur enregistrement:', error);
+      showToast(`❌ Erreur d'enregistrement: ${error.message || 'Erreur inconnue'}`, 'error');
     }
   };
 
@@ -338,7 +291,7 @@ function App() {
     showToast('Signature enregistrée - Facture prête pour envoi !', 'success');
   };
 
-  // 🚀 NOUVELLE FONCTION - UPLOAD DIRECT VERS GOOGLE DRIVE
+  // 🚀 NOUVELLE FONCTION - UPLOAD DIRECT VERS GOOGLE DRIVE AVEC PDF POUR EMAIL
   const handleUploadToGoogleDrive = async () => {
     try {
       // 🔒 VALIDATION OBLIGATOIRE AVANT UPLOAD
@@ -353,16 +306,63 @@ function App() {
       handleSave();
       handleSaveInvoice();
       
-      showToast('📤 Envoi vers Google Drive en cours...', 'success');
+      showToast('📤 Envoi vers Google Drive et génération email en cours...', 'success');
       
-      // Générer le PDF et l'envoyer vers Google Drive
+      // 🆕 GÉNÉRER LE PDF ET L'ENVOYER VERS N8N POUR EMAIL
       const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
-      await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
       
-      showToast('✅ Facture envoyée avec succès dans Google Drive !', 'success');
+      // 🔄 CONVERTIR LE PDF EN BASE64 POUR N8N
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1]; // Supprimer le préfixe data URL
+          resolve(base64);
+        };
+        reader.onerror = () => reject(new Error("Erreur de conversion PDF"));
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      // 🚀 PRÉPARER LES DONNÉES POUR N8N AVEC PDF
+      const webhookData = {
+        nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
+        fichier_facture: base64Data, // 📎 PDF EN PIÈCE JOINTE POUR EMAIL !
+        date_creation: new Date().toISOString(),
+        numero_facture: invoice.invoiceNumber,
+        date_facture: invoice.invoiceDate,
+        montant_total: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0),
+        acompte: invoice.payment.depositAmount || 0,
+        montant_restant: invoice.products.reduce((sum, product) => sum + (product.quantity * product.price), 0) - (invoice.payment.depositAmount || 0),
+        nom_client: invoice.client.name,
+        email_client: invoice.client.email,
+        telephone_client: invoice.client.phone,
+        adresse_client: `${invoice.client.address}, ${invoice.client.postalCode} ${invoice.client.city}`,
+        mode_paiement: invoice.payment.method || 'Non précisé',
+        signature: invoice.signature ? 'Oui' : 'Non',
+        conseiller: invoice.advisorName || 'Non précisé',
+        lieu_evenement: invoice.eventLocation || 'Non précisé',
+        nombre_produits: invoice.products.length,
+        produits: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', '),
+        dossier_id: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-'
+      };
+
+      // 📤 ENVOYER VERS N8N WEBHOOK AVEC PDF - URL CORRIGÉE
+      const response = await fetch('https://n8n.srv765811.hstgr.cloud/webhook/e7ca38d2-4b2a-4216-9c26-23663529790a', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData)
+      });
+
+      if (response.ok) {
+        showToast('✅ Facture envoyée avec succès ! Email avec PDF en cours d\'envoi...', 'success');
+      } else {
+        throw new Error('Erreur lors de l\'envoi vers N8N');
+      }
+      
     } catch (error: any) {
       console.error('❌ Erreur upload Google Drive:', error);
-      showToast(`❌ Erreur d'envoi Google Drive: ${error.message || 'Erreur inconnue'}`, 'error');
+      showToast(`❌ Erreur d'envoi: ${error.message || 'Erreur inconnue'}`, 'error');
     }
   };
   // 🆕 FONCTION NOUVELLE FACTURE - REMISE À ZÉRO COMPLÈTE
@@ -644,11 +644,11 @@ function App() {
                       : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   }`}
                   title={validation.isValid 
-                    ? "Enregistrer la facture et l'envoyer par email avec PDF en pièce jointe" 
-                    : "Complétez tous les champs obligatoires pour enregistrer et envoyer"}
+                    ? "Enregistrer la facture puis utiliser le bouton Drive pour l'envoyer" 
+                    : "Complétez tous les champs obligatoires pour enregistrer"}
                 >
-                  <span className="text-xl animate-bounce">📧</span>
-                  <span>ENREGISTRER & ENVOYER</span>
+                  <span className="text-xl animate-bounce">💾</span>
+                  <span>ENREGISTRER</span>
                 </button>
               </div>
             </div>
