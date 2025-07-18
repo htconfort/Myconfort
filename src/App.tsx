@@ -19,7 +19,11 @@ import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice
 import { AdvancedPDFService } from './services/advancedPdfService';
 import { GoogleDriveService } from './services/googleDriveService';
 
+console.log('🔧 App.tsx chargé - Composant principal OK');
+
 function App() {
+  console.log('🎯 App() fonction appelée - Rendu en cours...');
+  
   const [invoice, setInvoice] = useState<Invoice>({
     invoiceNumber: generateInvoiceNumber(),
     invoiceDate: new Date().toISOString().split('T')[0],
@@ -67,6 +71,7 @@ function App() {
   });
 
   useEffect(() => {
+    console.log('⚡ useEffect initial - Chargement des données...');
     setClients(loadClients());
     setInvoices(loadInvoices());
     const draft = loadDraft();
@@ -82,6 +87,38 @@ function App() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // 🧪 TEST DE PREVIEW - Affichage temporaire pour débugger
+  const isTestMode = false; // Changer à true pour tester
+  
+  if (isTestMode) {
+    console.log('🧪 MODE TEST ACTIVÉ');
+    return (
+      <div style={{
+        padding: 40,
+        backgroundColor: '#477A0C',
+        color: 'white',
+        textAlign: 'center',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column'
+      }}>
+        <div>🎉 Hello Test Preview MYCONFORT !</div>
+        <div style={{ fontSize: '16px', marginTop: '20px' }}>
+          ✅ React fonctionne correctement<br/>
+          ✅ App.tsx se charge bien<br/>
+          ✅ Styles appliqués<br/>
+          🔧 Changez isTestMode à false pour voir l'app complète
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🎨 Rendu de l\'application complète MYCONFORT');
 
   const showToast = (message: string, type: ToastType = 'success') => {
     setToast({ show: true, message, type });
@@ -431,6 +468,23 @@ function App() {
 
   return (
     <div className="min-h-screen font-['Inter'] text-gray-100" style={{ backgroundColor: '#14281D' }}>
+      {/* 🔍 Indicateur de debug en développement */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          background: '#477A0C',
+          color: 'white',
+          padding: '5px 10px',
+          fontSize: '12px',
+          zIndex: 9999,
+          borderRadius: '0 0 0 8px'
+        }}>
+          ✅ MYCONFORT LOADED
+        </div>
+      )}
+      
       <Header
         onGeneratePDF={handleValidateAndPDF}
         onShowClients={() => setShowClientsList(true)}

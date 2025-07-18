@@ -6,6 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MYCONFORT - Facturation Professionnelle</title>
     <meta name="description" content="MYCONFORT - Système de facturation professionnelle avec signature électronique et génération de PDF">
+    
+    <!-- 🔍 Debug console pour vérifier le chargement -->
+    <script>
+      console.log('🌟 Index.html chargé - DOM prêt');
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM Content Loaded - Prêt pour React');
+        const root = document.getElementById('root');
+        if (root) {
+          console.log('✅ Élément root trouvé:', root);
+        } else {
+          console.error('❌ Élément root non trouvé !');
+        }
+      });
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,6 +28,15 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- 🔍 Fallback si React ne se charge pas -->
+    <noscript>
+      <div style="padding: 40px; text-align: center; font-family: Arial;">
+        <h1>JavaScript requis</h1>
+        <p>Cette application nécessite JavaScript pour fonctionner.</p>
+      </div>
+    </noscript>
+    
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- html2pdf.js script -->
