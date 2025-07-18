@@ -559,6 +559,23 @@ function App() {
                   placeholder="client@email.com"
                 />
               </div>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={handleSaveInvoice}
+                  disabled={!invoice.client.name || !invoice.client.email || invoice.products.length === 0}
+                  className={`px-6 py-3 rounded-xl flex items-center space-x-3 font-bold shadow-lg transform transition-all hover:scale-105 disabled:hover:scale-100 ${
+                    invoice.client.name && invoice.client.email && invoice.products.length > 0
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
+                  title={invoice.client.name && invoice.client.email && invoice.products.length > 0 
+                    ? "Enregistrer la facture dans l'onglet Factures" 
+                    : "Complétez les informations client et ajoutez au moins un produit"}
+                >
+                  <span>💾</span>
+                  <span>ENREGISTRER FACTURE</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
