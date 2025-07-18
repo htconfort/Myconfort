@@ -57,6 +57,20 @@ export class AdvancedPDFService {
     green: [76, 175, 80]         // #4caf50 - Vert pour succès
   };
 
+  // 💰 FONCTION POUR FORMATER LES MONTANTS SANS SLASHES
+  private static formatAmountClean(amount: number): string {
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      return '0,00 €';
+    }
+    
+    // Utiliser Intl.NumberFormat pour un formatage propre
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
   // 🎯 MÉTHODE PRINCIPALE - PDF IDENTIQUE À L'EXEMPLE HTML
   static async generateInvoicePDF(invoice: Invoice): Promise<jsPDF> {
     console.log('🎨 GÉNÉRATION PDF IDENTIQUE À L\'EXEMPLE HTML FOURNI');
@@ -76,7 +90,7 @@ export class AdvancedPDFService {
     this.addLogisticsSectionLikeHTML(doc, invoiceData);
     this.addPaymentSectionLikeHTML(doc, invoiceData);
     this.addProductsSectionLikeHTML(doc, invoiceData);
-    this.addTotalsLikeHTML(doc, invoiceData);
+    this.addImprovedTotalsSection(doc, invoiceData);
     
     // Signature si présente
     if (invoiceData.signature) {
@@ -311,12 +325,12 @@ export class AdvancedPDFService {
     // Tableau des produits
     const tableData = data.items.map(item => [
       item.qty.toString(),
-      formatCurrency(item.unitPriceHT),
-      formatCurrency(item.unitPriceTTC),
+      this.formatAmountClean(item.unitPriceHT),
+      this.formatAmountClean(item.unitPriceTTC),
       item.discount > 0 ? 
-        (item.discountType === 'percent' ? `${item.discount}%` : formatCurrency(item.discount)) : 
+        (item.discountType === 'percent' ? `${item.discount}%` : this.formatAmountClean(item.discount)) : 
         '-',
-      formatCurrency(item.total)
+      this.formatAmountClean(item.total)
     ]);
 
     autoTable(doc, {
@@ -345,45 +359,112 @@ export class AdvancedPDFService {
     });
   }
 
-  // 💰 TOTAUX COMME L'EXEMPLE HTML
-  private static addTotalsLikeHTML(doc: jsPDF, data: InvoiceData): void {
+  // 💰 NOUVELLE SECTION TOTAUX AMÉLIORÉE - Sans slashes et meilleur agencement
+  private static addImprovedTotalsSection(doc: jsPDF, data: InvoiceData): void {
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     
-    // Section totaux
+    // Cadre principal pour les totaux
+    const totalsX = 120;
+    const totalsY = finalY + 5;
+    const totalsWidth = 70;
+    
+    // Bordure du cadre totaux
+    doc.setDrawColor(...this.COLORS.primary);
+    doc.setLineWidth(2);
+    doc.roundedRect(totalsX, totalsY, totalsWidth, 60, 3, 3, 'D');
+    
+    // En-tête du cadre totaux
+    doc.setFillColor(...this.COLORS.primary);
+    doc.roundedRect(totalsX, totalsY, totalsWidth, 12, 3, 3, 'F');
+    doc.setTextColor(...this.COLORS.white);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RÉCAPITULATIF FINANCIER', totalsX + totalsWidth/2, totalsY + 7, { align: 'center' });
+    
+    // Corps du cadre totaux
     doc.setTextColor(...this.COLORS.dark);
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     
-    let yPos = finalY + 10;
+    let yPos = totalsY + 18;
     
     // Total HT
-    doc.text('Total HT:', 130, yPos);
+    doc.text('Total HT :', totalsX + 5, yPos);
     doc.setFont('helvetica', 'bold');
-    doc.text(formatCurrency(data.totalHT), 180, yPos, { align: 'right' });
+    doc.text(this.formatAmountClean(data.totalHT), totalsX + totalsWidth - 5, yPos, { align: 'right' });
+    yPos += 7;
+    
+    // TVA
+    doc.setFont('helvetica', 'normal');
+    doc.text(`TVA (${data.taxRate}%) :`, totalsX + 5, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(this.formatAmountClean(data.totalTVA), totalsX + totalsWidth - 5, yPos, { align: 'right' });
+    yPos += 7;
+    
+    // Remise si applicable
+    if (data.totalDiscount > 0) {
+      doc.setTextColor(220, 38, 38);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Remise totale :', totalsX + 5, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`-${this.formatAmountClean(data.totalDiscount)}`, totalsX + totalsWidth - 5, yPos, { align: 'right' });
+      yPos += 7;
+      doc.setTextColor(...this.COLORS.dark);
+    }
+    
+    // Ligne de séparation
+    doc.setDrawColor(...this.COLORS.primary);
+    doc.setLineWidth(1);
+    doc.line(totalsX + 5, yPos + 2, totalsX + totalsWidth - 5, yPos + 2);
     yPos += 8;
     
     // Total TTC
+    doc.setFillColor(71, 122, 12, 0.1); // Fond vert très léger
+    doc.roundedRect(totalsX + 2, yPos - 3, totalsWidth - 4, 10, 2, 2, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(...this.COLORS.primary);
-    doc.text('TOTAL TTC:', 130, yPos);
-    doc.text(formatCurrency(data.totalTTC), 180, yPos, { align: 'right' });
+    doc.text('TOTAL TTC :', totalsX + 5, yPos + 2);
+    doc.setFontSize(13);
+    doc.text(this.formatAmountClean(data.totalTTC), totalsX + totalsWidth - 5, yPos + 2, { align: 'right' });
     
     // Acompte si applicable
     if (data.depositAmount && data.depositAmount > 0) {
+      yPos += 15;
+      
+      // Cadre séparé pour l'acompte
+      const acompteY = yPos;
+      doc.setDrawColor(25, 118, 210);
+      doc.setLineWidth(1);
+      doc.roundedRect(totalsX, acompteY, totalsWidth, 25, 2, 2, 'D');
+      
+      // En-tête acompte
+      doc.setFillColor(25, 118, 210);
+      doc.roundedRect(totalsX, acompteY, totalsWidth, 8, 2, 2, 'F');
+      doc.setTextColor(...this.COLORS.white);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DÉTAIL DU PAIEMENT', totalsX + totalsWidth/2, acompteY + 5, { align: 'center' });
+      
       yPos += 12;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(...this.COLORS.dark);
-      doc.text('Acompte versé:', 130, yPos);
+      doc.setFontSize(9);
       doc.setTextColor(...this.COLORS.blue);
-      doc.text(formatCurrency(data.depositAmount), 180, yPos, { align: 'right' });
-      
-      yPos += 6;
+      doc.text('Acompte versé :', totalsX + 5, yPos);
       doc.setFont('helvetica', 'bold');
+      doc.text(this.formatAmountClean(data.depositAmount), totalsX + totalsWidth - 5, yPos, { align: 'right' });
+      
+      yPos += 8;
+      
+      // Reste à payer - Mise en valeur
+      doc.setFillColor(255, 140, 0, 0.2); // Fond orange léger
+      doc.roundedRect(totalsX + 2, yPos - 2, totalsWidth - 4, 8, 1, 1, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
       doc.setTextColor(...this.COLORS.orange);
-      doc.text('RESTE À PAYER:', 130, yPos);
-      doc.text(formatCurrency(data.totalTTC - data.depositAmount), 180, yPos, { align: 'right' });
+      doc.text('RESTE À PAYER :', totalsX + 5, yPos + 2);
+      doc.setFontSize(11);
+      doc.text(this.formatAmountClean(data.totalTTC - data.depositAmount), totalsX + totalsWidth - 5, yPos + 2, { align: 'right' });
     }
   }
 
@@ -540,7 +621,7 @@ export class AdvancedPDFService {
     
     data.items.forEach((item, index) => {
       doc.setFont('helvetica', 'normal');
-      doc.text(`${item.qty}x ${item.description} - ${formatCurrency(item.total)}`, 15, y);
+      doc.text(`${item.qty}x ${item.description} - ${this.formatAmountClean(item.total)}`, 15, y);
       y += 5;
     });
     
@@ -549,7 +630,7 @@ export class AdvancedPDFService {
     // Total
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text(`TOTAL TTC: ${formatCurrency(data.totalTTC)}`, 15, y);
+    doc.text(`TOTAL TTC: ${this.formatAmountClean(data.totalTTC)}`, 15, y);
   }
 
   private static addCompressedFooter(doc: jsPDF): void {

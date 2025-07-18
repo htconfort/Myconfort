@@ -11,6 +11,19 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   invoice, 
   className = "" 
 }) => {
+  // Fonction pour formater les montants sans slashes
+  const formatAmountClean = (amount: number): string => {
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      return '0,00 €';
+    }
+    
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
   // Calculer le total TTC
   const totalTTC = invoice.products.reduce((sum, product) => {
     return sum + calculateProductTotal(
@@ -190,16 +203,16 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 return (
                   <tr key={index}>
                     <td>{product.quantity}</td>
-                    <td>{formatCurrency(unitPriceHT)}</td>
-                    <td>{formatCurrency(product.priceTTC)}</td>
+                    <td>{formatAmountClean(unitPriceHT)}</td>
+                    <td>{formatAmountClean(product.priceTTC)}</td>
                     <td>
                       {product.discount > 0 ? (
                         product.discountType === 'percent' ? 
                           `${product.discount}%` : 
-                          formatCurrency(product.discount)
+                          formatAmountClean(product.discount)
                       ) : '-'}
                     </td>
-                    <td>{formatCurrency(totalProduct)}</td>
+                    <td>{formatAmountClean(totalProduct)}</td>
                   </tr>
                 );
               })}
@@ -213,24 +226,53 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
             </tbody>
           </table>
 
-          <div className="totals">
-            <div className="total-row">
-              <span className="total-label">Total HT:</span>
-              <span className="total-value">{formatCurrency(totalHT)}</span>
-            </div>
-            <div className="total-row">
-              <span className="total-label">TVA ({invoice.taxRate}%):</span>
-              <span className="total-value">{formatCurrency(totalTVA)}</span>
-            </div>
-            {totalDiscount > 0 && (
-              <div className="total-row" style={{ color: '#e53e3e' }}>
-                <span className="total-label">Remise totale:</span>
-                <span className="total-value">-{formatCurrency(totalDiscount)}</span>
+          {/* NOUVEAUX TOTAUX AMÉLIORÉS - Sans slashes et meilleur agencement */}
+          <div className="totals-improved">
+            {/* Cadre principal des totaux */}
+            <div className="totals-container">
+              {/* En-tête des totaux */}
+              <div className="totals-header">
+                <span className="totals-title">RÉCAPITULATIF FINANCIER</span>
               </div>
-            )}
-            <div className="total-row final-total">
-              <span className="total-label">TOTAL TTC:</span>
-              <span className="total-value">{formatCurrency(totalTTC)}</span>
+              
+              {/* Corps des totaux */}
+              <div className="totals-body">
+                <div className="total-row">
+                  <span className="total-label">Total HT :</span>
+                  <span className="total-value">{formatAmountClean(totalHT)}</span>
+                </div>
+                <div className="total-row">
+                  <span className="total-label">TVA ({invoice.taxRate}%) :</span>
+                  <span className="total-value">{formatAmountClean(totalTVA)}</span>
+                </div>
+                {totalDiscount > 0 && (
+                  <div className="total-row discount">
+                    <span className="total-label">Remise totale :</span>
+                    <span className="total-value">-{formatAmountClean(totalDiscount)}</span>
+                  </div>
+                )}
+                
+                {/* Total TTC mis en valeur */}
+                <div className="total-row final-total">
+                  <span className="total-label">TOTAL TTC :</span>
+                  <span className="total-value">{formatAmountClean(totalTTC)}</span>
+                </div>
+                
+                {/* Section acompte si applicable */}
+                {acompteAmount > 0 && (
+                  <div className="acompte-section">
+                    <div className="acompte-header">DÉTAIL DU PAIEMENT</div>
+                    <div className="total-row acompte">
+                      <span className="total-label">Acompte versé :</span>
+                      <span className="total-value">{formatAmountClean(acompteAmount)}</span>
+                    </div>
+                    <div className="total-row reste-a-payer">
+                      <span className="total-label">RESTE À PAYER :</span>
+                      <span className="total-value">{formatAmountClean(montantRestant)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Mention légale Article L224‑59 - Fond blanc sans encadré */}
@@ -242,25 +284,6 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                 « Avant la conclusion de tout contrat entre un consommateur et un professionnel à l'occasion d'une foire, d'un salon […] le professionnel informe le consommateur qu'il ne dispose pas d'un délai de rétractation. »
               </div>
             </div>
-            {/* Acompte si applicable */}
-            {acompteAmount > 0 && (
-              <>
-                <div className="total-row" style={{ marginTop: '10px' }}>
-                  <span className="total-label">Acompte versé:</span>
-                  <span className="total-value" style={{ color: '#3182ce' }}>{formatCurrency(acompteAmount)}</span>
-                </div>
-                <div className="total-row" style={{ 
-                  backgroundColor: '#fff3cd', 
-                  padding: '8px', 
-                  borderRadius: '4px',
-                  marginTop: '5px',
-                  color: '#ff8c00'
-                }}>
-                  <span className="total-label" style={{ fontWeight: 'bold' }}>RESTE À PAYER:</span>
-                  <span className="total-value" style={{ fontWeight: 'bold' }}>{formatCurrency(montantRestant)}</span>
-                </div>
-              </>
-            )}
           </div>
         </section>
 

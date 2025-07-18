@@ -324,6 +324,141 @@
   color: #689f38;
 }
 
+/* NOUVEAUX STYLES POUR LES TOTAUX AMÉLIORÉS */
+.totals-improved {
+  margin-top: 25px;
+}
+
+.totals-container {
+  background: #ffffff;
+  border: 2px solid #689f38;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  max-width: 400px;
+  margin-left: auto;
+}
+
+.totals-header {
+  background: #689f38;
+  color: white;
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.totals-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.totals-body {
+  padding: 20px;
+}
+
+.totals-body .total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.totals-body .total-row:last-child {
+  border-bottom: none;
+}
+
+.totals-body .total-label {
+  color: #666;
+  font-weight: 600;
+}
+
+.totals-body .total-value {
+  color: #333;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.totals-body .total-row.discount {
+  color: #e53e3e;
+}
+
+.totals-body .total-row.discount .total-label,
+.totals-body .total-row.discount .total-value {
+  color: #e53e3e;
+}
+
+.totals-body .total-row.final-total {
+  background: #689f38;
+  color: white;
+  margin: 15px -20px -20px -20px;
+  padding: 15px 20px;
+  border-bottom: none;
+  font-size: 16px;
+}
+
+.totals-body .total-row.final-total .total-label {
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.totals-body .total-row.final-total .total-value {
+  color: white;
+  font-weight: 900;
+  font-size: 20px;
+}
+
+/* Section acompte */
+.acompte-section {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px dashed #ccc;
+}
+
+.acompte-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.totals-body .total-row.acompte {
+  background: #e3f2fd;
+  margin: 5px -20px;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.totals-body .total-row.acompte .total-label,
+.totals-body .total-row.acompte .total-value {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.totals-body .total-row.reste-a-payer {
+  background: #fff3e0;
+  margin: 10px -20px -20px -20px;
+  padding: 15px 20px;
+  border-radius: 0 0 10px 10px;
+}
+
+.totals-body .total-row.reste-a-payer .total-label {
+  color: #f57c00;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.totals-body .total-row.reste-a-payer .total-value {
+  color: #f57c00;
+  font-weight: 900;
+  font-size: 18px;
+}
+
 .footer {
   background: linear-gradient(135deg, #689f38, #7cb342);
   color: white;

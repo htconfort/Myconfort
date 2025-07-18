@@ -45,6 +45,19 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
     ? "max-w-4xl mx-auto bg-white shadow-2xl" 
     : "w-full bg-white";
 
+  // Fonction pour formater les montants sans slashes
+  const formatAmountClean = (amount: number): string => {
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      return '0,00 €';
+    }
+    
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount).replace(/\s/g, ' '); // Remplacer les espaces insécables par des espaces normaux
+  };
   return (
     <div className={containerClass} style={{ fontFamily: 'Inter, sans-serif', color: '#080F0F' }}>
       {/* Bordure supérieure verte */}
@@ -190,17 +203,17 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                     {product.quantity}
                   </td>
                   <td className="border border-gray-300 px-3 py-4 text-right" style={{ color: '#080F0F' }}>
-                    {formatCurrency(calculateHT(product.priceTTC, invoice.taxRate))}
+                    {formatAmountClean(calculateHT(product.priceTTC, invoice.taxRate))}
                   </td>
                   <td className="border border-gray-300 px-3 py-4 text-right font-semibold" style={{ color: '#080F0F' }}>
-                    {formatCurrency(product.priceTTC)}
+                    {formatAmountClean(product.priceTTC)}
                   </td>
                   <td className="border border-gray-300 px-3 py-4 text-right">
                     {product.discount > 0 ? (
                       <span className="text-red-600 font-semibold">
                         -{product.discountType === 'percent' 
                           ? `${product.discount}%` 
-                          : formatCurrency(product.discount)
+                          : formatAmountClean(product.discount)
                         }
                       </span>
                     ) : (
@@ -208,7 +221,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
                     )}
                   </td>
                   <td className="border border-gray-300 px-3 py-4 text-right font-bold" style={{ color: '#080F0F' }}>
-                    {formatCurrency(calculateProductTotal(
+                    {formatAmountClean(calculateProductTotal(
                       product.quantity,
                       product.priceTTC,
                       product.discount,
@@ -221,49 +234,87 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
           </table>
         </div>
 
-        {/* Totaux avec gestion acompte */}
-        <div className="mt-8 flex justify-end">
-          <div className="w-full max-w-md">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="font-semibold" style={{ color: '#080F0F' }}>Total HT:</span>
-                  <span className="font-semibold" style={{ color: '#080F0F' }}>{formatCurrency(totals.subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-semibold" style={{ color: '#080F0F' }}>TVA ({invoice.taxRate}%):</span>
-                  <span className="font-semibold" style={{ color: '#080F0F' }}>{formatCurrency(totals.taxAmount)}</span>
-                </div>
-                {totals.totalDiscount > 0 && (
-                  <div className="flex justify-between text-sm text-red-600">
-                    <span className="font-semibold">Remise totale:</span>
-                    <span className="font-semibold">-{formatCurrency(totals.totalDiscount)}</span>
-                  </div>
-                )}
-                <div className="border-t border-gray-300 pt-3">
-                  <div className="flex justify-between text-xl font-bold">
-                    <span style={{ color: '#080F0F' }}>TOTAL TTC:</span>
-                    <span className="text-[#477A0C]">{formatCurrency(totals.totalWithTax)}</span>
-                  </div>
+        {/* NOUVEAU DESIGN TOTAUX - Agencement amélioré et sans slashes */}
+        <div className="mt-8">
+          <div className="flex justify-end">
+            <div className="w-full max-w-lg">
+              {/* Cadre principal des totaux */}
+              <div className="bg-white border-2 border-[#477A0C] rounded-xl shadow-lg overflow-hidden">
+                {/* En-tête des totaux */}
+                <div className="bg-[#477A0C] text-[#F2EFE2] px-6 py-3">
+                  <h4 className="text-lg font-bold text-center">RÉCAPITULATIF FINANCIER</h4>
                 </div>
                 
-                {/* Gestion acompte - EXACTEMENT comme dans l'aperçu */}
-                {invoice.payment.method === 'Acompte' && invoice.payment.depositAmount > 0 && (
-                  <>
-                    <div className="border-t border-gray-300 pt-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-semibold" style={{ color: '#080F0F' }}>Acompte versé:</span>
-                        <span className="font-semibold text-blue-600">{formatCurrency(invoice.payment.depositAmount)}</span>
+                {/* Corps des totaux */}
+                <div className="p-6 space-y-4">
+                  {/* Ligne Total HT */}
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span className="font-semibold text-gray-700">Total HT :</span>
+                    <span className="font-bold text-lg" style={{ color: '#080F0F' }}>
+                      {formatAmountClean(totals.subtotal)}
+                    </span>
+                  </div>
+                  
+                  {/* Ligne TVA */}
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span className="font-semibold text-gray-700">TVA ({invoice.taxRate}%) :</span>
+                    <span className="font-bold text-lg" style={{ color: '#080F0F' }}>
+                      {formatAmountClean(totals.taxAmount)}
+                    </span>
+                  </div>
+                  
+                  {/* Ligne Remise si applicable */}
+                  {totals.totalDiscount > 0 && (
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                      <span className="font-semibold text-red-600">Remise totale :</span>
+                      <span className="font-bold text-lg text-red-600">
+                        -{formatAmountClean(totals.totalDiscount)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Ligne Total TTC - Mise en valeur */}
+                  <div className="bg-[#477A0C] text-[#F2EFE2] rounded-lg px-4 py-4 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-xl">TOTAL TTC :</span>
+                      <span className="font-black text-2xl">
+                        {formatAmountClean(totals.totalWithTax)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Section Acompte si applicable */}
+                  {invoice.payment.method === 'Acompte' && invoice.payment.depositAmount > 0 && (
+                    <div className="mt-6 space-y-3">
+                      {/* Séparateur visuel */}
+                      <div className="border-t-2 border-dashed border-gray-300 pt-4">
+                        <div className="text-center text-sm font-semibold text-gray-600 mb-3">
+                          DÉTAIL DU PAIEMENT
+                        </div>
+                      </div>
+                      
+                      {/* Acompte versé */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-blue-800">Acompte versé :</span>
+                          <span className="font-bold text-lg text-blue-600">
+                            {formatAmountClean(invoice.payment.depositAmount)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Reste à payer - Mise en valeur */}
+                      <div className="bg-orange-100 border-2 border-orange-400 rounded-lg px-4 py-4">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-xl text-orange-800">RESTE À PAYER :</span>
+                          <span className="font-black text-2xl text-orange-600">
+                            {formatAmountClean(totals.totalWithTax - invoice.payment.depositAmount)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-orange-50 border border-orange-200 rounded p-3">
-                      <div className="flex justify-between text-lg font-bold text-orange-600">
-                        <span>RESTE À PAYER:</span>
-                        <span>{formatCurrency(totals.totalWithTax - invoice.payment.depositAmount)}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -299,8 +350,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, isPreview = fal
               {invoice.payment.method === 'Acompte' && invoice.payment.depositAmount > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
                   <p className="font-semibold text-blue-800">Détails de l'acompte:</p>
-                  <p className="text-blue-700">Montant versé: <span className="font-bold">{formatCurrency(invoice.payment.depositAmount)}</span></p>
-                  <p className="text-orange-700 font-semibold">Reste à payer: <span className="font-bold">{formatCurrency(totals.totalWithTax - invoice.payment.depositAmount)}</span></p>
+                  <p className="text-blue-700">Montant versé: <span className="font-bold">{formatAmountClean(invoice.payment.depositAmount)}</span></p>
+                  <p className="text-orange-700 font-semibold">Reste à payer: <span className="font-bold">{formatAmountClean(totals.totalWithTax - invoice.payment.depositAmount)}</span></p>
                 </div>
               )}
               
