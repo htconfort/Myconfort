@@ -275,7 +275,8 @@ function App() {
       handleSaveInvoice();
       showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
-      await AdvancedPDFService.downloadPDF(invoice);
+      // 🎯 UTILISER LE SERVICE PDF UNIFIÉ
+      await PDFService.downloadPDF(invoice);
       showToast(`PDF MYCONFORT téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
     } catch (error) {
       console.error('PDF generation error:', error);

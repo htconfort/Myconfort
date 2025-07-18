@@ -1,34 +1,250 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { X, Download, Printer, FileText, Share2, Loader, UploadCloud as CloudUpload } from 'lucide-react';
-import { InvoicePDF } from './InvoicePDF';
+import { InvoicePDF } from './InvoicePDF'; // ✅ MÊME COMPOSANT que l'aperçu principal !
 import { Invoice } from '../types';
-import html2canvas from 'html2canvas';
-import { AdvancedPDFService } from '../services/advancedPdfService';
+import { PDFService } from '../services/pdfService';
 import { GoogleDriveService } from '../services/googleDriveService';
+import html2canvas from 'html2canvas';
+import html2pdf from 'html2pdf.js';
 
 interface PDFPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   invoice: Invoice;
-  onDownload: () => void;
+  onDownload?: () => void;
 }
 
 export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   isOpen,
   onClose,
-  invoice,
-  onDownload
+  invoice
 }) => {
-  const [isSharing, setIsSharing] = useState(false);
-  const [shareStep, setShareStep] = useState('');
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStep, setUploadStep] = useState('');
-  
-  const handlePrint = () => {
-    window.print();
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareStep, setShareStep] = useState('');
+
+  // 🎯 GÉNÉRATION PDF IDENTIQUE À L'APERÇU - MÊME DOM
+  const generatePDFFromPreview = async (): Promise<Blob> => {
+    if (!previewRef.current) {
+      throw new Error('Aperçu non trouvé pour la génération PDF');
+    }
+
+    console.log('🎯 GÉNÉRATION PDF DEPUIS LE MÊME DOM QUE L\'APERÇU');
+    
+    // Attendre que l'élément soit complètement rendu
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // 📋 CONFIGURATION EXACTE - IDENTIQUE À VOTRE SCRIPT
+    const opt = {
+      margin: 0,
+      filename: `MyConfort_Facture_${invoice.invoiceNumber}.pdf`,
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        letterRendering: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: previewRef.current.scrollWidth,
+        height: previewRef.current.scrollHeight
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      }
+    };
+
+    try {
+      console.log('🔄 Génération PDF depuis l\'aperçu avec votre configuration exacte...');
+      const pdfBlob = await html2pdf().set(opt).from(previewRef.current).outputPdf('blob');
+      console.log('✅ PDF généré depuis l\'aperçu - IDENTIQUE À L\'AFFICHAGE !');
+      return pdfBlob;
+    } catch (error) {
+      console.error('❌ Erreur génération PDF depuis aperçu:', error);
+      throw new Error('Impossible de générer le PDF depuis l\'aperçu');
+    }
   };
 
-  // Partage d'aperçu par email
+  // 📥 TÉLÉCHARGER LE PDF DEPUIS L'APERÇU
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    try {
+      console.log('📥 TÉLÉCHARGEMENT PDF DEPUIS L\'APERÇU AFFICHÉ');
+      
+      if (!previewRef.current) {
+        throw new Error('Aperçu non trouvé');
+      }
+
+      // Utiliser html2pdf directement sur l'aperçu affiché
+      const opt = {
+        margin: 0,
+        filename: `MyConfort_Facture_${invoice.invoiceNumber}.pdf`,
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        }
+      };
+
+      await html2pdf().set(opt).from(previewRef.current).save();
+      console.log('✅ PDF téléchargé depuis l\'aperçu - IDENTIQUE À L\'AFFICHAGE !');
+      
+    } catch (error) {
+      console.error('❌ Erreur téléchargement PDF:', error);
+      alert(`❌ Erreur lors du téléchargement du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // 📤 TÉLÉCHARGER ET ENVOYER SUR GOOGLE DRIVE
+  const handleDownloadAndUploadPDF = async () => {
+    setIsDownloading(true);
+    setIsUploading(true);
+    setUploadStep('🔄 Génération du PDF depuis l\'aperçu...');
+    
+    try {
+      console.log('🚀 PROCESSUS COMPLET : TÉLÉCHARGEMENT + GOOGLE DRIVE');
+      
+      // 1. Générer le PDF depuis l'aperçu affiché
+      const pdfBlob = await generatePDFFromPreview();
+      
+      setUploadStep('📥 Téléchargement local...');
+      
+      // 2. Téléchargement local
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MyConfort_Facture_${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      setUploadStep('📤 Envoi vers Google Drive...');
+      
+      // 3. Envoi Google Drive
+      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      
+      if (success) {
+        setUploadStep('✅ PDF téléchargé et envoyé !');
+        alert(`✅ Facture ${invoice.invoiceNumber} téléchargée et envoyée sur Google Drive avec succès !`);
+      } else {
+        throw new Error('Échec de l\'envoi vers Google Drive');
+      }
+      
+    } catch (error) {
+      console.error('❌ Erreur processus complet:', error);
+      alert(`❌ Erreur lors du processus: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsDownloading(false);
+      setIsUploading(false);
+      setUploadStep('');
+    }
+  };
+
+  // 📤 ENVOYER UNIQUEMENT SUR GOOGLE DRIVE
+  const handleUploadToGoogleDrive = async () => {
+    setIsUploading(true);
+    setUploadStep('🔄 Génération du PDF...');
+
+    try {
+      // Generate PDF blob from the preview
+      const pdfBlob = await generatePDFFromPreview();
+      
+      setUploadStep('📤 Envoi vers Google Drive...');
+      
+      // Upload to Google Drive
+      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      
+      if (success) {
+        setUploadStep('✅ PDF envoyé avec succès !');
+        alert(`✅ Facture ${invoice.invoiceNumber} envoyée avec succès vers Google Drive !`);
+      } else {
+        throw new Error('Échec de l\'envoi vers Google Drive');
+      }
+    } catch (error) {
+      console.error('❌ Erreur upload Google Drive:', error);
+      alert(`❌ Erreur lors de l'envoi vers Google Drive: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    } finally {
+      setIsUploading(false);
+      setUploadStep('');
+    }
+  };
+
+  // 🖨️ IMPRESSION DEPUIS L'APERÇU
+  const handlePrint = () => {
+    if (!previewRef.current) {
+      alert('Aperçu non trouvé pour l\'impression.');
+      return;
+    }
+    
+    const printContents = previewRef.current.innerHTML;
+    const printWindow = window.open('', '', 'height=900,width=700');
+    
+    if (!printWindow) {
+      alert('Impossible d\'ouvrir la fenêtre d\'impression. Veuillez autoriser les pop-ups.');
+      return;
+    }
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Facture ${invoice.invoiceNumber}</title>
+          <meta charset="UTF-8">
+          <style>
+            body { 
+              font-family: 'Inter', Arial, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: #fff; 
+              color: #333;
+              line-height: 1.4;
+            }
+            .facture-apercu { 
+              background: #fff; 
+              font-family: 'Inter', Arial, sans-serif;
+            }
+            @media print {
+              body { margin: 0; padding: 10mm; }
+              .no-print { display: none !important; }
+            }
+            /* Styles pour l'impression */
+            .invoice-container { max-width: none; box-shadow: none; }
+            .header { background: linear-gradient(135deg, #477A0C, #5A8F0F) !important; }
+            .footer { background: linear-gradient(135deg, #477A0C, #5A8F0F) !important; }
+          </style>
+        </head>
+        <body>${printContents}</body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        setTimeout(() => {
+          printWindow.close();
+        }, 1000);
+      }, 500);
+    };
+  };
+
+  // 📸 PARTAGE APERÇU PAR EMAIL
   const handleSharePreviewViaEmail = async () => {
     if (!invoice.client.email) {
       alert('Veuillez renseigner l\'email du client pour partager l\'aperçu');
@@ -38,19 +254,16 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     setIsSharing(true);
 
     try {
-      // Étapes de progression
       setShareStep('📸 Capture de l\'aperçu...');
       
-      // Capturer l'aperçu avec html2canvas
-      const element = document.getElementById('pdf-preview-content');
-      if (!element) {
-        throw new Error('Élément aperçu non trouvé');
+      if (!previewRef.current) {
+        throw new Error('Aperçu non trouvé');
       }
 
       setShareStep('🖼️ Conversion en image...');
       
-      // Utiliser des options optimisées pour réduire la taille
-      const canvas = await html2canvas(element, {
+      // Capturer l'aperçu avec html2canvas
+      const canvas = await html2canvas(previewRef.current, {
         scale: 0.75,
         useCORS: true,
         allowTaint: true,
@@ -89,44 +302,10 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
     } catch (error) {
       console.error('❌ Erreur partage aperçu:', error);
-      
-      const errorMessage = `❌ Erreur lors de la capture de l'aperçu\n\n` +
-        `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}\n\n` +
-        `Consultez la console pour plus de détails`;
-      
-      alert(errorMessage);
+      alert(`❌ Erreur lors de la capture de l'aperçu: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     } finally {
       setIsSharing(false);
       setShareStep('');
-    }
-  };
-
-  // Upload to Google Drive
-  const handleUploadToGoogleDrive = async () => {
-    setIsUploading(true);
-    setUploadStep('🔄 Génération du PDF...');
-
-    try {
-      // Generate PDF blob
-      const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
-      
-      setUploadStep('📤 Envoi vers Google Drive...');
-      
-      // Upload to Google Drive
-      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
-      
-      if (success) {
-        setUploadStep('✅ PDF envoyé avec succès !');
-        alert(`✅ Facture ${invoice.invoiceNumber} envoyée avec succès vers Google Drive !`);
-      } else {
-        throw new Error('Échec de l\'envoi vers Google Drive');
-      }
-    } catch (error) {
-      console.error('❌ Erreur upload Google Drive:', error);
-      alert(`❌ Erreur lors de l'envoi vers Google Drive: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
-    } finally {
-      setIsUploading(false);
-      setUploadStep('');
     }
   };
 
@@ -148,17 +327,37 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             )}
           </div>
           <div className="flex items-center space-x-3">
-            {/* Bouton upload Google Drive */}
+            {/* Bouton téléchargement seul */}
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
+              title="Télécharger le PDF identique à cet aperçu"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Téléchargement...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Télécharger PDF</span>
+                </>
+              )}
+            </button>
+
+            {/* Bouton Google Drive seul */}
             <button
               onClick={handleUploadToGoogleDrive}
               disabled={isUploading}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
               title="Envoyer cette facture vers Google Drive"
             >
               {isUploading ? (
                 <>
                   <Loader className="w-4 h-4 animate-spin" />
-                  <span>Envoi en cours...</span>
+                  <span>Envoi...</span>
                 </>
               ) : (
                 <>
@@ -167,18 +366,38 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
                 </>
               )}
             </button>
+
+            {/* Bouton combiné téléchargement + Google Drive */}
+            <button
+              onClick={handleDownloadAndUploadPDF}
+              disabled={isDownloading || isUploading}
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
+              title="Télécharger ET envoyer sur Google Drive"
+            >
+              {(isDownloading || isUploading) ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Traitement...</span>
+                </>
+              ) : (
+                <>
+                  <CloudUpload size={18} />
+                  <span>Télécharger & Drive</span>
+                </>
+              )}
+            </button>
             
             {/* Bouton partage aperçu */}
             <button
               onClick={handleSharePreviewViaEmail}
               disabled={isSharing || !invoice.client.email}
-              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100 disabled:opacity-50"
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105 disabled:hover:scale-100"
               title={!invoice.client.email ? "Veuillez renseigner l'email du client" : "Capturer cet aperçu et l'envoyer par email"}
             >
               {isSharing ? (
                 <>
                   <Loader className="w-4 h-4 animate-spin" />
-                  <span>Capture en cours...</span>
+                  <span>Capture...</span>
                 </>
               ) : (
                 <>
@@ -195,13 +414,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
               <Printer size={18} />
               <span>Imprimer</span>
             </button>
-            <button
-              onClick={onDownload}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 font-semibold transition-all hover:scale-105"
-            >
-              <Download size={18} />
-              <span>Télécharger PDF</span>
-            </button>
+            
             <button
               onClick={onClose}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-2 rounded-lg transition-all hover:scale-105"
@@ -210,6 +423,19 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Indicateur de traitement en cours */}
+        {(isDownloading || isUploading) && uploadStep && (
+          <div className="bg-blue-50 border-b border-blue-200 p-3">
+            <div className="flex items-center space-x-3">
+              <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              <div>
+                <div className="font-semibold text-blue-900">Traitement en cours...</div>
+                <div className="text-sm text-blue-700">{uploadStep}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Indicateur de partage en cours */}
         {isSharing && shareStep && (
@@ -224,59 +450,23 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           </div>
         )}
 
-        {/* Indicateur d'upload en cours */}
-        {isUploading && uploadStep && (
-          <div className="bg-blue-50 border-b border-blue-200 p-3">
-            <div className="flex items-center space-x-3">
-              <Loader className="w-5 h-5 animate-spin text-blue-600" />
-              <div>
-                <div className="font-semibold text-blue-900">Envoi vers Google Drive en cours...</div>
-                <div className="text-sm text-blue-700">{uploadStep}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Instructions pour le partage */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b p-3">
+        {/* Instructions */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b p-3">
           <div className="flex items-center space-x-2 text-sm">
-            <Share2 className="w-4 h-4 text-purple-600" />
-            <span className="font-semibold text-purple-900">Partage d'aperçu :</span>
-            <span className="text-purple-800">
-              {invoice.client.email 
-                ? "Cliquez sur \"Partager Aperçu\" pour capturer et envoyer par email"
-                : "⚠️ Email client requis pour le partage d'aperçu"
-              }
+            <FileText className="w-4 h-4 text-green-600" />
+            <span className="font-semibold text-green-900">PDF identique à l'aperçu :</span>
+            <span className="text-green-800">
+              Le PDF généré sera exactement identique à ce que vous voyez ci-dessous
             </span>
           </div>
           <div className="mt-1 text-xs text-gray-600">
-            📸 Format: JPEG optimisé • 🎯 Téléchargement automatique
-          </div>
-          <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 L'image sera téléchargée et votre client mail s'ouvrira automatiquement
+            📥 Téléchargement local • 📤 Envoi Google Drive • 🖨️ Impression • 📸 Partage aperçu
           </div>
         </div>
 
-        {/* Instructions pour Google Drive */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-3">
-          <div className="flex items-center space-x-2 text-sm">
-            <CloudUpload className="w-4 h-4 text-blue-600" />
-            <span className="font-semibold text-blue-900">Google Drive :</span>
-            <span className="text-blue-800">
-              Cliquez sur "Google Drive" pour envoyer cette facture vers votre Drive
-            </span>
-          </div>
-          <div className="mt-1 text-xs text-gray-600">
-            📁 Dossier: {GoogleDriveService.getConfig().folderId} • 🎯 Format: PDF haute qualité
-          </div>
-          <div className="mt-1 text-xs text-blue-600 font-semibold">
-            💡 La facture sera automatiquement envoyée vers votre Google Drive via n8n
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="overflow-auto max-h-[calc(90vh-220px)] bg-gray-100 p-4">
-          <div id="pdf-preview-content">
+        {/* Content - APERÇU IDENTIQUE */}
+        <div className="overflow-auto max-h-[calc(90vh-200px)] bg-gray-100 p-4">
+          <div ref={previewRef} className="facture-apercu" id="pdf-preview-content">
             <InvoicePDF invoice={invoice} isPreview={true} />
           </div>
         </div>
