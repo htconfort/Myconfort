@@ -8,7 +8,8 @@ import { InvoicesListModal } from './components/InvoicesListModal';
 import { ProductsListModal } from './components/ProductsListModal';
 import { PDFPreviewModal } from './components/PDFPreviewModal';
 import { EmailJSConfigModal } from './components/EmailJSConfigModal';
-import { GoogleDriveModal } from './components/GoogleDriveModal';
+import { GoogleDriveModal }
+ from './components/GoogleDriveModal';
 import { SignaturePad } from './components/SignaturePad';
 import { EmailSender } from './components/EmailSender';
 import { InvoicePDF } from './components/InvoicePDF';
@@ -69,6 +70,7 @@ function App() {
     message: '',
     type: 'success' as ToastType
   });
+  const [isSaving, setIsSaving] = useState(false); // 🆕 Nouvel état pour le chargement du bouton
 
   useEffect(() => {
     console.log('⚡ useEffect initial - Chargement des données...');
@@ -158,6 +160,7 @@ function App() {
 
   // 🆕 NOUVELLE FONCTION - ENREGISTRER + UTILISER MÊME LOGIQUE QUE BOUTON DRIVE
   const handleSaveAndSendInvoice = async () => {
+    setIsSaving(true); // 🚀 Activer l'état de chargement
     try {
       // 🔒 VALIDATION OBLIGATOIRE
       const validation = validateMandatoryFields();
@@ -181,6 +184,8 @@ function App() {
     } catch (error: any) {
       console.error('❌ Erreur enregistrement:', error);
       showToast(`❌ Erreur d'enregistrement: ${error.message || 'Erreur inconnue'}`, 'error');
+    } finally {
+      setIsSaving(false); // 🛑 Désactiver l'état de chargement
     }
   };
 
@@ -276,7 +281,7 @@ function App() {
       showToast('Génération du PDF MYCONFORT en cours...', 'success');
       
       // 🎯 UTILISER LE SERVICE PDF UNIFIÉ
-      await PDFService.downloadPDF(invoice);
+      await AdvancedPDFService.downloadPDF(invoice);
       showToast(`PDF MYCONFORT téléchargé avec succès${invoice.signature ? ' (avec signature électronique)' : ''}`, 'success');
     } catch (error) {
       console.error('PDF generation error:', error);
@@ -676,64 +681,30 @@ function App() {
           
           <div className="bg-[#F2EFE2] rounded-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Bouton Aperçu & PDF */}
-              <button
-                onClick={handleValidateAndPDF}
-                disabled={!validation.isValid}
-                className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
-                  validation.isValid
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white' 
-                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                }`}
-                title={validation.isValid 
-                  ? "Voir l'aperçu et télécharger le PDF" 
-                  : "Complétez tous les champs obligatoires"}
-              >
-                <span className="text-xl">📄</span>
-                <span>APERÇU & PDF</span>
-              </button>
-
-              {/* Bouton Télécharger PDF direct */}
-              <button
-                onClick={handleGeneratePDF}
-                disabled={!validation.isValid}
-                className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
-                  validation.isValid
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white' 
-                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                }`}
-                title={validation.isValid 
-                  ? "Générer et télécharger le PDF directement" 
-                  : "Complétez tous les champs obligatoires"}
-              >
-                <span className="text-xl">📥</span>
-                <span>TÉLÉCHARGER PDF</span>
-              </button>
-
               {/* Bouton Enregistrer */}
               <button
                 onClick={handleSaveAndSendInvoice}
-                disabled={!validation.isValid}
+                disabled={!validation.isValid || isSaving} // 🛑 Désactiver si non valide OU en cours de sauvegarde
                 className={`px-6 py-4 rounded-xl flex items-center justify-center space-x-3 font-bold shadow-lg transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100 ${
-                  validation.isValid
+                  validation.isValid && !isSaving // ✅ Couleur orange si valide ET pas en sauvegarde
                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white' 
-                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed' // ⚠️ Gris si non valide OU en sauvegarde
                 }`}
                 title={validation.isValid 
-                  ? "Enregistrer la facture" 
+                  ? (isSaving ? "Enregistrement en cours..." : "Enregistrer la facture") 
                   : "Complétez tous les champs obligatoires"}
               >
-                <span className="text-xl">💾</span>
-                <span>ENREGISTRER</span>
+                <span className="text-xl">
+                  {isSaving ? '⏳' : '💾'} {/* 🔄 Icône dynamique */}
+                </span>
+                <span>{isSaving ? 'ENREGISTREMENT...' : 'ENREGISTRER'}</span> {/* 💬 Texte dynamique */}
               </button>
             </div>
             
             {/* Instructions */}
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
               <p className="font-semibold">💡 Instructions :</p>
-              <p>• <strong>APERÇU & PDF</strong> : Voir l'aperçu et télécharger/envoyer le PDF</p>
-              <p>• <strong>TÉLÉCHARGER PDF</strong> : Génération directe du PDF</p>
-              <p>• <strong>ENREGISTRER</strong> : Sauvegarder la facture localement</p>
+              <p>• <strong>ENREGISTRER</strong> : Sauvegarder la facture localement. Une fois enregistrée, utilisez le bouton "Drive" en haut à droite pour générer le PDF et l'envoyer par email.</p>
             </div>
           </div>
         </div>
