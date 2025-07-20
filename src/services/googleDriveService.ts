@@ -1,375 +1,284 @@
-import { GoogleFile, GoogleDriveResponse } from '../types/google';
-import { Invoice } from '../types';
-import { formatCurrency, calculateProductTotal } from '../utils/calculations';
+// Service Google Drive pour MyComfort
+// Sauvegarde automatique des factures PDF dans Google Drive
 
-// Configuration for Google Drive integration via n8n webhook
-const MAKE_CONFIG = {
-  WEBHOOK_URL: 'https://n8n.srv765811.hstgr.cloud/webhook/e7ca38d2-4b2a-4216-9c26-23663529790a', // n8n webhook URL
-  FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // Google Drive folder ID
+import { Invoice } from './invoiceStorage';
+import { getPDFBlob } from './pdfGenerator';
+
+// Configuration Google Drive API
+const GOOGLE_DRIVE_CONFIG = {
+  CLIENT_ID: '416673956609-ushnkvokiicp2ec0uug7dsvpb50mscr5.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyCHArqLOqdspuiJZsXjbJiUvz_3sKtEy8M',
+  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+  SCOPES: 'https://www.googleapis.com/auth/drive.file',
+  FOLDER_ID: '1hZsPW8TeZ6s3AlLesb1oLQNbI3aJY3p-' // Votre dossier Drive
 };
 
-export class GoogleDriveService {
-  private static instance: GoogleDriveService;
+// Interface pour les métadonnées de fichier
+interface DriveFileMetadata {
+  name: string;
+  parents?: string[];
+  description?: string;
+}
 
-  static getInstance(): GoogleDriveService {
-    if (!GoogleDriveService.instance) {
-      GoogleDriveService.instance = new GoogleDriveService();
-    }
-    return GoogleDriveService.instance;
-  }
+// Interface pour la réponse Google Drive
+interface DriveUploadResponse {
+  id: string;
+  name: string;
+  webViewLink?: string;
+  webContentLink?: string;
+}
 
-  /**
-   * Uploads a PDF to Google Drive via n8n webhook
-   */
-  static async uploadPDFToGoogleDrive(invoice: Invoice, pdfBlob: Blob): Promise<boolean> {
-    try {
-      console.log('🚀 UPLOAD PDF VERS GOOGLE DRIVE VIA n8n');
-      
-      // Convert PDF blob to base64
-      const pdfBase64 = await this.blobToBase64(pdfBlob);
-      
-      // Calculate invoice totals for metadata
-      const totalAmount = invoice.products.reduce((sum, product) => {
-        return sum + calculateProductTotal(
-          product.quantity,
-          product.priceTTC,
-          product.discount,
-          product.discountType
-        );
-      }, 0);
+// Fonction principale de sauvegarde sur Google Drive
+export const saveToGoogleDrive = async (
+  pdfBlob: Blob, 
+  filename: string,
+  folderId?: string
+): Promise<DriveUploadResponse> => {
+  try {
+    console.log('☁️ Sauvegarde sur Google Drive:', filename);
+    
+    // Vérifier l'authentification
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      throw new Error('Token d\'accès Google Drive manquant');
+    }
 
-      const acompteAmount = invoice.payment.depositAmount || 0;
-      const montantRestant = totalAmount - acompteAmount;
-      
-      // Prepare data for n8n webhook
-      const webhookData = {
-        // PDF data
-        nom_facture: `Facture_MYCONFORT_${invoice.invoiceNumber}`,
-        fichier_facture: pdfBase64.split(',')[1], // Remove data:application/pdf;base64, prefix
-        date_creation: new Date().toISOString(),
-        
-        // Invoice metadata
-        numero_facture: invoice.invoiceNumber,
-        date_facture: invoice.invoiceDate,
-        montant_total: totalAmount,
-        acompte: acompteAmount,
-        montant_restant: montantRestant,
-        
-        // Client information
-        nom_client: invoice.client.name,
-        email_client: invoice.client.email,
-        telephone_client: invoice.client.phone,
-        adresse_client: `${invoice.client.address}, ${invoice.client.postalCode} ${invoice.client.city}`,
-        
-        // Payment information
-        mode_paiement: invoice.payment.method || 'Non spécifié',
-        signature: invoice.signature ? 'Oui' : 'Non',
-        
-        // Additional metadata
-        conseiller: invoice.advisorName || 'MYCONFORT',
-        lieu_evenement: invoice.eventLocation || 'Non spécifié',
-        nombre_produits: invoice.products.length,
-        produits: invoice.products.map(p => `${p.quantity}x ${p.name}`).join(', '),
-        
-        // Google Drive folder ID
-        dossier_id: MAKE_CONFIG.FOLDER_ID
-      };
-      
-      console.log('📤 Envoi des données vers n8n pour upload Google Drive...');
-      
-      // Set up fetch with timeout and proper error handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30 second timeout
-      
-      try {
-        // Send data to n8n webhook with proper error handling
-        const response = await fetch(MAKE_CONFIG.WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(webhookData),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          // Handle different HTTP error codes
-          let errorMessage = '';
-          switch (response.status) {
-            case 404:
-              errorMessage = 'Webhook n8n introuvable (404). Vérifiez que l\'URL est correcte et que le workflow n8n est actif.';
-              break;
-            case 500:
-              errorMessage = 'Erreur serveur n8n (500). Vérifiez la configuration de votre workflow n8n.';
-              break;
-            case 403:
-              errorMessage = 'Accès refusé (403). Vérifiez les permissions de votre webhook n8n.';
-              break;
-            case 400:
-              errorMessage = 'Requête invalide (400). Vérifiez la configuration de votre webhook n8n.';
-              break;
-            default:
-              errorMessage = `Erreur HTTP ${response.status}: ${response.statusText}`;
-          }
-          
-          throw new Error(errorMessage);
-        }
-        
-        console.log('✅ PDF envoyé avec succès vers Google Drive via n8n');
-        return true;
-        
-      } catch (fetchError: any) {
-        clearTimeout(timeoutId);
-        
-        // Handle specific fetch errors
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Timeout: Le webhook n8n ne répond pas dans les temps. Vérifiez que votre instance n8n est active et accessible.');
-        }
-        
-        if (fetchError.message.includes('Failed to fetch')) {
-          throw new Error('Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau');
-        }
-        
-        if (fetchError.message.includes('CORS')) {
-          throw new Error('Erreur CORS: Le webhook n8n doit autoriser les requêtes depuis votre domaine. Vérifiez la configuration CORS de votre instance n8n.');
-        }
-        
-        throw fetchError; // Re-throw if it's an unexpected error
-      }
-      
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'upload vers Google Drive:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Converts a Blob to base64
-   */
-  private static async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
-        } else {
-          reject(new Error('Erreur de conversion blob vers base64'));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  /**
-   * Tests the Google Drive integration
-   */
-  static async testGoogleDriveIntegration(): Promise<{ success: boolean; message: string }> {
-    try {
-      console.log('🧪 TEST DE L\'INTÉGRATION GOOGLE DRIVE VIA n8n');
-      
-      // Get current configuration
-      const config = this.getConfig();
-      const webhookUrl = config.webhookUrl;
-      const folderId = config.folderId;
-      
-      // Validate webhook URL format
-      if (!webhookUrl || webhookUrl.trim() === '') {
-        return {
-          success: false,
-          message: '❌ URL du webhook n8n non configurée. Veuillez saisir une URL valide.'
-        };
-      }
-      
-      try {
-        new URL(webhookUrl);
-      } catch (urlError) {
-        return {
-          success: false,
-          message: '❌ URL du webhook n8n invalide. Veuillez vérifier le format de l\'URL.'
-        };
-      }
-      
-      // Validate folder ID
-      if (!folderId || folderId.trim() === '') {
-        return {
-          success: false,
-          message: '❌ ID du dossier Google Drive non configuré. Veuillez saisir un ID de dossier valide.'
-        };
-      }
-      
-      console.log(`🔗 Test de connectivité vers: ${webhookUrl}`);
-      
-      // Create a small test PDF
-      const testBlob = new Blob(['Test PDF content for Google Drive integration'], { type: 'application/pdf' });
-      const testBase64 = await this.blobToBase64(testBlob);
-      
-      // Prepare test data
-      const testData = {
-        nom_facture: 'Test_Integration_n8n_GoogleDrive',
-        fichier_facture: testBase64.split(',')[1],
-        date_creation: new Date().toISOString(),
-        test: true,
-        dossier_id: folderId
-      };
-      
-      // Set up fetch with timeout and proper error handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 30000); // 30 second timeout
-      
-      try {
-        // Send test data to n8n webhook
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(testData),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          // Handle different HTTP error codes
-          let errorMessage = '';
-          switch (response.status) {
-            case 404:
-              errorMessage = 'Webhook n8n introuvable (404). Vérifiez que l\'URL est correcte et que le workflow n8n est actif.';
-              break;
-            case 500:
-              errorMessage = 'Erreur serveur n8n (500). Vérifiez la configuration de votre workflow n8n.';
-              break;
-            case 403:
-              errorMessage = 'Accès refusé (403). Vérifiez les permissions de votre webhook n8n.';
-              break;
-            case 400:
-              errorMessage = 'Requête invalide (400). Vérifiez la configuration de votre webhook n8n.';
-              break;
-            default:
-              errorMessage = `Erreur HTTP ${response.status}: ${response.statusText}`;
-          }
-          
-          return {
-            success: false,
-            message: `❌ ${errorMessage}`
-          };
-        }
-        
-        // Try to parse response
-        let result;
-        try {
-          const responseText = await response.text();
-          if (responseText) {
-            result = JSON.parse(responseText);
-          } else {
-            result = { message: 'Réponse vide du webhook' };
-          }
-        } catch (parseError) {
-          // If response is not JSON, that's still okay for some webhooks
-          result = { message: 'Webhook a répondu avec succès' };
-        }
-        
-        console.log('✅ Test réussi:', result);
-        
-        return {
-          success: true,
-          message: `✅ Test d'intégration Google Drive réussi ! Le webhook n8n a répondu correctement. Le fichier test devrait être uploadé dans le dossier ${folderId}.`
-        };
-        
-      } catch (fetchError: any) {
-        clearTimeout(timeoutId);
-        
-        // Handle specific fetch errors
-        if (fetchError.name === 'AbortError') {
-          return {
-            success: false,
-            message: '❌ Timeout: Le webhook n8n ne répond pas dans les temps. Vérifiez que votre instance n8n est active et accessible.'
-          };
-        }
-        
-        if (fetchError.message.includes('Failed to fetch')) {
-          return {
-            success: false,
-            message: '❌ Impossible de se connecter au webhook n8n. Vérifiez que:\n• L\'URL est correcte\n• Votre instance n8n est en ligne\n• Le workflow est actif\n• Il n\'y a pas de problème de réseau ou de pare-feu\n• Le serveur n8n accepte les requêtes HTTPS'
-          };
-        }
-        
-        if (fetchError.message.includes('CORS')) {
-          return {
-            success: false,
-            message: '❌ Erreur CORS: Le webhook n8n doit autoriser les requêtes depuis votre domaine. Vérifiez la configuration CORS de votre instance n8n.'
-          };
-        }
-        
-        return {
-          success: false,
-          message: `❌ Erreur de connexion: ${fetchError.message || 'Erreur inconnue'}`
-        };
-      }
-      
-    } catch (error: any) {
-      console.error('❌ Erreur test intégration Google Drive:', error);
-      
-      return {
-        success: false,
-        message: `❌ Erreur inattendue lors du test: ${error.message || 'Erreur inconnue'}`
-      };
-    }
-  }
-  
-  /**
-   * Configures the n8n webhook URL
-   */
-  static updateWebhookConfig(webhookUrl: string, folderId?: string): void {
-    if (webhookUrl) {
-      localStorage.setItem('n8n_webhook_url', webhookUrl);
-    }
-    
-    if (folderId) {
-      localStorage.setItem('google_drive_folder_id', folderId);
-    }
-    
-    // Update the configuration
-    const savedWebhookUrl = localStorage.getItem('n8n_webhook_url');
-    const savedFolderId = localStorage.getItem('google_drive_folder_id');
-    
-    if (savedWebhookUrl) {
-      MAKE_CONFIG.WEBHOOK_URL = savedWebhookUrl;
-    }
-    
-    if (savedFolderId) {
-      MAKE_CONFIG.FOLDER_ID = savedFolderId;
-    }
-  }
-  
-  /**
-   * Gets the current configuration
-   */
-  static getConfig(): { webhookUrl: string; folderId: string } {
-    // Initialize with default values from localStorage if available
-    const savedWebhookUrl = localStorage.getItem('n8n_webhook_url');
-    const savedFolderId = localStorage.getItem('google_drive_folder_id');
-    
-    if (savedWebhookUrl) {
-      MAKE_CONFIG.WEBHOOK_URL = savedWebhookUrl;
-    }
-    
-    if (savedFolderId) {
-      MAKE_CONFIG.FOLDER_ID = savedFolderId;
-    }
-    
-    return {
-      webhookUrl: MAKE_CONFIG.WEBHOOK_URL,
-      folderId: MAKE_CONFIG.FOLDER_ID
+    // Préparer les métadonnées
+    const metadata: DriveFileMetadata = {
+      name: filename,
+      parents: [folderId || GOOGLE_DRIVE_CONFIG.FOLDER_ID],
+      description: `Facture MyComfort générée le ${new Date().toLocaleDateString('fr-FR')}`
     };
+
+    // Créer le FormData pour l'upload multipart
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], {
+      type: 'application/json'
+    }));
+    form.append('file', pdfBlob);
+
+    // Envoyer à Google Drive
+    const response = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,webContentLink',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: form
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Erreur Google Drive: ${response.status} - ${errorData}`);
+    }
+
+    const result: DriveUploadResponse = await response.json();
+    console.log('✅ Fichier sauvegardé sur Google Drive:', result);
+    
+    return result;
+
+  } catch (error) {
+    console.error('❌ Erreur sauvegarde Google Drive:', error);
+    throw error;
+  }
+};
+
+// Fonction pour sauvegarder une facture complète
+export const saveInvoiceToGoogleDrive = async (
+  invoice: Invoice,
+  customFilename?: string
+): Promise<DriveUploadResponse> => {
+  try {
+    // Générer le PDF
+    const pdfBlob = await getPDFBlob(invoice);
+    
+    // Nom de fichier par défaut
+    const filename = customFilename || 
+      `Facture_${invoice.invoiceNumber}_${invoice.clientName.replace(/\s+/g, '_')}.pdf`;
+    
+    // Sauvegarder sur Google Drive
+    return await saveToGoogleDrive(pdfBlob, filename);
+    
+  } catch (error) {
+    console.error('❌ Erreur sauvegarde facture Google Drive:', error);
+    throw error;
+  }
+};
+
+// Fonction d'authentification Google
+export const authenticateGoogleDrive = async (): Promise<boolean> => {
+  try {
+    // Charger l'API Google si pas déjà fait
+    if (!window.gapi) {
+      await loadGoogleAPI();
+    }
+
+    // Initialiser l'API
+    await window.gapi.load('auth2', async () => {
+      await window.gapi.auth2.init({
+        client_id: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
+        scope: GOOGLE_DRIVE_CONFIG.SCOPES
+      });
+    });
+
+    // Authentifier l'utilisateur
+    const authInstance = window.gapi.auth2.getAuthInstance();
+    const user = await authInstance.signIn();
+    
+    if (user.isSignedIn()) {
+      console.log('✅ Authentification Google Drive réussie');
+      return true;
+    }
+    
+    return false;
+
+  } catch (error) {
+    console.error('❌ Erreur authentification Google Drive:', error);
+    return false;
+  }
+};
+
+// Fonction pour obtenir le token d'accès
+const getAccessToken = async (): Promise<string | null> => {
+  try {
+    if (!window.gapi || !window.gapi.auth2) {
+      console.warn('⚠️ API Google non initialisée');
+      return null;
+    }
+
+    const authInstance = window.gapi.auth2.getAuthInstance();
+    const user = authInstance.currentUser.get();
+    
+    if (user.isSignedIn()) {
+      return user.getAuthResponse().access_token;
+    }
+    
+    return null;
+
+  } catch (error) {
+    console.error('❌ Erreur récupération token:', error);
+    return null;
+  }
+};
+
+// Fonction pour charger l'API Google
+const loadGoogleAPI = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (window.gapi) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Impossible de charger l\'API Google'));
+    document.head.appendChild(script);
+  });
+};
+
+// Fonction pour créer le dossier MyComfort (si nécessaire)
+export const createMyComfortFolder = async (): Promise<string> => {
+  try {
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      throw new Error('Token d\'accès manquant');
+    }
+
+    const metadata = {
+      name: 'MyComfort Factures',
+      mimeType: 'application/vnd.google-apps.folder',
+      description: 'Dossier automatique pour les factures MyComfort'
+    };
+
+    const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(metadata)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur création dossier: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Dossier MyComfort créé:', result.id);
+    
+    return result.id;
+
+  } catch (error) {
+    console.error('❌ Erreur création dossier:', error);
+    throw error;
+  }
+};
+
+// Fonction pour lister les factures sur Google Drive
+export const listInvoicesFromGoogleDrive = async (): Promise<any[]> => {
+  try {
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      throw new Error('Token d\'accès manquant');
+    }
+
+    const query = `parents in '${GOOGLE_DRIVE_CONFIG.FOLDER_ID}' and name contains 'Facture_'`;
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,createdTime,webViewLink)`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Erreur listage: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.files || [];
+
+  } catch (error) {
+    console.error('❌ Erreur listage Google Drive:', error);
+    return [];
+  }
+};
+
+// Fonction de test de la configuration
+export const testGoogleDriveConfiguration = async (): Promise<boolean> => {
+  try {
+    console.log('🧪 Test configuration Google Drive...');
+    
+    // Test d'authentification
+    const isAuthenticated = await authenticateGoogleDrive();
+    if (!isAuthenticated) {
+      console.error('❌ Échec authentification');
+      return false;
+    }
+
+    // Test de création d'un fichier de test
+    const testBlob = new Blob(['Test MyComfort'], { type: 'text/plain' });
+    const result = await saveToGoogleDrive(testBlob, 'test-mycomfort.txt');
+    
+    console.log('✅ Test Google Drive réussi:', result.id);
+    return true;
+
+  } catch (error) {
+    console.error('❌ Test Google Drive échoué:', error);
+    return false;
+  }
+};
+
+// Export de la configuration pour modification
+export { GOOGLE_DRIVE_CONFIG };
+
+// Types pour TypeScript
+declare global {
+  interface Window {
+    gapi: any;
   }
 }
