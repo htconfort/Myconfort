@@ -3,7 +3,7 @@ import { X, Download, Printer, FileText, Share2, Loader, UploadCloud as CloudUpl
 import { InvoicePDF } from './InvoicePDF'; // ✅ MÊME COMPOSANT que l'aperçu principal !
 import { Invoice } from '../types';
 import { PDFService } from '../services/pdfService';
-import { GoogleDriveService } from '../services/googleDriveService';
+import { saveInvoiceToGoogleDrive } from '../services/googleDriveService';
 import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
 
@@ -138,9 +138,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       setUploadStep('📤 Envoi vers Google Drive...');
       
       // 3. Envoi Google Drive
-      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      const result = await saveInvoiceToGoogleDrive(invoice);
       
-      if (success) {
+      if (result) {
         setUploadStep('✅ PDF téléchargé et envoyé !');
         alert(`✅ Facture ${invoice.invoiceNumber} téléchargée et envoyée sur Google Drive avec succès !`);
       } else {
@@ -169,9 +169,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
       setUploadStep('📤 Envoi vers Google Drive...');
       
       // Upload to Google Drive
-      const success = await GoogleDriveService.uploadPDFToGoogleDrive(invoice, pdfBlob);
+      const result = await saveInvoiceToGoogleDrive(invoice);
       
-      if (success) {
+      if (result) {
         setUploadStep('✅ PDF envoyé avec succès !');
         alert(`✅ Facture ${invoice.invoiceNumber} envoyée avec succès vers Google Drive !`);
       } else {

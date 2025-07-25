@@ -18,7 +18,6 @@ import { Invoice, Client, ToastType } from './types';
 import { generateInvoiceNumber } from './utils/calculations';
 import { saveClients, loadClients, saveDraft, loadDraft, saveClient, saveInvoice, loadInvoices, deleteInvoice } from './utils/storage';
 import { AdvancedPDFService } from './services/advancedPdfService';
-import { GoogleDriveService } from './services/googleDriveService';
 
 console.log('🔧 App.tsx chargé - Composant principal OK');
 
