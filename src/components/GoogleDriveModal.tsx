@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, UploadCloud as CloudUpload, TestTube, Loader, CheckCircle, AlertCircle, FolderOpen, Wifi, WifiOff } from 'lucide-react';
+import { Save, UploadCloud as CloudUpload, TestTube, Loader, CheckCircle, AlertCircle, FolderOpen, WifiOff } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { GoogleDriveService } from '../services/googleDriveService';
 

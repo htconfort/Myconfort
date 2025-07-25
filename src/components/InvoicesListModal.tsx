@@ -31,7 +31,7 @@ export const InvoicesListModal: React.FC<InvoicesListModalProps> = ({
 
   // Filtrer et trier les factures
   const filteredAndSortedInvoices = React.useMemo(() => {
-    let filtered = invoices.filter(invoice => {
+    const filtered = invoices.filter(invoice => {
       const matchesSearch = 
         invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

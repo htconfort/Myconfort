@@ -2,7 +2,7 @@
 // Sauvegarde automatique des factures PDF dans Google Drive
 
 import { Invoice } from './invoiceStorage';
-import { getPDFBlob } from './pdfGenerator';
+import { AdvancedPDFService } from './advancedPdfService';
 
 // Configuration Google Drive API
 const GOOGLE_DRIVE_CONFIG = {
@@ -92,7 +92,7 @@ export const saveInvoiceToGoogleDrive = async (
 ): Promise<DriveUploadResponse> => {
   try {
     // Générer le PDF
-    const pdfBlob = await getPDFBlob(invoice);
+    const pdfBlob = await AdvancedPDFService.getPDFBlob(invoice);
     
     // Nom de fichier par défaut
     const filename = customFilename || 
@@ -275,6 +275,21 @@ export const testGoogleDriveConfiguration = async (): Promise<boolean> => {
 
 // Export de la configuration pour modification
 export { GOOGLE_DRIVE_CONFIG };
+
+// Service object for compatibility with existing components
+export const GoogleDriveService = {
+  getConfig: () => ({
+    webhookUrl: 'https://n8n.srv765811.hstgr.cloud/webhook-test/facture-myconfort',
+    folderId: GOOGLE_DRIVE_CONFIG.FOLDER_ID
+  }),
+  
+  updateWebhookConfig: (webhookUrl: string, folderId: string) => {
+    // Update configuration logic here if needed
+    console.log('Configuration updated:', { webhookUrl, folderId });
+  },
+  
+  testGoogleDriveIntegration: testGoogleDriveConfiguration
+};
 
 // Types pour TypeScript
 declare global {
