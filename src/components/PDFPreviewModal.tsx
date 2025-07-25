@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { X, Download, Printer, FileText, Share2, Loader, UploadCloud as CloudUpload } from 'lucide-react';
 import { InvoicePDF } from './InvoicePDF'; // ✅ MÊME COMPOSANT que l'aperçu principal !
 import { Invoice } from '../types';
-import { PDFService } from '../services/pdfService';
 import { saveInvoiceToGoogleDrive } from '../services/googleDriveService';
 import html2canvas from 'html2canvas';
 import html2pdf from 'html2pdf.js';
@@ -164,7 +163,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
     try {
       // Generate PDF blob from the preview
-      const pdfBlob = await generatePDFFromPreview();
+      await generatePDFFromPreview();
       
       setUploadStep('📤 Envoi vers Google Drive...');
       

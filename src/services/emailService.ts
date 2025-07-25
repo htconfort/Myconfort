@@ -442,7 +442,7 @@ export class EmailService {
       }
 
       // Préparer le message pour l'aperçu avec clés API définitives
-      let previewMessage = `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît dans notre système MYCONFORT.\n\nL'image ci-jointe vous montre exactement l'aperçu de votre facture.`;
+      const previewMessage = `Voici l'aperçu de votre facture n°${invoice.invoiceNumber} tel qu'il apparaît dans notre système MYCONFORT.\n\nL'image ci-jointe vous montre exactement l'aperçu de votre facture.`;
 
       // Préparer les données pour votre Template template_yng4k8s
       const templateParams = {

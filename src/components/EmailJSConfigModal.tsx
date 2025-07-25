@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, FileText } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { Modal } from './ui/Modal';
 
 interface EmailJSConfigModalProps {
